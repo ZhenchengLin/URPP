@@ -1,0 +1,12 @@
+id: student_b
+
+name: prerequisite_gap
+
+description: >
+  Synthetic student attempting advanced material while missing
+  an important prerequisite.
+
+expected_patterns:
+  - prerequisite_failure
+  - advanced_topic_difficulty
+  - benefits_from_prerequisite_repair

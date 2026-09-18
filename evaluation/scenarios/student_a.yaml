@@ -1,0 +1,13 @@
+id: student_a
+
+name: strong_foundation_weak_application
+
+description: >
+  Synthetic student who recalls definitions and explains concepts
+  adequately but struggles with independent application.
+
+expected_patterns:
+  - strong_recall
+  - adequate_explanation
+  - weak_independent_application
+  - benefits_from_scaffolding
