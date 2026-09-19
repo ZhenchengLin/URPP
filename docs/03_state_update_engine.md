@@ -1,3 +1,7 @@
+> **Historical design candidate — V0.1.**
+> Superseded for implementation by [Design 01B V0.2](03b_state_update_engine_v0.2.md).
+> Retained for comparison and design history.
+
 # Design 01B — Student State Update Engine
 
 Status: **V0.1 Design Candidate**
