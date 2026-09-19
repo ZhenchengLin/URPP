@@ -15,7 +15,12 @@ an answer, or provide transactional session persistence.
 """
 
 from dataclasses import dataclass
+from secrets import token_urlsafe
 from datetime import datetime
+
+from pydantic import BaseModel, ConfigDict, Field
+
+from app.services.decision.models_v01 import TeachingActionV01
 
 from app.domain.learning.state_v02 import ObjectiveStateV02
 
@@ -42,6 +47,29 @@ from app.services.student_model.state_update_v02 import (
 )
 
 
+class AssessmentDeliveryV01(BaseModel):
+    """
+    Server-created representation of a delivered numeric item.
+
+    The prompt is loaded from the stored assessment revision.
+    The assignment ID identifies this pending in-memory turn;
+    it is not a replacement for authentication or authorization.
+    """
+
+    model_config = ConfigDict(
+        frozen=True,
+        extra="forbid",
+    )
+
+    assignment_id: str = Field(min_length=1)
+    decision_id: str = Field(min_length=1)
+    assessment_item_id: str = Field(min_length=1)
+    item_revision: int = Field(ge=1)
+    prompt: str = Field(min_length=1)
+    selected_action: TeachingActionV01
+    assigned_at: datetime
+
+
 @dataclass(frozen=True)
 class PendingNumericAssessmentV01:
     """
@@ -55,6 +83,7 @@ class PendingNumericAssessmentV01:
     assessment_item_id: str
     item_revision: int
     requested_at: datetime
+    assignment_id: str | None = None
 
 
 class NumericTeachingSessionV01:
@@ -148,6 +177,55 @@ class NumericTeachingSessionV01:
         instead of relying on an exact prompt comparison.
         """
 
+        return self._start_numeric_turn(
+            assessment_item_id=assessment_item_id,
+            item_revision=item_revision,
+            decision_id=decision_id,
+            requested_at=requested_at,
+            structured=False,
+        )
+
+    def start_structured_numeric_turn(
+        self,
+        *,
+        assessment_item_id: str,
+        item_revision: int,
+        decision_id: str,
+        requested_at: datetime,
+    ) -> AssessmentDeliveryV01:
+        """
+        Return a server-created assignment using the stored prompt.
+
+        The Assessment Agent is still invoked by the current
+        orchestrator, but its free-form text is not used as the
+        delivered assessment item in this structured mode.
+        """
+
+        result = self._start_numeric_turn(
+            assessment_item_id=assessment_item_id,
+            item_revision=item_revision,
+            decision_id=decision_id,
+            requested_at=requested_at,
+            structured=True,
+        )
+
+        if not isinstance(result, AssessmentDeliveryV01):
+            raise RuntimeError(
+                "Structured assessment delivery was not created."
+            )
+
+        return result
+
+    def _start_numeric_turn(
+        self,
+        *,
+        assessment_item_id: str,
+        item_revision: int,
+        decision_id: str,
+        requested_at: datetime,
+        structured: bool,
+    ) -> TeachingTurnResultV01 | AssessmentDeliveryV01:
+
         if self._pending is not None:
             raise ValueError(
                 "Complete the pending assessment before "
@@ -215,20 +293,41 @@ class NumericTeachingSessionV01:
                 "to the Assessment Agent."
             )
 
-        if turn.content != item.prompt:
+        if not structured and turn.content != item.prompt:
             raise ValueError(
                 "Assessment Agent output does not match "
                 "the stored assessment prompt."
             )
+
+        assignment_id = (
+            token_urlsafe(24) if structured else None
+        )
 
         self._pending = PendingNumericAssessmentV01(
             decision_id=decision_id,
             assessment_item_id=assessment_item_id,
             item_revision=item_revision,
             requested_at=requested_at,
+            assignment_id=assignment_id,
         )
 
         self._used_decision_ids.add(decision_id)
+
+        if structured:
+            if assignment_id is None:
+                raise RuntimeError(
+                    "Structured assignment ID was not generated."
+                )
+
+            return AssessmentDeliveryV01(
+                assignment_id=assignment_id,
+                decision_id=decision_id,
+                assessment_item_id=assessment_item_id,
+                item_revision=item_revision,
+                prompt=item.prompt,
+                selected_action=turn.decision.selected_action,
+                assigned_at=requested_at,
+            )
 
         return turn
 
@@ -237,6 +336,7 @@ class NumericTeachingSessionV01:
         *,
         attempt_id: str,
         as_of: datetime,
+        assignment_id: str | None = None,
     ) -> ObjectiveStateV02:
         """
         Accept one stored attempt for the pending assessment.
@@ -250,6 +350,18 @@ class NumericTeachingSessionV01:
         if pending is None:
             raise ValueError(
                 "No assessment is awaiting a student attempt."
+            )
+
+        if pending.assignment_id is not None:
+            if assignment_id != pending.assignment_id:
+                raise ValueError(
+                    "Assignment ID does not match "
+                    "the pending assessment."
+                )
+        elif assignment_id is not None:
+            raise ValueError(
+                "Legacy assessment does not accept "
+                "an assignment ID."
             )
 
         if attempt_id in self._accepted_attempt_ids:
