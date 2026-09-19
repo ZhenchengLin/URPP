@@ -32,6 +32,7 @@ from sqlalchemy import (
     ForeignKey,
     ForeignKeyConstraint,
     String,
+    UniqueConstraint,
     update,
 )
 
@@ -117,6 +118,15 @@ class NumericAssignmentRow(Base):
         nullable=False,
     )
 
+    # Non-NULL only while this assignment is pending.
+    # UNIQUE allows many completed rows with NULL here,
+    # but only one pending row for each session.
+    pending_session_key: Mapped[str | None] = mapped_column(
+        String(128),
+        unique=True,
+        nullable=True,
+    )
+
     completed_attempt_id: Mapped[str | None] = mapped_column(
         String(128),
         ForeignKey(
@@ -128,6 +138,11 @@ class NumericAssignmentRow(Base):
     )
 
     __table_args__ = (
+        UniqueConstraint(
+            'session_id',
+            'decision_id',
+            name='numeric_assignment_session_decision_unique',
+        ),
         ForeignKeyConstraint(
             [
                 "assessment_item_id",
@@ -141,10 +156,13 @@ class NumericAssignmentRow(Base):
         CheckConstraint(
             "("
             "status = 'pending' "
-            "AND completed_attempt_id IS NULL"
+            "AND completed_attempt_id IS NULL "
+            "AND pending_session_key IS NOT NULL "
+            "AND pending_session_key = session_id"
             ") OR ("
             "status = 'completed' "
-            "AND completed_attempt_id IS NOT NULL"
+            "AND completed_attempt_id IS NOT NULL "
+            "AND pending_session_key IS NULL"
             ")",
             name="numeric_assignment_status_consistency",
         ),
@@ -393,6 +411,7 @@ class NumericAssignmentRepositoryV01:
                     item_revision=delivery.item_revision,
                     assigned_at_utc=assigned_at_utc,
                     status="pending",
+                    pending_session_key=session_id,
                     completed_attempt_id=None,
                 )
 
@@ -578,6 +597,7 @@ class NumericAssignmentRepositoryV01:
                     )
                     .values(
                         status="completed",
+                        pending_session_key=None,
                         completed_attempt_id=attempt.attempt_id,
                     )
                 )
