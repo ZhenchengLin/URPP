@@ -298,6 +298,7 @@ class NumericAssignmentRepositoryV01:
         course_id: str,
         objective_id: str,
         session_id: str,
+        require_registered_session: bool = False,
     ) -> StoredNumericAssignmentV01:
         """
         Persist an internally produced structured assessment delivery.
@@ -341,6 +342,11 @@ class NumericAssignmentRepositoryV01:
                 "Delivery must contain an assessment action."
             )
 
+        if not isinstance(require_registered_session, bool):
+            raise TypeError(
+                "require_registered_session must be a boolean."
+            )
+
         assigned_at_utc = self._as_utc_iso(
             delivery.assigned_at,
             name="assigned_at",
@@ -348,6 +354,44 @@ class NumericAssignmentRepositoryV01:
 
         with self._session_factory() as session:
             with session.begin():
+
+                if require_registered_session:
+                    # Local import avoids the module import cycle:
+                    # the Session Repository already imports
+                    # NumericAssignmentRow from this module.
+                    from app.repositories.numeric_session_records_v01 import (
+                        NumericTeachingSessionRowV01,
+                    )
+
+                    registered = session.get(
+                        NumericTeachingSessionRowV01,
+                        session_id,
+                    )
+
+                    if registered is None:
+                        raise LookupError(
+                            "Registered teaching session was not found."
+                        )
+
+                    if (
+                        registered.student_id != student_id
+                        or registered.course_id != course_id
+                        or registered.objective_id != objective_id
+                    ):
+                        raise ValueError(
+                            "Registered teaching session scope "
+                            "does not match the assignment."
+                        )
+
+                    session_started_at = datetime.fromisoformat(
+                        registered.started_at_utc
+                    )
+
+                    if delivery.assigned_at < session_started_at:
+                        raise ValueError(
+                            "Assignment predates its registered "
+                            "teaching session."
+                        )
 
                 item_row = session.get(
                     AssessmentItemRow,

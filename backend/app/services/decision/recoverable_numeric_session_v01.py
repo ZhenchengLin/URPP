@@ -381,6 +381,7 @@ class RecoverableNumericSessionServiceV01:
             course_id=self._course_id,
             objective_id=self._objective_id,
             session_id=self._session_id,
+            require_registered_session=True,
         )
 
         if stored.assignment_id != delivery.assignment_id:
