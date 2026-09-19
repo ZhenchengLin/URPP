@@ -13,7 +13,7 @@ authenticate users, authorize access, or implement migrations.
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
-from sqlalchemy import String, select
+from sqlalchemy import String, UniqueConstraint, select
 
 from sqlalchemy.orm import (
     Mapped,
@@ -25,9 +25,6 @@ from app.repositories.assessment_records_v02 import (
     Base,
 )
 
-from app.repositories.numeric_assignment_v01 import (
-    NumericAssignmentRow,
-)
 
 
 class NumericTeachingSessionRowV01(Base):
@@ -56,6 +53,18 @@ class NumericTeachingSessionRowV01(Base):
     started_at_utc: Mapped[str] = mapped_column(
         String(48),
         nullable=False,
+    )
+
+    # Target key for the registered Assignment's
+    # Composite Foreign Key.
+    __table_args__ = (
+        UniqueConstraint(
+            'session_id',
+            'student_id',
+            'course_id',
+            'objective_id',
+            name='numeric_session_scope_unique_v01',
+        ),
     )
 
 
@@ -246,6 +255,11 @@ class NumericSessionRecordRepositoryV01:
         Sorting is deterministic so state reconstruction uses
         the same input ordering after a process restart.
         """
+
+        # Delayed import breaks the repository module cycle.
+        from app.repositories.numeric_assignment_v01 import (
+            NumericAssignmentRow,
+        )
 
         self.load(
             session_id=session_id,

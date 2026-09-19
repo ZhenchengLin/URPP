@@ -48,6 +48,10 @@ from app.repositories.assessment_records_v02 import (
     StudentAttemptRow,
 )
 
+from app.repositories.numeric_session_records_v01 import (
+    NumericTeachingSessionRowV01,
+)
+
 from app.services.assessment.models_v02 import (
     AssessmentItemV02,
     StudentAttemptV02,
@@ -127,6 +131,13 @@ class NumericAssignmentRow(Base):
         nullable=True,
     )
 
+    # NULL is retained only for legacy internal callers.
+    # Strict assignments populate this with session_id.
+    registered_session_id: Mapped[str | None] = mapped_column(
+        String(128),
+        nullable=True,
+    )
+
     completed_attempt_id: Mapped[str | None] = mapped_column(
         String(128),
         ForeignKey(
@@ -138,6 +149,28 @@ class NumericAssignmentRow(Base):
     )
 
     __table_args__ = (
+        ForeignKeyConstraint(
+            [
+                'registered_session_id',
+                'student_id',
+                'course_id',
+                'objective_id',
+            ],
+            [
+                'numeric_teaching_sessions_v01.session_id',
+                'numeric_teaching_sessions_v01.student_id',
+                'numeric_teaching_sessions_v01.course_id',
+                'numeric_teaching_sessions_v01.objective_id',
+            ],
+            ondelete='RESTRICT',
+            onupdate='RESTRICT',
+            name='numeric_assignment_registered_session_fk_v01',
+        ),
+        CheckConstraint(
+            'registered_session_id IS NULL '
+            'OR registered_session_id = session_id',
+            name='numeric_assignment_registered_session_match_v01',
+        ),
         UniqueConstraint(
             'session_id',
             'decision_id',
@@ -456,6 +489,10 @@ class NumericAssignmentRepositoryV01:
                     assigned_at_utc=assigned_at_utc,
                     status="pending",
                     pending_session_key=session_id,
+                    registered_session_id=(
+                        session_id if require_registered_session
+                        else None
+                    ),
                     completed_attempt_id=None,
                 )
 

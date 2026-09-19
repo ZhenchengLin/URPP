@@ -235,6 +235,43 @@ def check_sqlite_numeric_database(
                 "procedure first."
             )
 
+        assignment_columns = {
+            row[1]
+            for row in connection.execute(
+                'PRAGMA table_info(numeric_assignments_v01)'
+            )
+        }
+
+        if 'registered_session_id' not in assignment_columns:
+            raise DatabaseNotReadyError(
+                'Assignment table predates the registered-session '
+                'foreign key schema. Do not start the current '
+                'numeric teaching service against this database.'
+            )
+
+        foreign_keys = connection.execute(
+            'PRAGMA foreign_key_list(numeric_assignments_v01)'
+        ).fetchall()
+
+        registered_scope = {
+            (row[3], row[4])
+            for row in foreign_keys
+            if row[2] == 'numeric_teaching_sessions_v01'
+        }
+
+        expected_scope = {
+            ('registered_session_id', 'session_id'),
+            ('student_id', 'student_id'),
+            ('course_id', 'course_id'),
+            ('objective_id', 'objective_id'),
+        }
+
+        if registered_scope != expected_scope:
+            raise DatabaseNotReadyError(
+                'Registered-session Composite Foreign Key '
+                'is missing or incomplete.'
+            )
+
         _check_session_assignment_scope(connection)
 
         def count_rows(table_name: str) -> int:
