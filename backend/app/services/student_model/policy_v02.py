@@ -32,6 +32,8 @@ class StatePolicyV02:
 
     stale_after_days: int = 21
 
+    min_retrieval_delay_hours: float = 24.0
+
 
 ASSISTANCE_WEIGHTS = (
     1.00,

@@ -61,7 +61,34 @@ def evaluate_evidence(
             diagnostic_weight=0.0,
         )
 
-    if event.outcome == "neutral" or event.correctness is None:
+    # Outcome and numeric correctness must agree.
+    #
+    # Reject contradictory performance records rather than
+    # silently treating a labeled failure as a successful answer.
+    #
+    # This rule applies to performance evidence after validity
+    # and objective-alignment checks.
+    correctness = event.correctness
+
+    inconsistent = (
+        (event.outcome == "success" and correctness != 1.0)
+        or (event.outcome == "failure" and correctness != 0.0)
+        or (
+            event.outcome == "partial"
+            and correctness is not None
+            and not (0.0 < correctness < 1.0)
+        )
+        or (event.outcome == "neutral" and correctness is not None)
+    )
+
+    if inconsistent:
+        return EvidenceDecision(
+            eligible=False,
+            reason="inconsistent_outcome_correctness",
+            diagnostic_weight=0.0,
+        )
+
+    if event.outcome == "neutral" or correctness is None:
         return EvidenceDecision(
             eligible=False,
             reason="performance_not_observable",

@@ -184,6 +184,13 @@ class EvidenceEventV02(BaseModel):
         "unknown",
     ] = "unknown"
 
+    # Explicit delay for retrieval assessments.
+    # None means the delay has not been established.
+    retrieval_delay_hours: float | None = Field(
+        default=None,
+        ge=0.0,
+    )
+
     # --------------------------------------------------------
     # Interpretation
     # --------------------------------------------------------

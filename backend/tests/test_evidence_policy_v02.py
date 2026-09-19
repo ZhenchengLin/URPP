@@ -145,3 +145,59 @@ def test_invalid_assessment_is_excluded():
 
     assert result.eligible is False
     assert result.reason == "assessment_not_valid"
+
+
+# ============================================================
+# ASSESSMENT OUTCOME CONSISTENCY
+# ============================================================
+
+
+@pytest.mark.parametrize(
+    "outcome, correctness",
+    [
+        ("failure", 1.0),
+        ("success", 0.0),
+        ("success", 0.5),
+        ("partial", 0.0),
+        ("partial", 1.0),
+        ("neutral", 1.0),
+    ],
+)
+def test_inconsistent_outcome_and_correctness_are_excluded(
+    outcome,
+    correctness,
+):
+    event = make_event(
+        outcome=outcome,
+        correctness=correctness,
+    )
+
+    result = evaluate_evidence(event, POLICY)
+
+    assert result.eligible is False
+    assert result.diagnostic_weight == 0.0
+    assert result.reason == "inconsistent_outcome_correctness"
+
+
+def test_valid_failure_remains_eligible():
+    event = make_event(
+        outcome="failure",
+        correctness=0.0,
+    )
+
+    result = evaluate_evidence(event, POLICY)
+
+    assert result.eligible is True
+    assert result.diagnostic_weight > 0.0
+
+
+def test_valid_partial_result_remains_eligible():
+    event = make_event(
+        outcome="partial",
+        correctness=0.5,
+    )
+
+    result = evaluate_evidence(event, POLICY)
+
+    assert result.eligible is True
+    assert result.diagnostic_weight > 0.0
