@@ -331,7 +331,9 @@ class NumericAssignmentRepositoryV01:
         course_id: str,
         objective_id: str,
         session_id: str,
-        require_registered_session: bool = False,
+        # False is a temporary legacy-internal compatibility path.
+        # New services must use the registered Session binding.
+        require_registered_session: bool = True,
     ) -> StoredNumericAssignmentV01:
         """
         Persist an internally produced structured assessment delivery.

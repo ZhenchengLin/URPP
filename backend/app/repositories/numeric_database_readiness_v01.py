@@ -274,6 +274,20 @@ def check_sqlite_numeric_database(
 
         _check_session_assignment_scope(connection)
 
+        # Passing the scope audit is insufficient if an
+        # Assignment still bypasses the registered-session FK.
+        unbound_count = connection.execute(
+            'SELECT COUNT(*) FROM numeric_assignments_v01 '
+            'WHERE registered_session_id IS NULL'
+        ).fetchone()[0]
+
+        if unbound_count:
+            raise DatabaseNotReadyError(
+                'Legacy unbound assignments were found. '
+                'Do not start the strict numeric teaching service '
+                'until these records have been reconciled.'
+            )
+
         def count_rows(table_name: str) -> int:
             # Only fixed, internal table names are supplied here.
             return connection.execute(

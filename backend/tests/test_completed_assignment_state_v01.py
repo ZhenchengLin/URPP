@@ -139,6 +139,7 @@ def prepare_assignment(
         course_id="course-001",
         objective_id="objective-001",
         session_id=session_id,
+        require_registered_session=False,
     )
 
 

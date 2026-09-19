@@ -131,7 +131,7 @@ def register_session(
     )
 
 
-def add_assignment(assignments):
+def add_assignment(assignments, *, legacy=False):
     return assignments.issue_assignment(
         AssessmentDeliveryV01(
             assignment_id="assignment-001",
@@ -148,6 +148,7 @@ def add_assignment(assignments):
         course_id="course-001",
         objective_id="objective-001",
         session_id="session-001",
+        require_registered_session=not legacy,
     )
 
 
@@ -210,7 +211,7 @@ def test_orphan_assignment_is_rejected(database):
     # The current schema does not enforce an Assignment-to-Session
     # foreign key. This test demonstrates that the read-only
     # readiness check detects an otherwise insertable orphan.
-    add_assignment(assignments)
+    add_assignment(assignments, legacy=True)
 
     with pytest.raises(
         DatabaseNotReadyError,
@@ -231,7 +232,7 @@ def test_assignment_session_scope_mismatch_is_rejected(
         course_id="different-course",
     )
 
-    add_assignment(assignments)
+    add_assignment(assignments, legacy=True)
 
     with pytest.raises(
         DatabaseNotReadyError,
@@ -252,10 +253,29 @@ def test_assignment_before_session_start_is_rejected(
         started_at=NOW.replace(hour=1),
     )
 
-    add_assignment(assignments)
+    add_assignment(assignments, legacy=True)
 
     with pytest.raises(
         DatabaseNotReadyError,
         match="predates its Teaching Session",
+    ):
+        check_sqlite_numeric_database(path)
+
+
+def test_existing_session_does_not_make_legacy_assignment_ready(
+    database,
+):
+    path, assessments, sessions, assignments = database
+
+    add_item(assessments)
+    register_session(sessions)
+
+    # An existing Session is not enough: the Assignment must
+    # actually be bound through registered_session_id.
+    add_assignment(assignments, legacy=True)
+
+    with pytest.raises(
+        DatabaseNotReadyError,
+        match="Legacy unbound assignments",
     ):
         check_sqlite_numeric_database(path)

@@ -120,6 +120,7 @@ def issue(repository, *, delivery=None):
         course_id="course-001",
         objective_id="objective-001",
         session_id="session-001",
+        require_registered_session=False,
     )
 
 
