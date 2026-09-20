@@ -42,6 +42,10 @@ from app.services.assessment.models_v02 import (
     AssessmentItemV02,
 )
 
+from app.services.decision.assessment_action_eligibility_v01 import (
+    require_eligible_assessment_action_v01,
+)
+
 from app.services.decision.completed_assignment_state_v01 import (
     CompletedAssignmentStateServiceV01,
 )
@@ -364,6 +368,13 @@ class RecoverableNumericSessionServiceV01:
                 "Teaching decision did not select "
                 "an assessment action."
             )
+
+        # Reject Action–Item mismatches before creating
+        # or persisting a structured Numeric Assignment.
+        require_eligible_assessment_action_v01(
+            selected_action=turn.decision.selected_action,
+            item=item,
+        )
 
         delivery = AssessmentDeliveryV01(
             assignment_id=token_urlsafe(24),

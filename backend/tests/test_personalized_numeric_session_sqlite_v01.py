@@ -408,7 +408,7 @@ def test_completed_answer_and_state_survive_database_reopen(
         reopened.engine.dispose()
 
 
-def test_transfer_request_does_not_create_transfer_mastery(
+def test_transfer_request_cannot_relabel_ordinary_problem(
     stack,
 ):
     stack.assessments.save_item(
@@ -424,22 +424,19 @@ def test_transfer_request_does_not_create_transfer_mastery(
 
     service.start(started_at=NOW)
 
-    delivery = deliver(service)
+    with pytest.raises(
+        ValueError,
+        match="requires a transfer-tagged Assessment Item",
+    ):
+        deliver(service)
 
-    assert (
-        delivery.selected_action
-        == TeachingActionV01.TRANSFER_ASSESSMENT
+    restored = stack.make_service().resume(
+        as_of=NOW + timedelta(seconds=1)
     )
 
-    recovered = service.submit_numeric_answer(
-        assignment_id=delivery.assignment_id,
-        response_text="5",
-        as_of=NOW + timedelta(seconds=3),
-    )
-
-    # The request and action label alone do not establish
-    # that this item measured genuine knowledge transfer.
-    assert recovered.state.transfer_success_count == 0
+    assert restored.pending is None
+    assert restored.completed_assignment_ids == ()
+    assert restored.state.transfer_success_count == 0
 
 
 def test_pending_assignment_rejects_another_personalized_delivery(
