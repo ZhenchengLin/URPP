@@ -27,6 +27,10 @@ from app.repositories.numeric_assignment_v01 import (
     NumericAssignmentRepositoryV01,
 )
 
+from app.repositories.numeric_session_records_v01 import (
+    NumericSessionRecordRepositoryV01,
+)
+
 from app.services.decision.completed_assignment_state_v01 import (
     CompletedAssignmentStateServiceV01,
 )
@@ -72,6 +76,23 @@ class PersistedNumericTeachingLoopV01:
         self._course_id = course_id
         self._objective_id = objective_id
         self._session_id = session_id
+
+        # This legacy coordinator retains in-memory progress,
+        # but its Assignments must still be bound to a
+        # registered database Teaching Session.
+        self._session_repository = (
+            NumericSessionRecordRepositoryV01(
+                assessment_repository
+            )
+        )
+
+        self._session_repository.register(
+            session_id=session_id,
+            student_id=student_id,
+            course_id=course_id,
+            objective_id=objective_id,
+            started_at=as_of,
+        )
 
         self._teaching_session = NumericTeachingSessionV01(
             repository=assessment_repository,
@@ -161,7 +182,7 @@ class PersistedNumericTeachingLoopV01:
                 course_id=self._course_id,
                 objective_id=self._objective_id,
                 session_id=self._session_id,
-                require_registered_session=False,
+                require_registered_session=True,
             )
         except Exception:
             # The in-memory teaching coordinator has already

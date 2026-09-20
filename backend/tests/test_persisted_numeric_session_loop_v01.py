@@ -421,3 +421,35 @@ def test_submission_requires_prior_delivery(
             assignment_id="assignment-001",
             response_text="5",
         )
+
+
+def test_legacy_loop_registers_durable_session(environment):
+    """
+    The old in-memory coordinator must register its identity
+    before issuing strictly bound database Assignments.
+    """
+
+    (
+        assessments,
+        assignments,
+        loop,
+        current_time,
+        assessment_agent,
+    ) = environment
+
+    from app.repositories.numeric_session_records_v01 import (
+        NumericTeachingSessionRowV01,
+    )
+
+    with assessments._session_factory() as session:
+        row = session.get(
+            NumericTeachingSessionRowV01,
+            "session-001",
+        )
+
+        assert row is not None
+        assert row.student_id == "student-001"
+        assert row.course_id == "course-001"
+        assert row.objective_id == "objective-001"
+
+    assert loop._session_repository is not None
