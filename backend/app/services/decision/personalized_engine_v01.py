@@ -57,6 +57,7 @@ REQUEST_ACTION_MAP = {
 class DecisionSelectionSourceV01(str, Enum):
     BASELINE = "baseline"
     EXPLICIT_STUDENT_REQUEST = "explicit_student_request"
+    EVIDENCE_DRIVEN = "evidence_driven"
 
 
 class PersonalizedDecisionResultV01(BaseModel):
