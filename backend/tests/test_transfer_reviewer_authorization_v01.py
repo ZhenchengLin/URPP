@@ -37,7 +37,7 @@ NOW = datetime(
 )
 
 
-class TestIdentityProvider:
+class FakeIdentityProvider:
     def __init__(self, identity=None, *, error=None):
         self.identity = identity
         self.error = error
@@ -52,7 +52,7 @@ class TestIdentityProvider:
         return self.identity
 
 
-class TestPermissionProvider:
+class FakePermissionProvider:
     def __init__(self, result=False, *, error=None):
         self.result = result
         self.error = error
@@ -177,8 +177,8 @@ def test_missing_providers_fail_closed():
 
 
 def test_missing_identity_fails_closed_before_permission_check():
-    identity_provider = TestIdentityProvider(None)
-    permission_provider = TestPermissionProvider(True)
+    identity_provider = FakeIdentityProvider(None)
+    permission_provider = FakePermissionProvider(True)
 
     service = make_service(
         identity_provider=identity_provider,
@@ -197,10 +197,10 @@ def test_missing_identity_fails_closed_before_permission_check():
 
 def test_unexpected_identity_response_is_rejected():
     service = make_service(
-        identity_provider=TestIdentityProvider(
+        identity_provider=FakeIdentityProvider(
             "reviewer-001"
         ),
-        permission_provider=TestPermissionProvider(True),
+        permission_provider=FakePermissionProvider(True),
     )
 
     with pytest.raises(
@@ -211,10 +211,10 @@ def test_unexpected_identity_response_is_rejected():
 
 
 def test_wrong_identity_issuer_is_rejected():
-    permission_provider = TestPermissionProvider(True)
+    permission_provider = FakePermissionProvider(True)
 
     service = make_service(
-        identity_provider=TestIdentityProvider(
+        identity_provider=FakeIdentityProvider(
             make_identity(issuer="unrecognized-issuer")
         ),
         permission_provider=permission_provider,
@@ -239,10 +239,10 @@ def test_wrong_identity_issuer_is_rejected():
 def test_stale_or_future_identity_is_rejected(
     verified_at,
 ):
-    permission_provider = TestPermissionProvider(True)
+    permission_provider = FakePermissionProvider(True)
 
     service = make_service(
-        identity_provider=TestIdentityProvider(
+        identity_provider=FakeIdentityProvider(
             make_identity(verified_at=verified_at)
         ),
         permission_provider=permission_provider,
@@ -259,10 +259,10 @@ def test_stale_or_future_identity_is_rejected(
 
 def test_permission_denial_blocks_review():
     service = make_service(
-        identity_provider=TestIdentityProvider(
+        identity_provider=FakeIdentityProvider(
             make_identity()
         ),
-        permission_provider=TestPermissionProvider(False),
+        permission_provider=FakePermissionProvider(False),
     )
 
     with pytest.raises(
@@ -284,10 +284,10 @@ def test_ambiguous_permission_response_is_rejected(
     unexpected_permission,
 ):
     service = make_service(
-        identity_provider=TestIdentityProvider(
+        identity_provider=FakeIdentityProvider(
             make_identity()
         ),
-        permission_provider=TestPermissionProvider(
+        permission_provider=FakePermissionProvider(
             unexpected_permission
         ),
     )
@@ -301,10 +301,10 @@ def test_ambiguous_permission_response_is_rejected(
 
 def test_identity_provider_failure_is_denied():
     service = make_service(
-        identity_provider=TestIdentityProvider(
+        identity_provider=FakeIdentityProvider(
             error=RuntimeError("identity provider unavailable")
         ),
-        permission_provider=TestPermissionProvider(True),
+        permission_provider=FakePermissionProvider(True),
     )
 
     with pytest.raises(
@@ -316,10 +316,10 @@ def test_identity_provider_failure_is_denied():
 
 def test_permission_provider_failure_is_denied():
     service = make_service(
-        identity_provider=TestIdentityProvider(
+        identity_provider=FakeIdentityProvider(
             make_identity()
         ),
-        permission_provider=TestPermissionProvider(
+        permission_provider=FakePermissionProvider(
             error=RuntimeError("permission provider unavailable")
         ),
     )
@@ -341,11 +341,11 @@ def test_stale_draft_rejected_before_identity_or_permission():
         }
     )
 
-    identity_provider = TestIdentityProvider(
+    identity_provider = FakeIdentityProvider(
         make_identity()
     )
 
-    permission_provider = TestPermissionProvider(True)
+    permission_provider = FakePermissionProvider(True)
 
     service = make_service(
         identity_provider=identity_provider,
@@ -370,10 +370,10 @@ def test_revision_mismatch_rejected_before_permission():
     item = make_item()
     draft = make_draft(item)
 
-    permission_provider = TestPermissionProvider(True)
+    permission_provider = FakePermissionProvider(True)
 
     service = make_service(
-        identity_provider=TestIdentityProvider(
+        identity_provider=FakeIdentityProvider(
             make_identity()
         ),
         permission_provider=permission_provider,
@@ -397,10 +397,10 @@ def test_configured_test_providers_return_scoped_access_check():
     item = make_item()
     draft = make_draft(item)
 
-    permission_provider = TestPermissionProvider(True)
+    permission_provider = FakePermissionProvider(True)
 
     service = make_service(
-        identity_provider=TestIdentityProvider(
+        identity_provider=FakeIdentityProvider(
             make_identity()
         ),
         permission_provider=permission_provider,
