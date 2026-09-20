@@ -435,3 +435,442 @@ def test_help_record_does_not_fabricate_mastery_evidence(
             delivery,
         )
     ) == 1
+
+
+# ---------------------------------------------------------
+# Implementation 13E-3B:
+# Application-reported presentation integration.
+# ---------------------------------------------------------
+
+from app.services.decision.assessment_assistance_presentation_v01 import (
+    AssessmentAssistancePresentationServiceV01,
+    AssistancePresentationFailedV01,
+    AssistancePresentationUnloggedV01,
+)
+
+
+class RecordingAssistancePresenter:
+    """
+    Test double for an application content presenter.
+
+    Recording a callback in this test does not simulate
+    a real browser, student attention, or authentication.
+    """
+
+    def __init__(
+        self,
+        *,
+        result=True,
+        error=None,
+    ):
+        self.result = result
+        self.error = error
+        self.calls = []
+
+    def present(
+        self,
+        *,
+        assignment_id,
+        student_id,
+        session_id,
+        kind,
+        content,
+    ):
+        self.calls.append(
+            {
+                "assignment_id": assignment_id,
+                "student_id": student_id,
+                "session_id": session_id,
+                "kind": kind,
+                "content": content,
+            }
+        )
+
+        if self.error is not None:
+            raise self.error
+
+        return self.result
+
+
+def make_presentation_service(
+    environment,
+    presenter,
+):
+    _, engine, assistance, _, _ = environment
+
+    return AssessmentAssistancePresentationServiceV01(
+        session_factory=sessionmaker(
+            bind=engine,
+            expire_on_commit=False,
+        ),
+        assistance_log=assistance,
+        presenter=presenter,
+    )
+
+
+def present_hint(
+    presentation_service,
+    delivery,
+    *,
+    student_id="student-001",
+    session_id="session-001",
+    content="Consider adding 2 and 3.",
+):
+    return presentation_service.present_assistance(
+        assignment_id=delivery.assignment_id,
+        student_id=student_id,
+        session_id=session_id,
+        kind=AssessmentAssistanceKindV01.HINT,
+        content=content,
+    )
+
+
+def test_presentation_success_persists_application_report(
+    environment,
+):
+    _, _, assistance, _, delivery = environment
+
+    presenter = RecordingAssistancePresenter()
+
+    presentation_service = make_presentation_service(
+        environment,
+        presenter,
+    )
+
+    result = present_hint(
+        presentation_service,
+        delivery,
+    )
+
+    assert len(presenter.calls) == 1
+
+    assert presenter.calls[0]["assignment_id"] == (
+        delivery.assignment_id
+    )
+
+    assert presenter.calls[0]["kind"] == (
+        AssessmentAssistanceKindV01.HINT
+    )
+
+    assert result.source == "application_reported"
+
+    assert result.content_sha256 == sha256(
+        b"Consider adding 2 and 3."
+    ).hexdigest()
+
+    assert list_records(
+        assistance,
+        delivery,
+    ) == (result,)
+
+
+def test_failed_presentation_does_not_create_assistance_event(
+    environment,
+):
+    _, _, assistance, _, delivery = environment
+
+    presenter = RecordingAssistancePresenter(
+        result=False,
+    )
+
+    presentation_service = make_presentation_service(
+        environment,
+        presenter,
+    )
+
+    with pytest.raises(
+        AssistancePresentationFailedV01,
+        match="did not report",
+    ):
+        present_hint(
+            presentation_service,
+            delivery,
+        )
+
+    assert len(presenter.calls) == 1
+
+    assert list_records(
+        assistance,
+        delivery,
+    ) == ()
+
+
+def test_presenter_exception_does_not_create_assistance_event(
+    environment,
+):
+    _, _, assistance, _, delivery = environment
+
+    presenter = RecordingAssistancePresenter(
+        error=RuntimeError("Presentation unavailable."),
+    )
+
+    presentation_service = make_presentation_service(
+        environment,
+        presenter,
+    )
+
+    with pytest.raises(
+        AssistancePresentationFailedV01,
+        match="raised an exception",
+    ):
+        present_hint(
+            presentation_service,
+            delivery,
+        )
+
+    assert len(presenter.calls) == 1
+
+    assert list_records(
+        assistance,
+        delivery,
+    ) == ()
+
+
+def test_invalid_scope_rejected_before_presenter_is_called(
+    environment,
+):
+    _, _, assistance, _, delivery = environment
+
+    presenter = RecordingAssistancePresenter()
+
+    presentation_service = make_presentation_service(
+        environment,
+        presenter,
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="does not match",
+    ):
+        present_hint(
+            presentation_service,
+            delivery,
+            student_id="other-student",
+        )
+
+    with pytest.raises(
+        ValueError,
+        match="does not match",
+    ):
+        present_hint(
+            presentation_service,
+            delivery,
+            session_id="other-session",
+        )
+
+    assert presenter.calls == []
+
+    assert list_records(
+        assistance,
+        delivery,
+    ) == ()
+
+
+def test_completed_assignment_rejected_before_presentation(
+    environment,
+):
+    _, _, assistance, numeric_service, delivery = environment
+
+    completed = numeric_service.submit_numeric_answer(
+        assignment_id=delivery.assignment_id,
+        response_text="5",
+        as_of=NOW + timedelta(seconds=5),
+    )
+
+    assert completed.pending is None
+
+    presenter = RecordingAssistancePresenter()
+
+    presentation_service = make_presentation_service(
+        environment,
+        presenter,
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="after Assignment completion",
+    ):
+        present_hint(
+            presentation_service,
+            delivery,
+        )
+
+    assert presenter.calls == []
+
+    assert list_records(
+        assistance,
+        delivery,
+    ) == ()
+
+
+def test_invalid_input_rejected_before_presentation(
+    environment,
+):
+    _, _, assistance, _, delivery = environment
+
+    presenter = RecordingAssistancePresenter()
+
+    presentation_service = make_presentation_service(
+        environment,
+        presenter,
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="nonempty string",
+    ):
+        present_hint(
+            presentation_service,
+            delivery,
+            content="   ",
+        )
+
+    with pytest.raises(
+        TypeError,
+        match="AssessmentAssistanceKindV01",
+    ):
+        presentation_service.present_assistance(
+            assignment_id=delivery.assignment_id,
+            student_id="student-001",
+            session_id="session-001",
+            kind="hint",
+            content="Consider adding 2 and 3.",
+        )
+
+    assert presenter.calls == []
+
+    assert list_records(
+        assistance,
+        delivery,
+    ) == ()
+
+
+def test_presentation_success_then_assignment_completion_reports_partial_operation(
+    environment,
+):
+    """
+    Presentation and SQLite logging are not atomic.
+
+    Simulate completion of the Assignment during the
+    presentation callback, before the service attempts
+    to persist the assistance event.
+
+    The error must explicitly indicate that assistance
+    may have been provided without a durable log.
+    """
+
+    _, _, assistance, numeric_service, delivery = environment
+
+    class CompletingPresenter:
+        def __init__(self):
+            self.calls = 0
+
+        def present(
+            self,
+            *,
+            assignment_id,
+            student_id,
+            session_id,
+            kind,
+            content,
+        ):
+            self.calls += 1
+
+            numeric_service.submit_numeric_answer(
+                assignment_id=assignment_id,
+                response_text="5",
+                as_of=NOW + timedelta(seconds=5),
+            )
+
+            return True
+
+    presenter = CompletingPresenter()
+
+    presentation_service = make_presentation_service(
+        environment,
+        presenter,
+    )
+
+    with pytest.raises(
+        AssistancePresentationUnloggedV01,
+        match="without a durable log",
+    ):
+        present_hint(
+            presentation_service,
+            delivery,
+        )
+
+    assert presenter.calls == 1
+
+    assert list_records(
+        assistance,
+        delivery,
+    ) == ()
+
+    restored = numeric_service.resume(
+        as_of=NOW + timedelta(seconds=5),
+    )
+
+    assert restored.pending is None
+
+    assert restored.state.included_evidence_ids == []
+
+
+def test_presented_assistance_survives_database_reopen_without_creating_mastery(
+    environment,
+):
+    path, engine, assistance, numeric_service, delivery = environment
+
+    presenter = RecordingAssistancePresenter()
+
+    presentation_service = make_presentation_service(
+        environment,
+        presenter,
+    )
+
+    record = present_hint(
+        presentation_service,
+        delivery,
+    )
+
+    completed = numeric_service.submit_numeric_answer(
+        assignment_id=delivery.assignment_id,
+        response_text="5",
+        as_of=NOW + timedelta(seconds=5),
+    )
+
+    assert completed.state.included_evidence_ids == []
+
+    assert completed.state.independent_success_count == 0
+
+    engine.dispose()
+
+    reopened_engine, _, reopened_log, reopened_service = (
+        open_stack(
+            path,
+            initialize=False,
+        )
+    )
+
+    try:
+        restored = reopened_service.resume(
+            as_of=NOW + timedelta(seconds=5),
+        )
+
+        assert restored.pending is None
+
+        assert restored.state.state.value == "unknown"
+
+        assert restored.state.included_evidence_ids == []
+
+        assert restored.state.independent_success_count == 0
+
+        assert list_records(
+            reopened_log,
+            delivery,
+        ) == (record,)
+
+        assert len(presenter.calls) == 1
+
+    finally:
+        reopened_engine.dispose()
