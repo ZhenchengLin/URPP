@@ -874,3 +874,249 @@ def test_presented_assistance_survives_database_reopen_without_creating_mastery(
 
     finally:
         reopened_engine.dispose()
+
+
+# ---------------------------------------------------------
+# Implementation 13E-4A:
+# Read-only, persisted Attempt Provenance Snapshot.
+# ---------------------------------------------------------
+
+from app.services.assessment.numeric_attempt_provenance_snapshot_v01 import (
+    NumericAttemptProvenanceSnapshotServiceV01,
+)
+
+
+def make_provenance_snapshot_service(
+    engine,
+    assistance,
+):
+    return NumericAttemptProvenanceSnapshotServiceV01(
+        session_factory=sessionmaker(
+            bind=engine,
+            expire_on_commit=False,
+        ),
+        assistance_log=assistance,
+    )
+
+
+def test_provenance_snapshot_requires_completed_assignment(
+    environment,
+):
+    _, engine, assistance, _, delivery = environment
+
+    snapshots = make_provenance_snapshot_service(
+        engine,
+        assistance,
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="completed Assignment",
+    ):
+        snapshots.build_snapshot(
+            assignment_id=delivery.assignment_id,
+            student_id="student-001",
+            session_id="session-001",
+        )
+
+
+def test_provenance_snapshot_binds_actual_attempt_and_reported_hint(
+    environment,
+):
+    _, engine, assistance, numeric_service, delivery = environment
+
+    presenter = RecordingAssistancePresenter()
+
+    presentation = make_presentation_service(
+        environment,
+        presenter,
+    )
+
+    hint = present_hint(
+        presentation,
+        delivery,
+    )
+
+    completed = numeric_service.submit_numeric_answer(
+        assignment_id=delivery.assignment_id,
+        response_text="5",
+        as_of=NOW + timedelta(seconds=5),
+    )
+
+    snapshots = make_provenance_snapshot_service(
+        engine,
+        assistance,
+    )
+
+    snapshot = snapshots.build_snapshot(
+        assignment_id=delivery.assignment_id,
+        student_id="student-001",
+        session_id="session-001",
+    )
+
+    assert snapshot.assignment_id == delivery.assignment_id
+
+    assert snapshot.attempt_id
+
+    assert snapshot.response_text == "5"
+
+    assert snapshot.assistance_events == (hint,)
+
+    assert snapshot.assistance_report_status == (
+        "application_reported"
+    )
+
+    assert snapshot.stored_assistance_level is None
+
+    assert snapshot.stored_prior_solution_exposure is None
+
+    assert snapshot.external_assistance_status == "unknown"
+
+    assert snapshot.review_status == (
+        "requires_authorized_review"
+    )
+
+    assert snapshot.verified_independence is False
+
+    assert completed.state.included_evidence_ids == []
+
+    assert completed.state.independent_success_count == 0
+
+
+def test_empty_assistance_log_does_not_verify_independence(
+    environment,
+):
+    _, engine, assistance, numeric_service, delivery = environment
+
+    completed = numeric_service.submit_numeric_answer(
+        assignment_id=delivery.assignment_id,
+        response_text="5",
+        as_of=NOW + timedelta(seconds=5),
+    )
+
+    snapshots = make_provenance_snapshot_service(
+        engine,
+        assistance,
+    )
+
+    snapshot = snapshots.build_snapshot(
+        assignment_id=delivery.assignment_id,
+        student_id="student-001",
+        session_id="session-001",
+    )
+
+    assert snapshot.assistance_events == ()
+
+    assert snapshot.assistance_report_status == (
+        "no_application_report"
+    )
+
+    assert snapshot.external_assistance_status == "unknown"
+
+    assert snapshot.verified_independence is False
+
+    assert snapshot.stored_assistance_level is None
+
+    assert completed.state.included_evidence_ids == []
+
+
+def test_provenance_snapshot_rejects_wrong_student_or_session(
+    environment,
+):
+    _, engine, assistance, numeric_service, delivery = environment
+
+    numeric_service.submit_numeric_answer(
+        assignment_id=delivery.assignment_id,
+        response_text="5",
+        as_of=NOW + timedelta(seconds=5),
+    )
+
+    snapshots = make_provenance_snapshot_service(
+        engine,
+        assistance,
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="does not match",
+    ):
+        snapshots.build_snapshot(
+            assignment_id=delivery.assignment_id,
+            student_id="other-student",
+            session_id="session-001",
+        )
+
+    with pytest.raises(
+        ValueError,
+        match="does not match",
+    ):
+        snapshots.build_snapshot(
+            assignment_id=delivery.assignment_id,
+            student_id="student-001",
+            session_id="other-session",
+        )
+
+
+def test_provenance_snapshot_survives_sqlite_reopen(
+    environment,
+):
+    path, engine, assistance, numeric_service, delivery = environment
+
+    presenter = RecordingAssistancePresenter()
+
+    presentation = make_presentation_service(
+        environment,
+        presenter,
+    )
+
+    present_hint(
+        presentation,
+        delivery,
+    )
+
+    numeric_service.submit_numeric_answer(
+        assignment_id=delivery.assignment_id,
+        response_text="5",
+        as_of=NOW + timedelta(seconds=5),
+    )
+
+    before = make_provenance_snapshot_service(
+        engine,
+        assistance,
+    ).build_snapshot(
+        assignment_id=delivery.assignment_id,
+        student_id="student-001",
+        session_id="session-001",
+    )
+
+    engine.dispose()
+
+    reopened_engine, _, reopened_log, reopened_service = (
+        open_stack(
+            path,
+            initialize=False,
+        )
+    )
+
+    try:
+        after = make_provenance_snapshot_service(
+            reopened_engine,
+            reopened_log,
+        ).build_snapshot(
+            assignment_id=delivery.assignment_id,
+            student_id="student-001",
+            session_id="session-001",
+        )
+
+        assert after == before
+
+        restored = reopened_service.resume(
+            as_of=NOW + timedelta(seconds=5),
+        )
+
+        assert restored.state.included_evidence_ids == []
+
+        assert restored.state.independent_success_count == 0
+
+    finally:
+        reopened_engine.dispose()
