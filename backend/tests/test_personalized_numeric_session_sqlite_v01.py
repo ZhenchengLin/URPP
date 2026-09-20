@@ -679,3 +679,217 @@ def test_reused_decision_id_is_rejected_after_completion(
     assert restored.completed_assignment_ids == (
         delivery.assignment_id,
     )
+
+
+def test_real_excluded_assessment_changes_next_evidence_driven_action(
+    stack,
+):
+    """
+    13E-2B integration.
+
+    A real submitted answer is persisted and recovered.
+
+    Its unknown assistance provenance excludes it from
+    mastery estimation, but the excluded-attempt metadata
+    can still inform a non-mastery workflow adjustment.
+
+    The next action is selected from the recovered state,
+    not from a synthetic or manually upgraded state.
+    """
+
+    from app.services.decision.evidence_driven_turn_wiring_v01 import (
+        create_evidence_driven_personalized_turn_v01,
+    )
+
+    from app.services.decision.personalized_engine_v01 import (
+        DecisionSelectionSourceV01,
+    )
+
+    item = make_item()
+
+    stack.assessments.save_item(
+        item,
+        revision=1,
+    )
+
+    first_professor = RecordingAgent(
+        "First-turn professor content."
+    )
+
+    first_assessment = RecordingAgent(
+        "First-turn assessment agent content."
+    )
+
+    first_orchestrator = (
+        create_evidence_driven_personalized_turn_v01(
+            professor_agent=first_professor,
+            assessment_agent=first_assessment,
+        )
+    )
+
+    first_service = (
+        create_personalized_recoverable_numeric_session_v01(
+            assessment_repository=stack.assessments,
+            assignment_repository=stack.assignments,
+            session_repository=stack.sessions,
+            personalized_turn_orchestrator=first_orchestrator,
+            student_id="student-001",
+            course_id="course-001",
+            objective_id="objective-001",
+            session_id="session-001",
+        )
+    )
+
+    initial = first_service.start(
+        started_at=NOW
+    )
+
+    assert initial.state.state.value == "unknown"
+    assert initial.state.included_evidence_ids == []
+    assert initial.state.excluded_evidence_ids == []
+
+    first_delivery = deliver(
+        first_service,
+        item_id=item.assessment_item_id,
+        decision_id="evidence-loop-decision-001",
+        requested_at=NOW,
+    )
+
+    assert first_delivery.selected_action == (
+        TeachingActionV01.DIAGNOSTIC_ASSESSMENT
+    )
+
+    assert first_delivery.prompt == item.prompt
+
+    assert len(first_assessment.calls) == 1
+    assert first_professor.calls == []
+
+    submitted = first_service.submit_numeric_answer(
+        assignment_id=first_delivery.assignment_id,
+        response_text="5",
+        as_of=NOW + timedelta(seconds=3),
+    )
+
+    assert submitted.pending is None
+
+    # Reopen the file-backed SQLite database using new
+    # SQLAlchemy Engine and Repository instances.
+    reopened = stack.reopen(
+        clock_time=NOW + timedelta(seconds=5)
+    )
+
+    try:
+        next_professor = RecordingAgent(
+            "Next-turn professor content."
+        )
+
+        next_assessment = RecordingAgent(
+            "Next-turn assessment agent content."
+        )
+
+        next_orchestrator = (
+            create_evidence_driven_personalized_turn_v01(
+                professor_agent=next_professor,
+                assessment_agent=next_assessment,
+            )
+        )
+
+        restored_service = (
+            create_personalized_recoverable_numeric_session_v01(
+                assessment_repository=reopened.assessments,
+                assignment_repository=reopened.assignments,
+                session_repository=reopened.sessions,
+                personalized_turn_orchestrator=next_orchestrator,
+                student_id="student-001",
+                course_id="course-001",
+                objective_id="objective-001",
+                session_id="session-001",
+            )
+        )
+
+        restored = restored_service.resume(
+            as_of=NOW + timedelta(seconds=4)
+        )
+
+        assert restored.pending is None
+
+        assert restored.completed_assignment_ids == (
+            first_delivery.assignment_id,
+        )
+
+        # The actual recorded attempt is excluded.
+        # We do NOT convert the correct answer into
+        # independent success or a higher mastery label.
+        assert restored.state.state.value == "unknown"
+
+        assert restored.state.included_evidence_ids == []
+
+        assert restored.state.independent_success_count == 0
+
+        assert len(
+            restored.state.excluded_evidence_ids
+        ) == 1
+
+        excluded_id = (
+            restored.state.excluded_evidence_ids[0]
+        )
+
+        assert (
+            restored.state.exclusion_reasons[excluded_id]
+            == "assistance_level_unknown"
+        )
+
+        before_next_turn = restored.state.model_dump(
+            mode="json"
+        )
+
+        # Professor actions must use the teaching
+        # orchestrator directly, not the Numeric
+        # Assessment-only Session Adapter.
+        next_turn = next_orchestrator.run_turn(
+            restored.state,
+            decision_id="evidence-loop-decision-002",
+            requested_at=NOW + timedelta(seconds=4),
+        )
+
+        assert next_turn.decision.decision.selected_action == (
+            TeachingActionV01.CONCEPTUAL_REVIEW
+        )
+
+        assert next_turn.decision.selection_source == (
+            DecisionSelectionSourceV01.EVIDENCE_DRIVEN
+        )
+
+        assert "assistance_level_unknown" in (
+            next_turn.decision.selection_reason
+        )
+
+        assert next_turn.agent_kind == "professor"
+
+        assert len(next_professor.calls) == 1
+        assert next_assessment.calls == []
+
+        assert restored.state.model_dump(
+            mode="json"
+        ) == before_next_turn
+
+        # The next teaching turn must not fabricate
+        # another numeric Assignment or student evidence.
+        again = restored_service.resume(
+            as_of=NOW + timedelta(seconds=4)
+        )
+
+        assert again.pending is None
+
+        assert again.completed_assignment_ids == (
+            first_delivery.assignment_id,
+        )
+
+        assert again.state.included_evidence_ids == []
+
+        assert again.state.excluded_evidence_ids == (
+            restored.state.excluded_evidence_ids
+        )
+
+    finally:
+        reopened.engine.dispose()

@@ -189,6 +189,44 @@ class EvidenceDrivenDecisionEngineV01:
         )
 
         if state.state == ObjectiveStateLabel.UNKNOWN:
+            # A submitted assessment can be scored yet remain
+            # ineligible for state estimation when its assistance
+            # provenance is unknown.
+            #
+            # Treat that exclusion as a workflow observation,
+            # never as independent success or a mastery signal.
+            #
+            # Only apply this branch when ALL recorded excluded
+            # evidence in this otherwise empty snapshot has
+            # this exact provenance issue. Other exclusions
+            # retain the existing diagnostic-first behavior.
+            excluded_ids = state.excluded_evidence_ids
+
+            assistance_provenance_unresolved = (
+                included_count == 0
+                and distinct_count == 0
+                and bool(excluded_ids)
+                and all(
+                    state.exclusion_reasons.get(evidence_id)
+                    == "assistance_level_unknown"
+                    for evidence_id in excluded_ids
+                )
+            )
+
+            if assistance_provenance_unresolved:
+                return (
+                    TeachingActionV01.CONCEPTUAL_REVIEW,
+                    prefix
+                    + "A previous assessment response was "
+                    "recorded, but its evidence was excluded "
+                    "because assistance_level_unknown. "
+                    "Choose a conceptual review rather than "
+                    "repeating the same diagnostic immediately. "
+                    "This is a workflow adjustment, not a "
+                    "judgment that the student lacks understanding "
+                    "or has demonstrated mastery.",
+                )
+
             if included_count == 0 or distinct_count == 0:
                 return (
                     TeachingActionV01.DIAGNOSTIC_ASSESSMENT,

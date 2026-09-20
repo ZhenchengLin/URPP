@@ -422,3 +422,115 @@ def test_auto_result_has_distinct_provenance_and_policy_version():
 
     assert result.request_expanded_allowed_actions is False
     assert result.decision.fallback_used is False
+
+
+def test_unknown_assistance_provenance_selects_review_not_mastery():
+    """
+    This synthetic snapshot tests the policy response to
+    excluded evidence. It is not a student-mastery estimate.
+    """
+
+    state = unknown_state().model_copy(
+        update={
+            "excluded_evidence_ids": [
+                "excluded-attempt-001",
+            ],
+            "exclusion_reasons": {
+                "excluded-attempt-001":
+                    "assistance_level_unknown",
+            },
+        }
+    )
+
+    before = state.model_dump(mode="json")
+
+    result = decide(state)
+
+    assert result.decision.selected_action == (
+        TeachingActionV01.CONCEPTUAL_REVIEW
+    )
+
+    assert result.selection_source == (
+        DecisionSelectionSourceV01.EVIDENCE_DRIVEN
+    )
+
+    assert "assistance_level_unknown" in (
+        result.selection_reason
+    )
+
+    assert state.included_evidence_ids == []
+    assert state.independent_success_count == 0
+
+    assert state.model_dump(mode="json") == before
+
+
+def test_other_exclusion_reasons_do_not_trigger_assistance_fallback():
+    state = unknown_state().model_copy(
+        update={
+            "excluded_evidence_ids": [
+                "excluded-attempt-001",
+            ],
+            "exclusion_reasons": {
+                "excluded-attempt-001":
+                    "assessment_identity_missing",
+            },
+        }
+    )
+
+    result = decide(state)
+
+    assert result.decision.selected_action == (
+        TeachingActionV01.DIAGNOSTIC_ASSESSMENT
+    )
+
+
+def test_mixed_exclusion_reasons_do_not_trigger_assistance_fallback():
+    state = unknown_state().model_copy(
+        update={
+            "excluded_evidence_ids": [
+                "excluded-attempt-001",
+                "excluded-attempt-002",
+            ],
+            "exclusion_reasons": {
+                "excluded-attempt-001":
+                    "assistance_level_unknown",
+                "excluded-attempt-002":
+                    "assessment_identity_missing",
+            },
+        }
+    )
+
+    result = decide(state)
+
+    assert result.decision.selected_action == (
+        TeachingActionV01.DIAGNOSTIC_ASSESSMENT
+    )
+
+
+def test_explicit_diagnostic_request_still_overrides_provenance_fallback():
+    state = unknown_state().model_copy(
+        update={
+            "excluded_evidence_ids": [
+                "excluded-attempt-001",
+            ],
+            "exclusion_reasons": {
+                "excluded-attempt-001":
+                    "assistance_level_unknown",
+            },
+        }
+    )
+
+    result = decide(
+        state,
+        request_kind=(
+            StudentLearningRequestKindV01.REQUEST_DIAGNOSTIC
+        ),
+    )
+
+    assert result.decision.selected_action == (
+        TeachingActionV01.DIAGNOSTIC_ASSESSMENT
+    )
+
+    assert result.selection_source == (
+        DecisionSelectionSourceV01.EXPLICIT_STUDENT_REQUEST
+    )
