@@ -133,13 +133,24 @@ def prepare_assignment(
         assigned_at=NOW,
     )
 
+    from app.repositories.numeric_session_records_v01 import (
+        NumericSessionRecordRepositoryV01,
+    )
+
+    NumericSessionRecordRepositoryV01(assessments).register(
+        session_id=session_id,
+        student_id=student_id,
+        course_id="course-001",
+        objective_id="objective-001",
+        started_at=NOW,
+    )
+
     assignments.issue_assignment(
         delivery,
         student_id=student_id,
         course_id="course-001",
         objective_id="objective-001",
         session_id=session_id,
-        require_registered_session=False,
     )
 
 

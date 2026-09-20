@@ -128,8 +128,6 @@ def register(sessions):
 
 def issue(
     assignments,
-    *,
-    require_registered_session=True,
 ):
     return assignments.issue_assignment(
         AssessmentDeliveryV01(
@@ -147,7 +145,6 @@ def issue(
         course_id="course-001",
         objective_id="objective-001",
         session_id="session-001",
-        require_registered_session=require_registered_session,
     )
 
 
@@ -239,16 +236,47 @@ def test_database_rejects_changing_assignment_scope(
                 db.flush()
 
 
+
+def seed_legacy_unbound_assignment(assignments):
+    """
+    TEST ONLY: construct a historical unbound Assignment row.
+    Normal Assignment issuance must never use this path.
+    """
+
+    from app.repositories.numeric_assignment_v01 import (
+        NumericAssignmentRow,
+    )
+
+    with assignments._session_factory() as db:
+        with db.begin():
+            db.add(
+                NumericAssignmentRow(
+                    assignment_id="assignment-001",
+                    decision_id="decision-001",
+                    student_id="student-001",
+                    course_id="course-001",
+                    objective_id="objective-001",
+                    session_id="session-001",
+                    assessment_item_id="item-001",
+                    item_revision=1,
+                    assigned_at_utc=NOW.isoformat(),
+                    status="pending",
+                    pending_session_key="session-001",
+                    registered_session_id=None,
+                    completed_attempt_id=None,
+                )
+            )
+
+    return assignments.load_assignment("assignment-001")
+
+
 def test_database_rejects_unregistered_binding(
     environment,
 ):
     _, factory, assignments, _ = environment
 
-    # Legacy compatibility mode can create an unbound record.
-    issue(
-        assignments,
-        require_registered_session=False,
-    )
+    # Seed a historical unbound row directly for this test.
+    seed_legacy_unbound_assignment(assignments)
 
     # Attempting to turn that record into a registered one
     # without creating the Session must fail at the DB layer.
@@ -264,15 +292,12 @@ def test_database_rejects_unregistered_binding(
                 db.flush()
 
 
-def test_legacy_path_remains_explicitly_unbound(
+def test_historical_row_remains_explicitly_unbound(
     environment,
 ):
     _, factory, assignments, _ = environment
 
-    issue(
-        assignments,
-        require_registered_session=False,
-    )
+    seed_legacy_unbound_assignment(assignments)
 
     with factory() as db:
         row = db.scalar(

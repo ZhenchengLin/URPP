@@ -74,6 +74,20 @@ def repositories():
         )
     )
 
+    from app.repositories.numeric_session_records_v01 import (
+        NumericSessionRecordRepositoryV01,
+    )
+
+    NumericSessionRecordRepositoryV01(
+        assessment_repository
+    ).register(
+        session_id="session-001",
+        student_id="student-001",
+        course_id="course-001",
+        objective_id="objective-001",
+        started_at=NOW,
+    )
+
     yield assessment_repository, assignment_repository
 
     engine.dispose()
@@ -120,7 +134,6 @@ def issue(repository, *, delivery=None):
         course_id="course-001",
         objective_id="objective-001",
         session_id="session-001",
-        require_registered_session=False,
     )
 
 

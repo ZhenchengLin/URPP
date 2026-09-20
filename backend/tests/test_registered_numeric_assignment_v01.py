@@ -123,7 +123,6 @@ def register(
 def issue(
     assignments,
     *,
-    require_registered_session=True,
     assigned_at=NOW,
 ):
     delivery = AssessmentDeliveryV01(
@@ -144,7 +143,6 @@ def issue(
         course_id="course-001",
         objective_id="objective-001",
         session_id="session-001",
-        require_registered_session=require_registered_session,
     )
 
 
@@ -234,18 +232,48 @@ def test_strict_assignment_rejects_earlier_assignment(
         assignments.load_assignment("assignment-001")
 
 
-def test_legacy_mode_remains_explicitly_compatible(
+
+def seed_legacy_unbound_assignment(assignments):
+    """
+    TEST ONLY: construct a historical unbound Assignment row.
+    Normal Assignment issuance must never use this path.
+    """
+
+    from app.repositories.numeric_assignment_v01 import (
+        NumericAssignmentRow,
+    )
+
+    with assignments._session_factory() as db:
+        with db.begin():
+            db.add(
+                NumericAssignmentRow(
+                    assignment_id="assignment-001",
+                    decision_id="decision-001",
+                    student_id="student-001",
+                    course_id="course-001",
+                    objective_id="objective-001",
+                    session_id="session-001",
+                    assessment_item_id="item-001",
+                    item_revision=1,
+                    assigned_at_utc=NOW.isoformat(),
+                    status="pending",
+                    pending_session_key="session-001",
+                    registered_session_id=None,
+                    completed_attempt_id=None,
+                )
+            )
+
+    return assignments.load_assignment("assignment-001")
+
+
+def test_historical_unbound_row_does_not_bypass_strict_issuance(
     environment,
 ):
     _, assignments, _ = environment
 
-    # Existing internal prototypes and their tests may not
-    # register a Session before issuing an Assignment.
-    # This compatibility path is NOT database-level protection.
-    saved = issue(
-        assignments,
-        require_registered_session=False,
-    )
+    # This row represents historical stored data.
+    # New Assignments still require registered-Session checks.
+    saved = seed_legacy_unbound_assignment(assignments)
 
     assert saved.status == "pending"
 

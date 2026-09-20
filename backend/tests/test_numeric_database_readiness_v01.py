@@ -132,6 +132,33 @@ def register_session(
 
 
 def add_assignment(assignments, *, legacy=False):
+    if legacy:
+        from app.repositories.numeric_assignment_v01 import (
+            NumericAssignmentRow,
+        )
+
+        with assignments._session_factory() as db:
+            with db.begin():
+                db.add(
+                    NumericAssignmentRow(
+                        assignment_id="assignment-001",
+                        decision_id="decision-001",
+                        student_id="student-001",
+                        course_id="course-001",
+                        objective_id="objective-001",
+                        session_id="session-001",
+                        assessment_item_id="item-001",
+                        item_revision=1,
+                        assigned_at_utc=NOW.isoformat(),
+                        status="pending",
+                        pending_session_key="session-001",
+                        registered_session_id=None,
+                        completed_attempt_id=None,
+                    )
+                )
+
+        return assignments.load_assignment("assignment-001")
+
     return assignments.issue_assignment(
         AssessmentDeliveryV01(
             assignment_id="assignment-001",
@@ -148,7 +175,6 @@ def add_assignment(assignments, *, legacy=False):
         course_id="course-001",
         objective_id="objective-001",
         session_id="session-001",
-        require_registered_session=not legacy,
     )
 
 
@@ -208,9 +234,8 @@ def test_orphan_assignment_is_rejected(database):
 
     add_item(assessments)
 
-    # The current schema does not enforce an Assignment-to-Session
-    # foreign key. This test demonstrates that the read-only
-    # readiness check detects an otherwise insertable orphan.
+    # Historical unbound rows may have a NULL binding.
+    # Readiness must reject the invalid stored record.
     add_assignment(assignments, legacy=True)
 
     with pytest.raises(

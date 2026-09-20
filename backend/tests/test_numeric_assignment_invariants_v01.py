@@ -140,6 +140,24 @@ def issue(
     decision_id,
     session_id="session-001",
 ):
+    from app.repositories.numeric_session_records_v01 import (
+        NumericSessionRecordRepositoryV01,
+    )
+    from app.repositories.assessment_records_v02 import (
+        AssessmentRecordRepositoryV02,
+    )
+
+    assessments = AssessmentRecordRepositoryV02(
+        assignments._session_factory
+    )
+    NumericSessionRecordRepositoryV01(assessments).register(
+        session_id=session_id,
+        student_id="student-001",
+        course_id="course-001",
+        objective_id="objective-001",
+        started_at=NOW,
+    )
+
     return assignments.issue_assignment(
         make_delivery(
             assignment_id=assignment_id,
@@ -149,7 +167,6 @@ def issue(
         course_id="course-001",
         objective_id="objective-001",
         session_id=session_id,
-        require_registered_session=False,
     )
 
 
