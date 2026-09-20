@@ -25,7 +25,6 @@ from app.services.decision.models_v01 import (
 )
 
 from app.services.decision.personalized_engine_v01 import (
-    PersonalizedDecisionEngineV01,
     PersonalizedDecisionResultV01,
 )
 
@@ -40,6 +39,21 @@ from app.services.decision.turn_orchestrator_v01 import (
     AgentKindV01,
     DecisionContextBuilderV01,
 )
+
+
+class PersonalizedDecisionPortV01(Protocol):
+    """
+    Shared interface for personalized decision engines.
+
+    Both the explicit-request engine and the new
+    evidence-driven engine implement this interface.
+    """
+
+    def decide(
+        self,
+        context: PersonalizedDecisionContextV01,
+    ) -> PersonalizedDecisionResultV01:
+        ...
 
 
 class PersonalizedTeachingAgentPortV01(Protocol):
@@ -109,7 +123,7 @@ class PersonalizedTeachingTurnOrchestratorV01:
     def __init__(
         self,
         *,
-        decision_engine: PersonalizedDecisionEngineV01,
+        decision_engine: PersonalizedDecisionPortV01,
         professor_agent: PersonalizedTeachingAgentPortV01,
         assessment_agent: PersonalizedTeachingAgentPortV01,
     ) -> None:
