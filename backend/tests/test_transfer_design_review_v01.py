@@ -321,8 +321,8 @@ def test_revision_must_be_positive_integer():
 def test_draft_has_no_approval_or_reviewer_authority_field():
     draft = make_draft()
 
-    assert "approved" not in draft.model_fields
-    assert "reviewer_authorized" not in draft.model_fields
+    assert "approved" not in TransferDesignReviewDraftV01.model_fields
+    assert "reviewer_authorized" not in TransferDesignReviewDraftV01.model_fields
 
     with pytest.raises(ValidationError):
         TransferDesignReviewDraftV01(

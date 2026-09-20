@@ -35,6 +35,8 @@ from app.services.assessment.models_v02 import (
     NumericRubricV02,
 )
 
+from app.domain.learning.models import EvidenceType
+
 from app.services.decision.models_v01 import (
     TeachingActionV01,
 )
@@ -437,6 +439,56 @@ def test_transfer_request_cannot_relabel_ordinary_problem(
     assert restored.pending is None
     assert restored.completed_assignment_ids == ()
     assert restored.state.transfer_success_count == 0
+
+
+def test_transfer_tagged_item_still_requires_trusted_approval(
+    stack,
+):
+    # A TRANSFER_ATTEMPT tag is not a trusted design approval.
+    transfer_tagged_item = make_item().model_copy(
+        update={
+            "evidence_type": EvidenceType.TRANSFER_ATTEMPT,
+        }
+    )
+
+    stack.assessments.save_item(
+        transfer_tagged_item,
+        revision=1,
+    )
+
+    service = stack.make_service(
+        request=make_request(
+            StudentLearningRequestKindV01.REQUEST_TRANSFER
+        ),
+    )
+
+    service.start(started_at=NOW)
+
+    with pytest.raises(
+        ValueError,
+        match="requires a trusted Transfer Design Approval",
+    ):
+        deliver(service)
+
+    # The existing Session calls its Agent before this gate.
+    # The guarantee here is no persisted Assignment, not
+    # absence of an Agent call.
+    restored = stack.make_service().resume(
+        as_of=NOW + timedelta(seconds=1)
+    )
+
+    assert restored.pending is None
+
+    assert restored.completed_assignment_ids == ()
+
+    assert restored.state.transfer_success_count == 0
+
+    assert stack.sessions.list_assignment_ids(
+        session_id="session-001",
+        student_id="student-001",
+        course_id="course-001",
+        objective_id="objective-001",
+    ) == ()
 
 
 def test_pending_assignment_rejects_another_personalized_delivery(

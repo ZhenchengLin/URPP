@@ -46,6 +46,10 @@ from app.services.decision.assessment_action_eligibility_v01 import (
     require_eligible_assessment_action_v01,
 )
 
+from app.services.decision.transfer_delivery_gate_v01 import (
+    require_trusted_transfer_delivery_v01,
+)
+
 from app.services.decision.completed_assignment_state_v01 import (
     CompletedAssignmentStateServiceV01,
 )
@@ -374,6 +378,13 @@ class RecoverableNumericSessionServiceV01:
         require_eligible_assessment_action_v01(
             selected_action=turn.decision.selected_action,
             item=item,
+        )
+
+        # Until URPP has an authenticated and persisted
+        # Transfer Design Approval source, fail closed.
+        # This check runs before Assignment creation.
+        require_trusted_transfer_delivery_v01(
+            selected_action=turn.decision.selected_action,
         )
 
         delivery = AssessmentDeliveryV01(
