@@ -36,6 +36,7 @@ from app.services.assessment.transfer_design_review_v01 import (
 class TransferReviewOutcomeV01(str, Enum):
     APPROVE = "approve"
     REJECT = "reject"
+    REVOKE = "revoke"
 
 
 class TransferReviewDecisionV01(BaseModel):
