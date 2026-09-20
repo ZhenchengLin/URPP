@@ -7,6 +7,10 @@ from app.repositories.numeric_sqlite_engine_v01 import (
     create_numeric_sqlite_engine,
 )
 
+from app.repositories.numeric_repository_bundle_v01 import (
+    create_numeric_repository_bundle,
+)
+
 from app.api.routes.health import router as health_router
 
 
@@ -45,11 +49,20 @@ async def numeric_sqlite_lifespan(app: FastAPI):
     app.state.numeric_sqlite_engine = engine
 
     try:
+        # All three repositories share a Session factory
+        # bound to the guarded startup Engine.
+        repositories = create_numeric_repository_bundle(
+            engine
+        )
+        app.state.numeric_repositories = repositories
+
         yield
     finally:
         try:
             engine.dispose()
         finally:
+            if hasattr(app.state, 'numeric_repositories'):
+                del app.state.numeric_repositories
             del app.state.numeric_sqlite_engine
 
 
