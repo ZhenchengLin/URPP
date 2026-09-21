@@ -1,0 +1,543 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>URPP Reply 8 — Transfer Review</title><style>
+:root{color-scheme:dark;--bg:#0c1119;--panel:#151f2b;--line:#2c3b4c;--txt:#e6edf7;--muted:#a8b8c8;--accent:#8fc4ff;--gold:#e7ca85}*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:78px}body{margin:0;background:var(--bg);color:var(--txt);font:15.5px/1.8 -apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC",sans-serif}a{color:var(--accent)}.top{position:sticky;top:0;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 30px;background:#0c1119f5;border-bottom:1px solid var(--line);z-index:2;font-size:13px}.layout{display:grid;grid-template-columns:265px minmax(0,1fr)}aside{height:calc(100vh - 55px);position:sticky;top:55px;overflow:auto;border-right:1px solid var(--line);padding:22px 14px}aside a{display:block;color:var(--muted);font-size:12px;padding:6px 8px;text-decoration:none;border-radius:5px}aside a:hover{color:var(--accent);background:#203147}.eyebrow{font-size:10px;letter-spacing:2px;color:var(--accent);font-weight:800}main{max-width:1110px;margin:0 auto;padding:38px 54px 100px;min-width:0}h1,h2,h3{line-height:1.35}h1{font-size:38px}h2{font-size:26px;padding-top:20px;border-top:1px solid var(--line);margin-top:52px}h3{font-size:19px;margin-top:32px}p{margin:14px 0}blockquote{border-left:3px solid var(--accent);background:var(--panel);padding:12px 17px;margin:20px 0;color:var(--muted)}blockquote p{margin:4px 0}code{background:#19283b;padding:1px 4px;border-radius:4px;color:#c6e1ff}pre{overflow-x:auto;background:#080d14;border:1px solid var(--line);border-radius:9px;padding:16px;line-height:1.58;font-size:12px}pre code{background:transparent;padding:0}table{display:block;overflow-x:auto;border-collapse:collapse;width:100%;margin:23px 0;font-size:13px}th,td{border:1px solid var(--line);padding:8px 11px;vertical-align:top;text-align:left;min-width:105px}th{background:var(--panel)}tr:nth-child(even) td{background:#111a25}li{margin-bottom:6px}hr{border:0;border-top:1px solid var(--line);margin:28px 0}.search{width:100%;background:#121c27;color:var(--txt);border:1px solid var(--line);border-radius:7px;padding:9px 12px;margin:10px 0}.muted{color:var(--muted)}.hidden{display:none!important}#searchresult{font-size:12px;color:var(--muted)}.footer{color:var(--muted);margin-top:70px;font-size:12px}@media(max-width:800px){.layout{display:block}aside{position:relative;top:0;height:230px;overflow:auto;border-right:0;border-bottom:1px solid var(--line)}main{padding:22px 20px 70px}h1{font-size:28px}.top{padding:8px 14px}}
+</style></head><body><header class="top"><strong>URPP Engineering Archive · Reply 8 / 10</strong><a href="../index.html">← 网站主页</a></header><div class="layout"><aside><div class="eyebrow">CHAPTER NAVIGATION</div><input id="chapterSearch" class="search" type="search" placeholder="搜索本章代码、错误、Commit"><p id="searchresult" class="muted">本章全文可离线阅读。</p><a href="#part-1">Transfer Assessment、Reviewer Authorization 与 Evidence Integrity</a><a href="#part-2">1. 一条线看懂整个故事</a><a href="#part-4">2. 历史时间线与实际变更（严格按 Git checkpoint）</a><a href="#part-5">3. 13D-1A：普通 Numeric Item 不能靠 Request 被重新命名为 Transfer</a><a href="#part-10">4. 13D-1B：为什么 Review Draft 必须同时描述“新情境”与“非迁移路径”？</a><a href="#part-15">5. 13D-1C1：为什么一开始选择“全部拒绝 Transfer 发题”</a><a href="#part-18">6. 13D-1C2：Identity Assertion、Permission Provider 与真实认证不是同一件事</a><a href="#part-22">7. 13D-1C3：Decision Contract 和 SQLite Repository 保存的是 Claim，不是 Delivery Token</a><a href="#part-27">8. 13D-1C4：Review Lifecycle 如何处理撤销、同时间戳与脏历史？</a><a href="#part-32">9. 13D-1C5：Application Service 如何组装前面的组件？</a><a href="#part-37">10. Bug Casebook：哪些是真实开发史，哪些只是 Guard Test？</a><a href="#part-48">11. 跨模块执行演算：一条真正能核对的 Transfer Request</a><a href="#part-49">12. 架构决策记录（ADR）</a><a href="#part-54">13. 如何以后复核、扩展与维护这章</a></aside><main><h1>URPP Engineering Archive · Reply 8 / 10</h1>
+<h2 id="part-1">Transfer Assessment、Reviewer Authorization 与 Evidence Integrity</h2>
+<blockquote>
+<p><strong>历史定位</strong>：Implementation 13D-1A → 13D-1B → 13D-1C1 → 13D-1C2 → 13D-1C3 → 13D-1C4 → 13D-1C5。上述编号取自历史源码和设计文档，不把 <code>docs/12</code> 或 <code>docs/18</code> 误读为独立的 Implementation 编号。<br/>
+<strong>材料范围</strong>：你上传的 <code>transfer_review_history_source_pack.zip</code> 中的 7 个 Git checkpoint、60 条源码/测试/Diff/快照条目以及 <code>SOURCE_MANIFEST.json</code>；文件通过 ZIP 完整性检查。<br/>
+<strong>证据性质</strong>：Git 对象可以确认历史代码如何变动；自动测试可以确认设计了哪些防护情境；本资料包没有对应七个阶段的原始失败 pytest 日志，不能杜撰曾经出现过的生产事故。<br/>
+<strong>重要的当前边界</strong>：截至包内最后一个 snapshot（<code>4e165f2</code>），本章展示的 <code>RecoverableNumericSessionServiceV01</code> 对 <code>TRANSFER_ASSESSMENT</code> <strong>仍然无条件拒绝持久化发题</strong>。新增 Review Application 能记录 Review Claim，不意味着 Transfer Delivery 已解锁。</p>
+</blockquote>
+<hr/>
+<h2 id="part-2">1. 一条线看懂整个故事</h2>
+<p><strong>学生请求 Transfer</strong> → <strong>个性化决策可能选中 TRANSFER_ASSESSMENT</strong> → <strong>原始普通题可能被错误附上 Transfer Action</strong> → <strong>13D-1A 新增 Action–Item 结构校验</strong> → <strong>发现“题目被标成 Transfer”仍不等于设计有效</strong> → <strong>13D-1B 加入与题目内容绑定的 Review Draft</strong> → <strong>Draft 未获可信授权，13D-1C1 将 Transfer 发题关闭</strong> → <strong>13D-1C2 定义 Reviewer 身份/权限接口</strong> → <strong>13D-1C3 保存版本绑定的 Review Decision</strong> → <strong>13D-1C4 解释 Review History</strong> → <strong>13D-1C5 串起内部 Review 写入流程</strong> → <strong>仍不打开发题闸门</strong>。</p>
+<p>这串事件有两个互相独立的结果：一方面，教学系统不再能够仅凭学生的请求把普通题作为 Transfer Assessment 发放；另一方面，开发出一条可记录内部 Review 的原型流程。<strong>两个成果之间尚缺可信审批来源、审批有效性判定和发题时授权验证的连接。</strong> [S01–S07, D12–D18]</p>
+<h3 id="part-3">1.1 五种“看起来像批准”的东西，实际各是什么？</h3>
+<table>
+<thead>
+<tr>
+<th>现象</th>
+<th>能说明什么</th>
+<th>不能说明什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>selected_action == TRANSFER_ASSESSMENT</code></td>
+<td>选中了一个教学动作</td>
+<td>题目真的测 Transfer；题目已获批准；学生会独立完成</td>
+</tr>
+<tr>
+<td><code>item.evidence_type == TRANSFER_ATTEMPT</code></td>
+<td>题目具有结构标签</td>
+<td>其设计经真实专家审阅、具备新的应用情境</td>
+</tr>
+<tr>
+<td>成功创建 <code>TransferDesignReviewDraftV01</code></td>
+<td>填写了一份绑定该题内容的待审设计说明</td>
+<td>有人已经审核、审核者真实存在、已有发题授权</td>
+</tr>
+<tr>
+<td>保存 <code>TransferReviewDecisionV01(outcome=APPROVE)</code></td>
+<td>数据库里有一条声称批准的历史记录</td>
+<td>写入者有权批准、该记录当前有效、能够发题</td>
+</tr>
+<tr>
+<td><code>APPROVE_RECORDED</code></td>
+<td>该序列在所选时刻最新的记录声称批准</td>
+<td>真实 Reviewer 身份或审批来源已获验证；可绕过 Delivery Gate</td>
+</tr>
+</tbody>
+</table>
+<p>如果以后浏览这章只记住一句话：<strong>Action、Tag、Draft、Recorded Decision、Trusted Delivery Authorization 属于五个不同的事实层次，不能用一个 <code>approved=True</code> 把它们合并。</strong> [S01–S07]</p>
+<hr/>
+<h2 id="part-4">2. 历史时间线与实际变更（严格按 Git checkpoint）</h2>
+<table>
+<thead>
+<tr>
+<th>阶段 / Commit</th>
+<th>当时可确认的实际变更</th>
+<th>本阶段没有完成的事</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>13D-1A · <code>e2ef14dd3e</code></strong></td>
+<td>新增 <code>require_eligible_assessment_action_v01()</code>；在 Recoverable Session 发题前检查 Action–Item 对应关系；增加结构校验测试及 <code>docs/12</code></td>
+<td>Transfer 设计实质审核、受助/独立证明</td>
+</tr>
+<tr>
+<td><strong>13D-1B · <code>1e6ca9802a</code></strong></td>
+<td>新增 <code>TransferDesignReviewDraftV01</code>、完整 Item Fingerprint、Draft–Item Binding、设计问题字段及 <code>docs/13</code></td>
+<td>真实 Reviewer、批准记录、数据库中获取权威 Revision</td>
+</tr>
+<tr>
+<td><strong>13D-1C1 · <code>bbddaf38ed</code></strong></td>
+<td>新增始终拒绝 Transfer 的 <code>require_trusted_transfer_delivery_v01()</code>；接入 Session；补充拒绝未获批准发题的测试及 <code>docs/14</code></td>
+<td>任何“有 Approval 就放行”的路径</td>
+</tr>
+<tr>
+<td><strong>13D-1C2 · <code>d8aac30f08</code></strong></td>
+<td>新增 Identity/Permission Provider Protocol、时间/Issuer/Scope 校验、Fail-Closed 的 Authorization Service 和 <code>docs/15</code></td>
+<td>真实已部署的认证系统、生产权限管理</td>
+</tr>
+<tr>
+<td><strong>13D-1C3 · <code>8c83c51ae6</code></strong></td>
+<td>新增 Review Decision Contract、完整 Draft Hash、关联 Item Revision 的 Repository 与 SQLite 测试及 <code>docs/16</code></td>
+<td><code>is_approved()</code>、可信签发来源、生产 Migration</td>
+</tr>
+<tr>
+<td><strong>13D-1C4 · <code>bc79363d17</code></strong></td>
+<td>增加 REVOKE 记录类型与 Lifecycle 状态解释；对同时间戳、重复 ID、未来时间与不同 Item 历史作出显式处理；<code>docs/17</code></td>
+<td>有权撤销的身份审计、真实顺序保证、审批令牌</td>
+</tr>
+<tr>
+<td><strong>13D-1C5 · <code>4e165f2b35</code></strong></td>
+<td>新增 <code>TransferReviewApplicationServiceV01</code>：加载存储题目→获取时间→调用授权接口→生成 Decision ID→保存；<code>docs/18</code></td>
+<td>将身份与写入做成不可绕过的生产边界，或将记录结果接到 Delivery Gate</td>
+</tr>
+</tbody>
+</table>
+<p><strong>如何复核</strong>：每个节点在资料包中同时有 <code>history/&lt;label&gt;_&lt;hash&gt;/...</code> 的该次 Git 文件快照和 <code>diffs/&lt;label&gt;_&lt;hash&gt;.patch</code> 的原始变更。<code>final_snapshot/</code> 是最后一个节点的版本，<strong>不应倒写成所有早期节点都具备该能力</strong>。 [M01]</p>
+<hr/>
+<h2 id="part-5">3. 13D-1A：普通 Numeric Item 不能靠 Request 被重新命名为 Transfer</h2>
+<h3 id="part-6">3.1 问题产生的调用边界</h3>
+<p><code>PersonalizedDecisionEngine</code> 可以因为明确的学生请求选中 <code>TRANSFER_ASSESSMENT</code>。历史 <code>docs/12</code> 明确记载：原先 Recoverable Session 曾允许将一个普通 <code>PROBLEM_ATTEMPT</code> Item 连同 Transfer Action 持久化。<strong>文档明确把它描述为原先的设计缺口；资料包没有提供真实学生被错误评分的事故记录。</strong> [D12]</p>
+<p>先区分三类对象：</p>
+<pre><code class="language-text">StudentLearningRequestV01: REQUEST_TRANSFER
+      → 只是学生想开展的活动
+TeachingActionV01: TRANSFER_ASSESSMENT
+      → 只是当前教学轮次选中的动作
+AssessmentItemV02.evidence_type: PROBLEM_ATTEMPT / TRANSFER_ATTEMPT
+      → 是具体题目自身保存的结构标签
+</code></pre>
+<p>错误关联路径在概念上相当于：<strong>请求 Transfer → 动作 Transfer → 不检查题目 → 普通题按 Transfer 动作被 Issue</strong>。修复的着力点不是修改 Student State 或 Numeric Rubric，而是在执行发题前增加 Action–Item 一致性检查。 [S01, D12]</p>
+<h3 id="part-7">3.2 真实实现：<code>require_eligible_assessment_action_v01()</code></h3>
+<p>输入为已选择的 <code>TeachingActionV01</code> 和实际加载的 <code>AssessmentItemV02</code>；返回 <code>None</code> 表示结构检查通过，失败抛出异常：</p>
+<pre><code class="language-python">if selected_action not in ASSESSMENT_ACTIONS:
+    raise ValueError("Numeric Assignment requires an assessment action.")
+
+if not item.alignment_verified:
+    raise ValueError("Assessment objective alignment is not verified.")
+
+if (
+    selected_action == TeachingActionV01.TRANSFER_ASSESSMENT
+    and item.evidence_type != EvidenceType.TRANSFER_ATTEMPT
+):
+    raise ValueError(
+        "Transfer assessment requires a transfer-tagged Assessment Item; "
+        "an ordinary problem cannot be relabelled by a student request."
+    )
+</code></pre>
+<p>真实代码另有两个类型检查：必须传 <code>TeachingActionV01</code> 和 <code>AssessmentItemV02</code>，不能把任意字符串或任意对象传入。对于 <code>DIAGNOSTIC_ASSESSMENT</code>、<code>INDEPENDENT_PRACTICE</code> 等普通 Assessment Action，结构守卫不会要求必须具有 Transfer Tag。<strong>这是一项必要结构条件，不是认定题目具有知识迁移效度的充分条件。</strong> [S01, T01]</p>
+<h3 id="part-8">3.3 这一检查在 Session 的哪一步？</h3>
+<p>最后节点的 <code>RecoverableNumericSessionServiceV01.deliver_numeric_assessment()</code> 顺序是：恢复 Session → 确认没有 Pending Assignment → 校验 Decision ID 尚未使用 → 加载原始 Item Revision → 检查 Course/Objective 与 Alignment → <strong>调用 <code>_turn_orchestrator.run_turn()</code></strong> → 验证返回的是 Assessment Action → <strong>检查 Action–Item</strong> → <strong>检查 Transfer Delivery Gate</strong> → 生成 <code>AssessmentDeliveryV01</code> → <code>issue_assignment()</code>。 [S08]</p>
+<p>特别留意粗体位置：<strong>教学 Agent 已在两个 Gate 之前被 Orchestrator 调用。</strong> 这些 Gate 能阻止不合法的 Assignment 被持久化；它们<strong>不保证 Agent 完全没有执行，也不保证前端从未见过 Agent 生成的内容</strong>。这不是推测，<code>docs/12</code> 和 <code>docs/14</code> 明确写出了这一限制。后续若要实现“所有无效动作在调用 Agent 前就拒绝”，需要拆分 Decision、Validate 和 Execute 三个步骤，而不能只改变当前 Gate 的返回值。 [D12, D14, S08]</p>
+<h3 id="part-9">3.4 重要的交叉限制：当前 Numeric Scorer 不能自动产生 Transfer Success</h3>
+<p>最后 snapshot 的 <code>score_numeric_attempt()</code> 明确要求 <code>item.evidence_type == EvidenceType.PROBLEM_ATTEMPT</code>，并且输出 <code>transfer_distance="none"</code>；它复制 Attempt 的 <code>assistance_level</code> 和 <code>prior_solution_exposure</code>，不从答案正确推断独立性。因此即便某个 Transfer-Tagged Item 最终能被发放，<strong>这个 Numeric Scorer 仍不能因此自动产生经验证的 Transfer Performance Evidence</strong>。新的 Transfer Scorer、评估设计验证以及受助条件规则属于另外的工作范围。 [S09]</p>
+<hr/>
+<h2 id="part-10">4. 13D-1B：为什么 Review Draft 必须同时描述“新情境”与“非迁移路径”？</h2>
+<h3 id="part-11">4.1 题目标签无法证明它真的需要迁移</h3>
+<p>把 <code>evidence_type</code> 写成 <code>TRANSFER_ATTEMPT</code> 是一个结构声明。真正的 Transfer 问题要求学生把曾经学过的知识应用到新的情境中。历史 Draft 收集的内容是具体的设计理由，而不是一个无说明的 <code>is_transfer=True</code>。 [D13]</p>
+<table>
+<thead>
+<tr>
+<th>Draft 字段</th>
+<th>它回答的问题</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>source_learning_context</code></td>
+<td>学生先前在什么情境里学习了这项知识？</td>
+</tr>
+<tr>
+<td><code>target_application_context</code></td>
+<td>现在打算在哪个新情境下考查？</td>
+</tr>
+<tr>
+<td><code>changed_context_factors</code></td>
+<td>哪些背景、呈现方式或应用条件具体改变了？至少一项</td>
+</tr>
+<tr>
+<td><code>invariant_knowledge</code></td>
+<td>跨越情境保持适用的原理是什么？</td>
+</tr>
+<tr>
+<td><code>required_transfer_reasoning</code></td>
+<td>学生必须做哪种识别、推导或应用才能完成任务？</td>
+</tr>
+<tr>
+<td><code>plausible_non_transfer_path</code></td>
+<td>学生能否不理解迁移、只靠记忆或机械套题就碰巧答对？</td>
+</tr>
+<tr>
+<td><code>review_questions</code></td>
+<td>审阅者还要确认哪些疑点？至少一项</td>
+</tr>
+</tbody>
+</table>
+<p>最后两个字段尤其重要：即使题面改了故事背景，学生也可能依靠记忆中的模式机械答对。Draft 应当把这种可能路径写出来，以便未来 Reviewer 判断这道题是否真的能够区分迁移与重复练习。<strong>字段非空不等于审阅通过，Draft 也不能自动验证学生是否具备 Transfer 能力。</strong> [S02, D13]</p>
+<h3 id="part-12">4.2 完整 Item Fingerprint 的推导</h3>
+<p><code>fingerprint_assessment_item_v01(item)</code> 对 <code>AssessmentItemV02.model_dump(mode="json")</code> 使用稳定排序的 JSON 序列化，再计算 SHA-256：</p>
+<pre><code class="language-python">serialized = json.dumps(
+    item.model_dump(mode="json"),
+    sort_keys=True,
+    separators=(",", ":"),
+    ensure_ascii=False,
+    allow_nan=False,
+)
+item_content_sha256 = sha256(serialized.encode("utf-8")).hexdigest()
+</code></pre>
+<p>这会将 Draft 绑定到 Item 的<strong>当时完整模型内容</strong>。相比仅比较 <code>assessment_item_id</code>，Prompt、Rubric、Evidence Tag 等字段变化都会改变序列化数据的摘要。但还需要额外保存并比较 <code>item_revision</code>、Course、Objective 和 Item ID，因为 Revision 在此阶段由调用者传入，<strong>函数本身不会查数据库证明该 Revision 对应权威题目</strong>。 [S02, D13]</p>
+<p><code>require_current_transfer_review_binding_v01()</code> 依次要求：Draft/Item 类型正确 → ID/Revision/Course/Objective 一致 → 内容 Fingerprint 一致 → 当前 Item 仍有 Transfer Tag 和 Verified Alignment。通过表示“这份 Draft 仍绑定当前提供的 Item 快照”，<strong>不表示审批、签名或来源真实</strong>。 [S02]</p>
+<h3 id="part-13">4.3 Hash 到底能证明什么？</h3>
+<ul>
+<li><strong>可以</strong>：在采用同一序列化协议的前提下，检测 Draft 与当前 Item 模型内容不一致。</li>
+<li><strong>不能</strong>：证明某个 Item 确实源自可信 Repository；证明 Reviewer 的真实身份；阻止能够任意更改 Draft 和 Item 的同一调用者重新计算匹配 Hash；证明一题具有教育测量效度。</li>
+</ul>
+<p>这是内容一致性校验（change detection），不是授权机制（authorization），也不是数字签名（digital signature）。 [S02, D13]</p>
+<h3 id="part-14">4.4 历史测试证明了什么？</h3>
+<p><code>test_transfer_design_review_v01.py</code> 检查同一内容给出相同摘要、修改题目内容后旧 Draft 失效、更改 Revision/Item ID 后拒绝、普通题和未确认 Alignment 不能创建 Draft、必填文本和时区时间不可缺失，以及 Draft 中没有 Approval/Reviewer 权限字段。<strong>这些是设计的防御性测试，包中没有“修改题目后系统曾错误重用旧 Draft”的真实生产日志。</strong> [T02]</p>
+<hr/>
+<h2 id="part-15">5. 13D-1C1：为什么一开始选择“全部拒绝 Transfer 发题”</h2>
+<p>13D-1A 已经能拒绝普通题冒充 Transfer，但一条真实的 Transfer Tag 仍不足以证明题目审核完成。13D-1B 虽能产生 Draft，却没有可依赖的真实 Reviewer Authorization，也没有可信 Approval Source。这里引入的 <code>require_trusted_transfer_delivery_v01()</code> 非常小，但边界非常明确：</p>
+<pre><code class="language-python">def require_trusted_transfer_delivery_v01(*, selected_action):
+    if not isinstance(selected_action, TeachingActionV01):
+        raise TypeError(...)
+    if selected_action == TeachingActionV01.TRANSFER_ASSESSMENT:
+        raise ValueError(
+            "Transfer Assessment delivery requires a trusted "
+            "Transfer Design Approval. No trusted approval source is configured."
+        )
+</code></pre>
+<p>普通 Assessment Action 可以继续走原流程。Transfer Action <strong>不查 Review Table，也不接受 <code>approved=True</code> 参数，始终拒绝</strong>。这个版本并不存在“只要数据库 APPROVE 一条就通过”的代码路径。 [S03, D14, T03]</p>
+<h3 id="part-16">5.1 两道 Gate 分别干什么？</h3>
+<pre><code class="language-text">Item 与 Action 不匹配
+    ↓ require_eligible_assessment_action_v01
+    REJECT：普通题不能被贴上 Transfer 标签
+
+Item 与 Action 在结构上匹配，且 Action 是 Transfer
+    ↓ require_trusted_transfer_delivery_v01
+    REJECT：不存在可信 Approval Source
+</code></pre>
+<p>通过第一道 Gate 的 Transfer Item 仍在第二道被拒绝。<strong>结构有效与发题授权不能合并判断。</strong> [S01, S03, S08]</p>
+<h3 id="part-17">5.2 这道 Gate 的范围不是“整个 URPP 所有可能入口”</h3>
+<p><code>docs/14</code> 清楚说明，Gate 接入了 <code>RecoverableNumericSessionServiceV01</code>，<strong>但不声称已覆盖所有历史 Legacy Delivery Path</strong>。另外，Agent 先于 Gate 调用。本章所说“不能发 Transfer”特指源码已连接的这条 Recoverable Session Assignment 路径，并不对未审查的其他路径做全局安全承诺。 [D14, S08]</p>
+<hr/>
+<h2 id="part-18">6. 13D-1C2：Identity Assertion、Permission Provider 与真实认证不是同一件事</h2>
+<h3 id="part-19">6.1 分工：身份和权限是两个独立的查询</h3>
+<p><code>ReviewerIdentityProviderV01.current_reviewer()</code> 的接口返回一个 <code>ReviewerIdentityAssertionV01 | None</code>，其中含 <code>reviewer_id</code>、<code>issuer</code>、<code>verified_at</code>。<code>TransferReviewPermissionProviderV01.may_approve_transfer()</code> 则以 Reviewer、Issuer、Course、Objective 为输入返回布尔值。<strong>“知道是谁”不等于“有权审核这一课程的这一知识点”。</strong> [S04]</p>
+<p><code>ReviewerIdentityAssertionV01</code> 是普通 Python dataclass；任何能构造这个对象的代码都可以写 <code>reviewer_id="reviewer-001"</code>。<code>Protocol</code> 同样只是规定调用接口，<strong>不会自动创建可信身份来源</strong>。因此此模块被准确命名为 Authorization Contract / Policy Prototype，而不是 Production Authentication。 [S04, D15]</p>
+<h3 id="part-20">6.2 <code>require_reviewer_for_draft()</code> 的完整检查链</h3>
+<ol>
+<li><code>as_of</code> 必须是带时区的时间。</li>
+<li><code>require_current_transfer_review_binding_v01()</code> 必须通过，<strong>先拒绝过期 Draft，再查询身份/权限 Provider</strong>。</li>
+<li>两个 Provider 都必须已配置，否则 Fail Closed。</li>
+<li>调用 Identity Provider；异常、<code>None</code>、错误返回类型均被拒绝。</li>
+<li>Identity 的 Issuer 必须与应用配置一致。</li>
+<li><code>identity_age = as_of - identity.verified_at</code> 必须位于 <code>[0, 15 min]</code>；未来时间或过期时间均拒绝。15 分钟是原型的暂定参数，不是经过验证的生产 Session Policy。</li>
+<li>调用 Permission Provider，传入 Reviewer ID、Issuer、Course、Objective；异常与拒绝均 Fail Closed。</li>
+<li>返回值必须<strong>恰好是 <code>True</code></strong>，字符串 <code>"true"</code> 或整数 <code>1</code> 不算授权结果。</li>
+<li>返回 <code>ReviewerAccessCheckV01</code>，包含本次绑定的 Item ID、Revision、Content Hash、Issuer、Reviewer 和检查时间。 [S04, T04]</li>
+</ol>
+<h3 id="part-21">6.3 这条边界最容易被误解的地方</h3>
+<p><code>ReviewerAccessCheckV01</code> 不是 HMAC 签名或可转移的授权令牌；它只是一次由<strong>已配置 Provider</strong>得出的检查结果。若学生面对的 API 允许调用者注入任意 <code>FakeIdentityProvider</code> 和 <code>FakePermissionProvider</code>，那 API 本身就没有建立真实认证边界。真实系统必须由可信应用层独占 Provider 配置、限制构造 Service 的权力、绑定登录用户，并限制 Repository 的直接写入权限。 [S04, D15]</p>
+<p><strong>历史实测范围</strong>：测试文件使用的是 <code>TestIdentityProvider</code> / <code>TestPermissionProvider</code> 等替身。它测试缺少 Provider、Issuer 错配、身份过期或来自未来、权限拒绝、Provider 抛错、Draft 失效和错误类型；<strong>没有验证真实身份系统已经上线</strong>。 [T04]</p>
+<hr/>
+<h2 id="part-22">7. 13D-1C3：Decision Contract 和 SQLite Repository 保存的是 Claim，不是 Delivery Token</h2>
+<h3 id="part-23">7.1 Decision 对象包含哪些字段</h3>
+<p><code>TransferReviewDecisionV01</code> 的实际字段：</p>
+<pre><code class="language-text">decision_id
+assessment_item_id, item_revision
+course_id, objective_id
+item_content_sha256, draft_content_sha256
+reviewer_id, reviewer_identity_issuer
+outcome: approve / reject / revoke（REVOKE 于后续 13D-1C4 加入）
+rationale, decided_at
+</code></pre>
+<p>其中 <code>draft_content_sha256</code> 对<strong>完整的 Review Draft</strong>做稳定 JSON + SHA-256，而 <code>item_content_sha256</code> 指向完整 Assessment Item。这样以后修改 Review 的实质理由不会默默被当成原先 Decision 的相同 Draft。Reviewer ID 和 Issuer 在对象中只是<strong>被记录的声明</strong>，不能自证其来源可信。 [S05, S06]</p>
+<p>注意历史时间：最初 <code>8c83c51</code> 版本的 <code>TransferReviewOutcomeV01</code> 只有 APPROVE/REJECT；随后 <code>bc79363</code> 才增加 REVOKE。网站使用最后 snapshot 讲解最终字段时，仍单独记录了这次增量，不将新状态倒写回旧 Commit。 [P06]</p>
+<h3 id="part-24">7.2 Repository 的实际数据库设计</h3>
+<p><code>TransferReviewDecisionRow</code> 的主键是 <code>decision_id</code>，还有 <code>assessment_item_id</code>、<code>item_revision</code> 和 JSON <code>payload</code>。数据库表声明了 <code>(assessment_item_id, item_revision)</code> → <code>assessment_items_v02</code> 同一对列的 Composite Foreign Key（<code>ON DELETE RESTRICT</code>）。Repository 的 <code>save_decision()</code> 会在同一个数据库 Session 内检查：Decision ID 未使用 → 目标 Item Revision 存在 → Item 类型为 Numeric → Course/Objective 一致 → 重算 Item Fingerprint 一致 → 添加 Row → Commit。失败时不应把存储成功与 Review 通过混淆。 [S07]</p>
+<p><code>load_decision()</code> 按 ID 取回并验证为 <code>TransferReviewDecisionV01</code>。<code>list_decisions_for_item()</code> 按具体 Item Revision 列出历史记录，最后按 <code>(decided_at, decision_id)</code> 排序<strong>只是返回的历史浏览顺序，不是取得当前授权的逻辑</strong>。 [S07]</p>
+<h3 id="part-25">7.3 Append-only 的真实保证范围</h3>
+<p>Repository 不提供 Update/Delete 方法，并禁止重复 Decision ID 覆盖原记录；这防止正常调用该 Repository API 时“直接改写历史审批”。但能够使用底层数据库写权限的管理员或其他代码仍可能改 Row，因此不能把它描述为具备不可篡改审计（tamper-proof audit）。另外，这是 SQLAlchemy ORM 定义加 SQLite 单元/集成测试；<strong>该阶段没有对现有生产库应用新表的 Migration，不能因有 <code>Base.metadata.create_all()</code> 测试就推断生产 Schema 已升级。</strong> [S07, D16, T05]</p>
+<h3 id="part-26">7.4 一个贯穿全章的反例</h3>
+<pre><code class="language-text">数据库存在记录：outcome = approve
+          ↓
+Repository.load_decision() 成功
+          ↓
+Lifecycle 解释：APPROVE_RECORDED
+          ↓
+require_trusted_transfer_delivery_v01(TRANSFER_ASSESSMENT)
+          ↓
+仍然抛出 ValueError
+</code></pre>
+<p>上面的最后一步不是未来猜想，而是历史测试明确检查的行为。原因是 Repository 根本不提供 <code>is_approved()</code>，而 Delivery Gate 也根本没有读取这张 Table。<strong>保存决策和授权发题之间并不存在自动连接。</strong> [S03, S07, T05]</p>
+<hr/>
+<h2 id="part-27">8. 13D-1C4：Review Lifecycle 如何处理撤销、同时间戳与脏历史？</h2>
+<p><code>evaluate_transfer_review_lifecycle_v01(item, item_revision, decisions, as_of)</code> 接收指定题目和一组历史 Decision，返回 <code>TransferReviewLifecycleResultV01(status, reason, current_decision_id, considered_decision_ids)</code>。<strong>它不负责查数据库，也不验证 Reviewer 真伪，更不会打开 Delivery Gate。</strong> [S10]</p>
+<h3 id="part-28">8.1 六种返回状态</h3>
+<table>
+<thead>
+<tr>
+<th>Status</th>
+<th>确切语义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>NO_DECISION</code></td>
+<td>输入历史为空</td>
+</tr>
+<tr>
+<td><code>APPROVE_RECORDED</code></td>
+<td>在有效、无冲突的输入历史中，最新唯一时间戳记录的 Outcome 为 APPROVE；只是一条 Claim</td>
+</tr>
+<tr>
+<td><code>REJECT_RECORDED</code></td>
+<td>最新唯一时间戳的记录为 REJECT</td>
+</tr>
+<tr>
+<td><code>REVOKE_RECORDED</code></td>
+<td>最新唯一时间戳的记录为 REVOKE</td>
+</tr>
+<tr>
+<td><code>AMBIGUOUS</code></td>
+<td>至少两个不同 Decision 分享最新时间戳，即使两条都 APPROVE 也视为歧义</td>
+</tr>
+<tr>
+<td><code>INVALID_HISTORY</code></td>
+<td>重复 Decision ID、不同 Item/Revision/Scope/内容，或记录时间晚于 <code>as_of</code> 等</td>
+</tr>
+</tbody>
+</table>
+<h3 id="part-29">8.2 实际执行规则</h3>
+<ol>
+<li>验证 <code>item</code>、正整数 Revision、带时区 <code>as_of</code>、Decision 序列及成员类型。</li>
+<li>输入为空返回 <code>NO_DECISION</code>。</li>
+<li>任意 Decision ID 重复 → <code>INVALID_HISTORY</code>，即使两条数据字段完全一致。</li>
+<li>逐条与本次 Item ID、Revision、Course、Objective、完整 Fingerprint 比较，任意不一致 → <code>INVALID_HISTORY</code>。</li>
+<li><code>decision.decided_at &gt; as_of</code> → <code>INVALID_HISTORY</code>。</li>
+<li>按 <code>(decided_at, decision_id)</code> 排序找到最新记录，但<strong>不允许使用 Decision ID 打破最新时间戳并列</strong>；如果有两个最新时间戳相同 → <code>AMBIGUOUS</code>。</li>
+<li>在只有一条最新记录时，将 Outcome 解释为 APPROVE/REJECT/REVOKE 对应的 <code>*_RECORDED</code> 状态。 [S10, D17]</li>
+</ol>
+<p>为何“两个相同时间的 APPROVE”仍不认定批准？因为它们可能是两个独立并发审核事件；Decision ID 是标识符，不是审阅先后发生的可信时间序列。随意用字符串大小决定审批结果会把数据库排序偶然性误认为真实审核顺序。 [S10]</p>
+<h3 id="part-30">8.3 REVOKE 只是历史记录，不是删除，也不是自动撤销已发出的所有题</h3>
+<p><code>REVOKE</code> 在 <code>bc79363</code> 时增加到 Outcome Enum。记录 REVOKE 后最新 Lifecycle 可以显示 <code>REVOKE_RECORDED</code>。如果之后又出现更晚的 APPROVE，Lifecycle 可以变成 <code>APPROVE_RECORDED</code>；<strong>但这既不证明撤销者有权撤销，也不证明后来的批准有权恢复授权</strong>。源码明确拒绝把它当作 Delivery Permission。 [S06, S10, D17]</p>
+<h3 id="part-31">8.4 需要认真记录的剩余问题</h3>
+<ul>
+<li>时间由应用/调用链提供；Lifecycle 只检查时间是否相对 <code>as_of</code> 合法，不会证明时间来自不可伪造的服务器时钟。</li>
+<li>它不会验证审批记录的真实写入来源、批准者/撤销者权限，或多 Reviewer 法定人数。</li>
+<li>输入 Sequence 自身由调用方提供；若缺失真实历史记录，函数无法自行察觉“这里少了一条 REVOKE”。</li>
+<li>当前 Review Repository 不会在每次写入时自动执行 Lifecycle Policy；这是读取历史后执行的描述性解释。 [D17, S07, S10]</li>
+</ul>
+<hr/>
+<h2 id="part-32">9. 13D-1C5：Application Service 如何组装前面的组件？</h2>
+<p><strong>这是有实际代码调用顺序的一次内部 Review 写入操作，不是已经部署好的认证系统。</strong> [S11, D18]</p>
+<pre><code class="language-text">submit_review(draft, outcome, rationale)
+    ↓ 检查输入类型和理由非空
+AssessmentRecordRepositoryV02.load_item(id, revision)
+    ↓ 取数据库已存的精确 Item 版本，不信任外部临时 Item
+Application clock() → decided_at
+    ↓ 检查时区与 draft.created_at &lt;= decided_at
+TransferReviewerAuthorizationServiceV01.require_reviewer_for_draft(...)
+    ↓ 检查 Draft–Item、Provider、Issuer、Freshness、Course/Objective Permission
+验证 ReviewerAccessCheck 的 Item/Revision/Hash/Time 与本次操作一致
+    ↓
+token_urlsafe(24) 生成本次 decision_id
+    ↓
+create_transfer_review_decision_v01(...)
+    ↓
+TransferReviewDecisionRepositoryV01.save_decision(decision)
+    ↓
+return decision（历史 Claim，不是 Delivery Token）
+</code></pre>
+<h3 id="part-33">9.1 方法签名刻意不暴露什么？</h3>
+<p>真实 <code>submit_review()</code> <strong>只接收</strong> <code>draft</code>、<code>outcome</code>、<code>rationale</code>，不接受调用者指定的 <code>reviewer_id</code>、<code>issuer</code>、<code>decided_at</code> 或之前构造的 <code>ReviewerAccessCheck</code>。该设计缩小了<strong>经由这一方法</strong>伪造审批信息的入口；但能控制构造函数里的 Provider/Clock，或绕过 Service 直接调用 Repository 的代码，仍可以产生未经真实授权的 Claim。 [S11, T07]</p>
+<h3 id="part-34">9.2 为什么先查存储题目，再核对 Draft？</h3>
+<p>13D-1B 的 Draft 创建器仅使用传入的 <code>AssessmentItemV02</code> 对象，不查 SQLite。Application Service 改为通过 <code>AssessmentRecordRepositoryV02.load_item(..., revision=...)</code> 加载历史保存的 Item，再把它交给 Authorization Service 做绑定检查。这样可以拒绝 Draft 指向不存在的 Item Revision，或与已保存 Item 内容不一致。但<strong>从 Repository 取回与 Fingerprint 相符的 Item，不代表这道题已经被专业 Reviewer 确认为真正的 Transfer</strong>。 [S02, S11, T07]</p>
+<h3 id="part-35">9.3 为什么 Authorization 和保存还不是一个原子动作？</h3>
+<p>源码明确注释：先调用授权 Service，再由另一个 Repository Session <code>save_decision()</code>；两步并非同一事务。若检查后写入前权限被撤销，或并发产生另一条 Review Decision，现有代码没有交易级别的当前审批有效性裁决。因为 Delivery Gate 仍关着，这个原型不会仅因这样的历史 Claim 直接开放 Transfer Assignment；但如果未来准备打开 Gate，必须先设计可验证的审批来源、撤销顺序和发题时重查。 [S11, D18]</p>
+<h3 id="part-36">9.4 测试范围：Fake Provider 的正面路径不等于真实授权</h3>
+<p><code>test_transfer_review_application_v01.py</code> 使用 FakeIdentityProvider / FakePermissionProvider、临时 SQLite 和可注入 Clock，检验了正常写入和重新打开数据库恢复、Provider 缺失和权限拒绝时<strong>不写入决策</strong>、Issuer 错配、过期 Draft、Item Revision 不存在、Draft 产生于 Decision 之后、Clock 无效、接口不允许请求者伪造身份/时间、APPROVE 仍打不开 Delivery Gate。测试确实存在，<strong>本包未包含当时实际运行它们的 pytest 总通过数或真实生产认证端到端演示</strong>。 [T07]</p>
+<hr/>
+<h2 id="part-37">10. Bug Casebook：哪些是真实开发史，哪些只是 Guard Test？</h2>
+<h3 id="part-38">CASE 13D-A · 早期允许普通题跟随 Transfer Action（有设计文档和代码 Diff 支持的已修复缺口）</h3>
+<p><strong>历史依据</strong>：<code>docs/12</code> 明确陈述 “Previously ... could persist an ordinary PROBLEM_ATTEMPT item under that Transfer Assessment action”；<code>e2ef14d</code> 的 Diff 显示新增 Action–Item Guard，并将其接入 <code>RecoverableNumericSessionServiceV01</code>；相应测试验证普通题会被拒绝。 [D12, P01, T01]</p>
+<p><strong>问题→修复→测试</strong>：Student Request 可使 Personalized Decision 选择 Transfer → 发题端未核对真正题目标签 → <code>require_eligible_assessment_action_v01()</code> 校验选中动作和保存题目之间的相容性 → 单元测试拒绝普通题、容许结构上符合要求的 Transfer-Tagged Item。<strong>不能因此进一步声称“某位真实学生曾被误判 Transfer Mastery”，因为该资料包没有这样的 Incident Log。</strong></p>
+<p><strong>后续发现的不足</strong>：Transfer Tag 只是文字/枚举标签，不是 Review Approval。因此 <code>1e6ca98</code> 增加 Review Draft，<code>bbddaf38</code> 进一步增加 Fail-Closed Gate。这是从“结构检查”走向“可信发题前置条件”的连续工程调整，而不是同一个 Bug 被一行修好的故事。 [D12–D14, P01–P03]</p>
+<h3 id="part-39">CASE 13D-B · 初版结构校验仍允许“仅带 Transfer Tag”的题目通过（通过测试确认的设计边界）</h3>
+<p><code>test_transfer_tag_satisfies_only_structural_requirement()</code> 显式证明结构校验通过并不包含 Design Approval；<code>docs/13</code> 也承认 Draft 引入时还没有真正发题审批。随后 <code>bbddaf38</code> 的 Diff 新增 Gate 接入和“未获批准不得 Issue”的测试。这属于<strong>可复核的历史设计缺口与增强</strong>，不是资料包能证明的生产数据损坏。 [T01, D13, P03]</p>
+<h3 id="part-40">GUARD 13D-01 · 错误 Alignment / 普通题 / 非 Assessment Action</h3>
+<p>对 <code>alignment_verified=False</code>、普通题要求 Transfer、Professor Action 误入 Numeric Assignment、非法 Item 类型分别触发 ValueError/TypeError。测试确保不把用户请求直接当成题目的性质。 [T01]</p>
+<h3 id="part-41">GUARD 13D-02 · Review Draft 内容/版本失效</h3>
+<p>修改 Prompt 或 Rubric、修改 Revision/ID，<code>require_current_transfer_review_binding_v01()</code> 拒绝已不匹配的 Draft。测试还检查时区时间和必填文本；仅 Hash 相等不构成审批。 [T02]</p>
+<h3 id="part-42">GUARD 13D-03 · 调用者试图传 <code>approved=True</code> 绕过 Gate</h3>
+<p>Gate 无该参数；测试预期 <code>TypeError</code>。这不是一次真实攻防事件，而是禁止“调用方声称已批准就可发题”的接口设计。 [T03]</p>
+<h3 id="part-43">GUARD 13D-04 · 模拟认证/授权异常</h3>
+<p>不存在 Provider、Provider 返回 <code>None</code> 或错误类型、Issuer 错、身份过期/来自未来、Permission 返回字符串/整数、Provider 抛异常、Draft 已过期，均应拒绝。测试用 Fake Provider，不证明存在真实身份系统。 [T04]</p>
+<h3 id="part-44">GUARD 13D-05 · 持久化伪造或错误版本的 Decision</h3>
+<p>Decision ID 重复、Item Revision 不存在、保存 Item 变更后 Hash 不一致、Draft 不匹配、空理由或无效时间会被测试拒绝；SQLite reopen 会恢复保存的 Claim。Repository 无权授予 Delivery。 [T05]</p>
+<h3 id="part-45">GUARD 13D-06 · 历史 Review 顺序冲突</h3>
+<p>同一最新时间戳有两条 Decision → <code>AMBIGUOUS</code>；重复 ID、内容不匹配或未来记录 → <code>INVALID_HISTORY</code>；REVOKE 可以成为最新记录，但不会代表有权撤销。 [T06]</p>
+<h3 id="part-46">GUARD 13D-07 · Application Writing Path 被伪造或失效</h3>
+<p>缺身份、权限不允许、Issuer 错、Item Revision 不存在、Draft 失效、Clock 无效或试图直接传 Reviewer ID → 不保存决策；合法的测试替身路径可保存 Claim，并在 reopen 后恢复，但仍打不开 Transfer Gate。 [T07]</p>
+<h3 id="part-47">10.1 本轮绝不能编造的内容</h3>
+<ul>
+<li>没有与这七个 Commit 对应的原始失败 pytest 输出，因此不能声称出现过多少次失败、具体哪个 Fix 是第一次失败、也不能编写不存在的 Traceback。</li>
+<li>原始 Diff 显示代码和测试如何改变，不等于当时的完整讨论或排障顺序；发生原因的“当时动机”只能引用设计文档陈述，其余标为事后技术解释。</li>
+<li>不存在实际授权 Reviewer 的真实账户登录、审批签章、可信审批令牌或已启用的 Transfer Delivery 证据；源码反而明确说这些尚未实现。 [M01, D15–D18]</li>
+</ul>
+<hr/>
+<h2 id="part-48">11. 跨模块执行演算：一条真正能核对的 Transfer Request</h2>
+<p>以下是<strong>根据所引源码构造的解释性场景</strong>，不是某位真实学生的原始历史日志。</p>
+<p><strong>输入</strong>：学生请求 <code>REQUEST_TRANSFER</code>，Decision Engine 返回 <code>TRANSFER_ASSESSMENT</code>；当前 Item 是 <code>PROBLEM_ATTEMPT</code>。</p>
+<pre><code class="language-text">run_turn() → selected_action = TRANSFER_ASSESSMENT
+      ↓ require_eligible_assessment_action_v01
+item.evidence_type = PROBLEM_ATTEMPT
+      ↓ ValueError
+没有 AssessmentDeliveryV01
+没有调用 issue_assignment()
+</code></pre>
+<p>把题目标签改成 <code>TRANSFER_ATTEMPT</code>，并不解决问题：</p>
+<pre><code class="language-text">Action–Item Guard：通过（仅结构意义）
+      ↓ require_trusted_transfer_delivery_v01
+      ↓ ValueError：No trusted approval source
+仍不会创建并持久化这道 Transfer Assignment
+</code></pre>
+<p>再构造一份绑定 Item Revision 的 Draft，使用<strong>测试专用</strong> Identity/Permission Provider 产生 APPROVE Decision：</p>
+<pre><code class="language-text">Review Application → saved APPROVE Claim
+Review Lifecycle → APPROVE_RECORDED
+Recoverable Session → Transfer Delivery Gate
+      ↓ 仍 ValueError
+</code></pre>
+<p>即使今后新增可信批准和发题链路，还必须另行处理：Numeric Scorer 对 Transfer Tag 的当前限制、题目测量迁移的实质审查、Attempt Assistance/先前答案暴露的真实来源，以及 State Estimator 对 Transfer Evidence 的资格判断。<strong>这四项都不能通过简单打开发题 Gate 自动获得。</strong> [S01, S03, S08–S11]</p>
+<hr/>
+<h2 id="part-49">12. 架构决策记录（ADR）</h2>
+<h3 id="part-50">ADR-13D-01 · 决策与内容资格独立</h3>
+<ul>
+<li><strong>Context</strong>：学生可以请求 Transfer，但请求不会改变存储题目的 Rubric/Evidence Type。</li>
+<li><strong>Decision</strong>：增加独立的 Action–Item Eligibility Guard，并放在 Assignment Issue 前。</li>
+<li><strong>收益</strong>：防止普通题因教学动作被错误重新归类。</li>
+<li><strong>代价/限制</strong>：Gate 只做结构检查，不能断言测量效度；教学 Agent 可能早于 Gate 执行。</li>
+<li><strong>历史依据</strong>：[S01, S08, D12, P01]。</li>
+</ul>
+<h3 id="part-51">ADR-13D-02 · Draft 与 Item 内容和 Revision 绑定</h3>
+<ul>
+<li><strong>Context</strong>：审核的对象可能在审核过程中或审核后变化。</li>
+<li><strong>Decision</strong>：保存完整 Item 的序列化 Fingerprint、Item ID/Revision/Course/Objective，并在 Review 流程中重新核对。</li>
+<li><strong>收益</strong>：可以发现当前 Item 内容和 Draft 快照不一致。</li>
+<li><strong>代价/限制</strong>：SHA-256 不验证来源或审核者权限；Draft 创建阶段的 Revision 本身由调用者提供。</li>
+<li><strong>历史依据</strong>：[S02, D13]。</li>
+</ul>
+<h3 id="part-52">ADR-13D-03 · 在没有可信审批源时保持 Fail Closed</h3>
+<ul>
+<li><strong>Context</strong>：结构标签和 Draft 仍可能由调用者生成。</li>
+<li><strong>Decision</strong>：<code>TRANSFER_ASSESSMENT</code> 一律拒绝，且无 <code>approved=True</code> 绕过入口。</li>
+<li><strong>收益</strong>：阻止这条 Session Path 在审批机制缺失时误发 Transfer Assignment。</li>
+<li><strong>代价/限制</strong>：有合法教学需要的 Transfer 请求也暂时不能通过该路径完成；不是全系统 Legacy Path 审计。</li>
+<li><strong>历史依据</strong>：[S03, D14, T03]。</li>
+</ul>
+<h3 id="part-53">ADR-13D-04 · Review History 与当前发题授权解耦</h3>
+<ul>
+<li><strong>Context</strong>：数据库可以保存历史 Claim，但其来源、撤销和当前有效性尚无可信证明。</li>
+<li><strong>Decision</strong>：Repository 只提供 Save/Load/List；Lifecycle 只提供 <code>*_RECORDED</code> 描述状态；Application 只写入历史 Claim；Delivery Gate 不接这些输出。</li>
+<li><strong>收益</strong>：避免把新开发的原型审核功能错误提升为生产安全控制。</li>
+<li><strong>代价/限制</strong>：真实授权、时钟/事务一致性、生产 Migration 和独立的 Transfer Scoring 仍是后续工作。</li>
+<li><strong>历史依据</strong>：[S03–S11, D15–D18]。</li>
+</ul>
+<hr/>
+<h2 id="part-54">13. 如何以后复核、扩展与维护这章</h2>
+<p>本章的所有源码引用都给出完整模块路径；<code>evidence/reply8_chapter_source_index.json</code> 包含七个完整 Commit Hash、ZIP 内部源文件位置、文件 SHA-256 以及下表别名。先看 History Snapshot，确定功能在何时出现；再看对应 Diff，确定新增/修改了哪几行；最后看当时测试，确认被检查的是哪个行为。<strong>不要先读最新版本再把它的行为倒写成早期版本。</strong></p>
+<table>
+<thead>
+<tr>
+<th>来源编号</th>
+<th>位置（历史包内部）</th>
+<th>可支持的陈述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>M01</td>
+<td><code>SOURCE_MANIFEST.json</code></td>
+<td>七个历史节点、文件来源、Hash 和版本边界</td>
+</tr>
+<tr>
+<td>P01–P07</td>
+<td><code>diffs/*.patch</code>，按历史节点标号</td>
+<td>某次 Commit 的真实增量</td>
+</tr>
+<tr>
+<td>S01</td>
+<td><code>final_snapshot/backend/app/services/decision/assessment_action_eligibility_v01.py</code></td>
+<td>结构校验与错误文本</td>
+</tr>
+<tr>
+<td>S02</td>
+<td><code>final_snapshot/backend/app/services/assessment/transfer_design_review_v01.py</code></td>
+<td>Draft 字段、Item Hash、绑定校验</td>
+</tr>
+<tr>
+<td>S03</td>
+<td><code>final_snapshot/backend/app/services/decision/transfer_delivery_gate_v01.py</code></td>
+<td>无条件拒绝 Transfer</td>
+</tr>
+<tr>
+<td>S04</td>
+<td><code>final_snapshot/backend/app/services/assessment/transfer_reviewer_authorization_v01.py</code></td>
+<td>Provider 接口、身份有效期、权限检查</td>
+</tr>
+<tr>
+<td>S05</td>
+<td><code>final_snapshot/backend/app/services/assessment/transfer_review_decision_v01.py</code></td>
+<td>Decision 合同、Draft Hash、REVOKE 后加</td>
+</tr>
+<tr>
+<td>S06</td>
+<td><code>history/review_decision_persistence_8c83c51ae6/.../transfer_review_decision_v01.py</code></td>
+<td>初版 Decision Enum（不含 REVOKE）</td>
+</tr>
+<tr>
+<td>S07</td>
+<td><code>final_snapshot/backend/app/repositories/transfer_review_decisions_v01.py</code></td>
+<td>数据库存储与来源限制</td>
+</tr>
+<tr>
+<td>S08</td>
+<td><code>final_snapshot/backend/app/services/decision/recoverable_numeric_session_v01.py</code></td>
+<td>Agent、两道 Gate、Issue Assignment 的先后顺序</td>
+</tr>
+<tr>
+<td>S09</td>
+<td><code>final_snapshot/backend/app/services/assessment/numeric_scoring_v02.py</code></td>
+<td>Numeric Scorer 对 Transfer Tag 的现有限制</td>
+</tr>
+<tr>
+<td>S10</td>
+<td><code>final_snapshot/backend/app/services/assessment/transfer_review_lifecycle_v01.py</code></td>
+<td><code>*_RECORDED</code>、冲突和无效历史</td>
+</tr>
+<tr>
+<td>S11</td>
+<td><code>final_snapshot/backend/app/services/assessment/transfer_review_application_v01.py</code></td>
+<td>Review 写入调用链及非原子性</td>
+</tr>
+<tr>
+<td>D12–D18</td>
+<td><code>history/</code> 对应各阶段的 <code>docs/12...</code> 至 <code>docs/18...</code></td>
+<td>每个阶段当时明示的目的、Non-Goals 与限制</td>
+</tr>
+<tr>
+<td>T01–T07</td>
+<td><code>history/</code> 与 <code>final_snapshot/backend/tests/</code> 中相应测试</td>
+<td>防护场景（不自动证明真实故障）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="part-55">13.1 本章没有改变任何生产行为</h3>
+<p>本章是根据上传的历史资料制作的工程文档。生成 HTML / Markdown 和安装到 <code>engineering-archive/</code> 都不修改 URPP 的 Backend、SQLite、Git Branch、Evidence Eligibility 或 Transfer Delivery Gate。</p>
+<p><strong>结尾判断（严格限定当前历史节点）</strong>：13D 系列完成了“普通题不能冒充 Transfer、未配置可信审批源时拒绝该 Session Path 发题、内部 Review Claim 可被记录与检查”的原型边界；<strong>没有完成“真实授权 Reviewer 批准后可发放 Transfer Assessment”，也没有据此证明学生发生 Transfer Learning。</strong></p>
+<footer class="footer">依据历史源码包制作 · 仅作历史记录与事后技术分析 · 未修改 URPP 生产代码</footer></main></div><script>const field=document.getElementById('chapterSearch'),status=document.getElementById('searchresult');const roots=[...document.querySelectorAll('main h2')];const all=[...document.querySelectorAll('main h2,main h3,main p,main pre,main li,main table,main blockquote')];field.addEventListener('input',()=>{const q=field.value.trim().toLowerCase();let c=0;for(const el of all){const ok=!q||el.textContent.toLowerCase().includes(q);el.classList.toggle('hidden',!ok);if(ok&&q)c++}status.textContent=q?`本章匹配的文本块：${c}（清空搜索后恢复原文）`:'本章全文可离线阅读。'});</script></body></html>

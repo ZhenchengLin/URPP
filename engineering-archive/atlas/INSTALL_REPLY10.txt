@@ -1,0 +1,8 @@
+URPP Reply 10 · Engineering Atlas
+
+This update creates engineering-archive/atlas/ only. It does not overwrite old index.html, pages/, backend/, sqlite or unrelated untracked files.
+Prerequisites: existing engineering-archive/index.html and all chapter pages from Replies 3–9.
+Open engineering-archive/atlas/index.html after installation.
+All data is static in data.js, compatible with file:// without network requests.
+Search uses the corresponding chapter Markdown; a result may open the chapter homepage when its HTML anchor cannot be reliably matched.
+Source and historical incident provenance limitations are documented in audit.json and the Audit view.

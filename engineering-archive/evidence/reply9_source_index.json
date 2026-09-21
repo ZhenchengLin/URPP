@@ -1,0 +1,777 @@
+{
+  "chapter": "URPP Engineering Archive Reply 9",
+  "evidence_pack": "implementation_13e_history_source_pack.zip",
+  "head": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3",
+  "notes": [
+    "Offsets in [Sxx:Lx–y] refer to 1-based source lines within the specified ZIP member.",
+    "USER LOG is based on earlier terminal feedback; the uploaded pack does not contain the original two failed tracebacks.",
+    "Test source is evidence of test intent and assertions, not proof tests were rerun in this environment."
+  ],
+  "checkpoints": [
+    {
+      "label": "13E-1_evidence_driven_decisions",
+      "commit": "a6e1181c252bc49a1abf9d2471884179cafaa4c7"
+    },
+    {
+      "label": "13E-2A_teaching_turn_wiring",
+      "commit": "beab3df10ec2951d214b7422e4dc565a1a83582f"
+    },
+    {
+      "label": "13E-2B_unknown_provenance",
+      "commit": "836bb7137b72cb91aaca4ed8556060b2a56fe0ce"
+    },
+    {
+      "label": "13E-3A_assistance_logging",
+      "commit": "add51d0026559b7705df1e4ade24ff9782d560db"
+    },
+    {
+      "label": "13E-3B_assistance_presentation",
+      "commit": "6dc1bd45d0750788272ec2c7d388ac3734376ed9"
+    },
+    {
+      "label": "13E-3C_local_numeric_cli",
+      "commit": "b8abf719932430d0473d711990286ab628c8c3a1"
+    },
+    {
+      "label": "13E-4A_provenance_snapshot",
+      "commit": "ccb4a5a23f7c8ef1b3068e9bd9e1ff7d848733fb"
+    },
+    {
+      "label": "13E-4B_review_candidate",
+      "commit": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3"
+    }
+  ],
+  "aliases": {
+    "S01": {
+      "archive_path": "final_snapshot/backend/app/services/decision/evidence_driven_engine_v01.py",
+      "commit": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3",
+      "original_path": "backend/app/services/decision/evidence_driven_engine_v01.py",
+      "sha256": "655ec4f3211f40f0ee99b2c7aa3abe187f6d553b28bebb3b5231107e60379949",
+      "bytes": 10805,
+      "lines": 320,
+      "role": "final source"
+    },
+    "S02": {
+      "archive_path": "final_snapshot/backend/app/services/decision/evidence_driven_turn_wiring_v01.py",
+      "commit": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3",
+      "original_path": "backend/app/services/decision/evidence_driven_turn_wiring_v01.py",
+      "sha256": "4eceae65d972eec26ef937a25f75b7983dc2c8d3cd5495efbd504ef7041cfe14",
+      "bytes": 2531,
+      "lines": 89,
+      "role": "final source"
+    },
+    "S03": {
+      "archive_path": "history/13E-2A_teaching_turn_wiring/backend/app/services/decision/personalized_turn_orchestrator_v01.py",
+      "commit": "beab3df10ec2951d214b7422e4dc565a1a83582f",
+      "original_path": "backend/app/services/decision/personalized_turn_orchestrator_v01.py",
+      "sha256": "a5b2a7c7c81a0cd649e67ecdbe6bef5e4ca5f789871b974aa4732a257ad9d92a",
+      "bytes": 6466,
+      "lines": 246,
+      "role": "final source"
+    },
+    "S04": {
+      "archive_path": "final_snapshot/backend/app/repositories/assessment_assistance_log_v01.py",
+      "commit": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3",
+      "original_path": "backend/app/repositories/assessment_assistance_log_v01.py",
+      "sha256": "0ef66199584b0a7c05528e21f722925717edbede6f77add8027023a9158c0827",
+      "bytes": 10465,
+      "lines": 389,
+      "role": "final source"
+    },
+    "S05": {
+      "archive_path": "final_snapshot/backend/app/services/decision/assessment_assistance_presentation_v01.py",
+      "commit": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3",
+      "original_path": "backend/app/services/decision/assessment_assistance_presentation_v01.py",
+      "sha256": "852a7cbe92be68444a4635805c3a614a31ee83c1f4674845a92665c6ade4ed55",
+      "bytes": 7240,
+      "lines": 250,
+      "role": "final source"
+    },
+    "S06": {
+      "archive_path": "final_snapshot/scripts/run_local_numeric_lesson_v01.py",
+      "commit": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3",
+      "original_path": "scripts/run_local_numeric_lesson_v01.py",
+      "sha256": "b9bfcf3c620c926fcc607581a490cea707906383b6b74911efabd195486a8b5b",
+      "bytes": 16109,
+      "lines": 626,
+      "role": "final source"
+    },
+    "S07": {
+      "archive_path": "final_snapshot/backend/app/services/assessment/numeric_attempt_provenance_snapshot_v01.py",
+      "commit": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3",
+      "original_path": "backend/app/services/assessment/numeric_attempt_provenance_snapshot_v01.py",
+      "sha256": "b0575c5001e818e8f5c6347e51d222988cd45b5e87f99bea235efaaaba6ea056",
+      "bytes": 6846,
+      "lines": 243,
+      "role": "final source"
+    },
+    "S08": {
+      "archive_path": "final_snapshot/backend/app/services/assessment/numeric_provenance_review_candidate_v01.py",
+      "commit": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3",
+      "original_path": "backend/app/services/assessment/numeric_provenance_review_candidate_v01.py",
+      "sha256": "a0d47a7bfa2960c49ab2c3b0ac1176020101491642a95b1e30362a16661d596d",
+      "bytes": 6796,
+      "lines": 247,
+      "role": "final source"
+    },
+    "T01": {
+      "archive_path": "final_snapshot/backend/tests/test_evidence_driven_engine_v01.py",
+      "commit": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3",
+      "original_path": "backend/tests/test_evidence_driven_engine_v01.py",
+      "sha256": "3a2d0c0cd4e99cc565c175dd040bdce13298330a4c5fcc9765f1e08976ca3315",
+      "bytes": 12514,
+      "lines": 536,
+      "role": "test"
+    },
+    "T02": {
+      "archive_path": "final_snapshot/backend/tests/test_evidence_driven_turn_wiring_v01.py",
+      "commit": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3",
+      "original_path": "backend/tests/test_evidence_driven_turn_wiring_v01.py",
+      "sha256": "edf69795afc7fafa62d116cc8438dfe068259120f8120140de988b6b571dd599",
+      "bytes": 6725,
+      "lines": 279,
+      "role": "test"
+    },
+    "T03": {
+      "archive_path": "history/13E-2B_unknown_provenance/backend/tests/test_personalized_numeric_session_sqlite_v01.py",
+      "commit": "836bb7137b72cb91aaca4ed8556060b2a56fe0ce",
+      "original_path": "backend/tests/test_personalized_numeric_session_sqlite_v01.py",
+      "sha256": "ae892b41ab463aad703d57922e6e3d62e00f217f9ff52fda7e8a8e089edb6dbe",
+      "bytes": 22009,
+      "lines": 895,
+      "role": "test"
+    },
+    "T04": {
+      "archive_path": "history/13E-3A_assistance_logging/backend/tests/test_assessment_assistance_log_v01.py",
+      "commit": "add51d0026559b7705df1e4ade24ff9782d560db",
+      "original_path": "backend/tests/test_assessment_assistance_log_v01.py",
+      "sha256": "df600b98098dc5143b2292467d20dd74f55e605e8c545369b980b5258c643382",
+      "bytes": 9693,
+      "lines": 437,
+      "role": "test"
+    },
+    "T05": {
+      "archive_path": "history/13E-3B_assistance_presentation/backend/tests/test_assessment_assistance_log_v01.py",
+      "commit": "6dc1bd45d0750788272ec2c7d388ac3734376ed9",
+      "original_path": "backend/tests/test_assessment_assistance_log_v01.py",
+      "sha256": "8e5c73ffc46fb9c800cbcadb527d4f5db47252ccac37985829d882f6c98f0ee3",
+      "bytes": 19398,
+      "lines": 876,
+      "role": "test"
+    },
+    "T06": {
+      "archive_path": "final_snapshot/backend/tests/test_local_numeric_lesson_cli_v01.py",
+      "commit": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3",
+      "original_path": "backend/tests/test_local_numeric_lesson_cli_v01.py",
+      "sha256": "629304bb91cbddfed0b4d6a58fca203e18e93c08b7e02f378cd3e40a88f2a80e",
+      "bytes": 6315,
+      "lines": 315,
+      "role": "test"
+    },
+    "T07": {
+      "archive_path": "final_snapshot/backend/tests/test_assessment_assistance_log_v01.py",
+      "commit": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3",
+      "original_path": "backend/tests/test_assessment_assistance_log_v01.py",
+      "sha256": "be289202f2f0c9e4fad38c31b168f5cac7b10dc76dee22ed132bcb237557e6f3",
+      "bytes": 25337,
+      "lines": 1122,
+      "role": "test"
+    },
+    "T08": {
+      "archive_path": "final_snapshot/backend/tests/test_numeric_provenance_review_candidate_v01.py",
+      "commit": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3",
+      "original_path": "backend/tests/test_numeric_provenance_review_candidate_v01.py",
+      "sha256": "f20979b77c4513a0b75b57272abfac5986ff83341c4717df1ee957a62ef0e00c",
+      "bytes": 8091,
+      "lines": 338,
+      "role": "test"
+    },
+    "D19": {
+      "archive_path": "final_snapshot/docs/19_evidence_driven_decision_v0.1.md",
+      "commit": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3",
+      "original_path": "docs/19_evidence_driven_decision_v0.1.md",
+      "sha256": "331c6e7c0423c7cfe4aa8eb4869059c780a67f728e65736dc988d473c41ffb2a",
+      "bytes": 3689,
+      "lines": 120,
+      "role": "design doc"
+    },
+    "D20": {
+      "archive_path": "final_snapshot/docs/20_evidence_driven_turn_wiring_v0.1.md",
+      "commit": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3",
+      "original_path": "docs/20_evidence_driven_turn_wiring_v0.1.md",
+      "sha256": "9956894ee2cf5b062536a432878a08fdaddb99732879ebb6fb8cdd761ed0fa7a",
+      "bytes": 2952,
+      "lines": 99,
+      "role": "design doc"
+    },
+    "D21": {
+      "archive_path": "final_snapshot/docs/21_evidence_provenance_adaptive_loop_v0.1.md",
+      "commit": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3",
+      "original_path": "docs/21_evidence_provenance_adaptive_loop_v0.1.md",
+      "sha256": "1cb2d161c17f521f228e57187ee254d409fc6437436e236ff4ca8a650973884f",
+      "bytes": 3441,
+      "lines": 107,
+      "role": "design doc"
+    },
+    "D22": {
+      "archive_path": "final_snapshot/docs/22_assessment_assistance_log_v0.1.md",
+      "commit": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3",
+      "original_path": "docs/22_assessment_assistance_log_v0.1.md",
+      "sha256": "2b36f819b6299b05a68442f293cf51a5958ae36427ab528d6cb8401a295ddcd1",
+      "bytes": 3284,
+      "lines": 110,
+      "role": "design doc"
+    },
+    "D23": {
+      "archive_path": "final_snapshot/docs/23_assessment_assistance_presentation_v0.1.md",
+      "commit": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3",
+      "original_path": "docs/23_assessment_assistance_presentation_v0.1.md",
+      "sha256": "eeb8ce10910a8b4f390f93c6f9a98bb706bca84445b1f8d2b539bb56a672d805",
+      "bytes": 3622,
+      "lines": 114,
+      "role": "design doc"
+    },
+    "D24": {
+      "archive_path": "history/13E-3C_local_numeric_cli/docs/24_local_numeric_teaching_cli_v0.1.md",
+      "commit": "b8abf719932430d0473d711990286ab628c8c3a1",
+      "original_path": "docs/24_local_numeric_teaching_cli_v0.1.md",
+      "sha256": "7f13733ca07bf5ebf9b78fc4375b1d777a7dea61f8965a2539bf13b1fa984288",
+      "bytes": 4533,
+      "lines": 162,
+      "role": "design doc"
+    },
+    "D25": {
+      "archive_path": "final_snapshot/docs/25_numeric_attempt_provenance_snapshot_v0.1.md",
+      "commit": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3",
+      "original_path": "docs/25_numeric_attempt_provenance_snapshot_v0.1.md",
+      "sha256": "7f7a7c0e531bcf17a6bfaa005dbbcdb222f38c2442f94b6aeb31bed56c7c878b",
+      "bytes": 3104,
+      "lines": 96,
+      "role": "design doc"
+    },
+    "D26": {
+      "archive_path": "final_snapshot/docs/26_numeric_provenance_review_candidate_v0.1.md",
+      "commit": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3",
+      "original_path": "docs/26_numeric_provenance_review_candidate_v0.1.md",
+      "sha256": "78b849c8670bebb3c23b19270116fa4cd1270c29ab95ed124298a1ad5f0f108d",
+      "bytes": 2781,
+      "lines": 96,
+      "role": "design doc"
+    },
+    "M01": {
+      "archive_path": "SOURCE_MANIFEST.json",
+      "commit": null,
+      "original_path": "SOURCE_MANIFEST.json",
+      "sha256": "b09932dc0ea729fc156fe383521dd26e7933f7236676d7c1a0466ff3ee425626",
+      "bytes": 22696,
+      "lines": 474,
+      "role": "manifest"
+    },
+    "P01": {
+      "archive_path": "diffs/13E-1_evidence_driven_decisions.patch",
+      "commit": "a6e1181c252bc49a1abf9d2471884179cafaa4c7",
+      "original_path": "<historical_git_diff>",
+      "sha256": "0fa1d5044c9ca7d872d9d6985bfb2d4832f713f728d74a4538578f4a4559026b",
+      "bytes": 24848,
+      "lines": 864,
+      "role": "git diff"
+    },
+    "P02": {
+      "archive_path": "diffs/13E-2A_teaching_turn_wiring.patch",
+      "commit": "beab3df10ec2951d214b7422e4dc565a1a83582f",
+      "original_path": "<historical_git_diff>",
+      "sha256": "54a6a9a63fd2cd4eec57ed74edaa96c56b658bf5d237eff02c912392cfb379cb",
+      "bytes": 15207,
+      "lines": 536,
+      "role": "git diff"
+    },
+    "P03": {
+      "archive_path": "diffs/13E-2B_unknown_provenance.patch",
+      "commit": "836bb7137b72cb91aaca4ed8556060b2a56fe0ce",
+      "original_path": "<historical_git_diff>",
+      "sha256": "c098c50bba2c12efbe921c03c2c0276188a413384199f0433a7156ddd473641d",
+      "bytes": 16611,
+      "lines": 512,
+      "role": "git diff"
+    },
+    "P04": {
+      "archive_path": "diffs/13E-3A_assistance_logging.patch",
+      "commit": "add51d0026559b7705df1e4ade24ff9782d560db",
+      "original_path": "<historical_git_diff>",
+      "sha256": "7eb707b57fb7b6f2b40a345e438cd335e5f4bb6f96a0162b1daef8f80b69b3eb",
+      "bytes": 25403,
+      "lines": 962,
+      "role": "git diff"
+    },
+    "P05": {
+      "archive_path": "diffs/13E-3B_assistance_presentation.patch",
+      "commit": "6dc1bd45d0750788272ec2c7d388ac3734376ed9",
+      "original_path": "<historical_git_diff>",
+      "sha256": "b56e3d3c72224be8455d664abe1c94b0f39ca367a243e757d13c059ba69be994",
+      "bytes": 22616,
+      "lines": 831,
+      "role": "git diff"
+    },
+    "P06": {
+      "archive_path": "diffs/13E-3C_local_numeric_cli.patch",
+      "commit": "b8abf719932430d0473d711990286ab628c8c3a1",
+      "original_path": "<historical_git_diff>",
+      "sha256": "8fe24e2ec2d745025ebc19de327c3b9628deeceee8a8a4b623ac16c16263fd53",
+      "bytes": 29030,
+      "lines": 1129,
+      "role": "git diff"
+    },
+    "P07": {
+      "archive_path": "diffs/13E-4A_provenance_snapshot.patch",
+      "commit": "ccb4a5a23f7c8ef1b3068e9bd9e1ff7d848733fb",
+      "original_path": "<historical_git_diff>",
+      "sha256": "2d3c0689f2857414de7c3e2f405127d0004c94539447575230c6ecb10301bb9b",
+      "bytes": 17757,
+      "lines": 613,
+      "role": "git diff"
+    },
+    "P08": {
+      "archive_path": "diffs/13E-4B_review_candidate.patch",
+      "commit": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3",
+      "original_path": "<historical_git_diff>",
+      "sha256": "b16f22d5d5f8cdc00487158d829e9cd1f3cd25a4982f12af23dbbe8867d2a1a9",
+      "bytes": 19500,
+      "lines": 707,
+      "role": "git diff"
+    }
+  },
+  "source_entries": [
+    {
+      "category": "historical_source",
+      "commit": "a6e1181c252bc49a1abf9d2471884179cafaa4c7",
+      "source_path": "backend/app/services/decision/evidence_driven_engine_v01.py",
+      "archive_path": "history/13E-1_evidence_driven_decisions/backend/app/services/decision/evidence_driven_engine_v01.py",
+      "size_bytes": 9134,
+      "sha256": "605714496a0cc400be9faba7c4aa04ef4b2925b0d1e39d253cb4d7ef6c2fc81b"
+    },
+    {
+      "category": "historical_source",
+      "commit": "a6e1181c252bc49a1abf9d2471884179cafaa4c7",
+      "source_path": "backend/app/services/decision/personalized_engine_v01.py",
+      "archive_path": "history/13E-1_evidence_driven_decisions/backend/app/services/decision/personalized_engine_v01.py",
+      "size_bytes": 6280,
+      "sha256": "016234befd9f4df66064f14d7730b51d163a80e03c731803113a393e9dc7b053"
+    },
+    {
+      "category": "historical_source",
+      "commit": "a6e1181c252bc49a1abf9d2471884179cafaa4c7",
+      "source_path": "backend/tests/test_evidence_driven_engine_v01.py",
+      "archive_path": "history/13E-1_evidence_driven_decisions/backend/tests/test_evidence_driven_engine_v01.py",
+      "size_bytes": 9623,
+      "sha256": "dbd6b485092e6e97452197c8445b4461773c8a94b6190c447e2cc881e6a19871"
+    },
+    {
+      "category": "historical_source",
+      "commit": "a6e1181c252bc49a1abf9d2471884179cafaa4c7",
+      "source_path": "docs/19_evidence_driven_decision_v0.1.md",
+      "archive_path": "history/13E-1_evidence_driven_decisions/docs/19_evidence_driven_decision_v0.1.md",
+      "size_bytes": 3689,
+      "sha256": "331c6e7c0423c7cfe4aa8eb4869059c780a67f728e65736dc988d473c41ffb2a"
+    },
+    {
+      "category": "historical_patch",
+      "commit": "a6e1181c252bc49a1abf9d2471884179cafaa4c7",
+      "source_path": "<historical_git_diff>",
+      "archive_path": "diffs/13E-1_evidence_driven_decisions.patch",
+      "size_bytes": 24848,
+      "sha256": "0fa1d5044c9ca7d872d9d6985bfb2d4832f713f728d74a4538578f4a4559026b"
+    },
+    {
+      "category": "historical_source",
+      "commit": "beab3df10ec2951d214b7422e4dc565a1a83582f",
+      "source_path": "backend/app/services/decision/evidence_driven_turn_wiring_v01.py",
+      "archive_path": "history/13E-2A_teaching_turn_wiring/backend/app/services/decision/evidence_driven_turn_wiring_v01.py",
+      "size_bytes": 2531,
+      "sha256": "4eceae65d972eec26ef937a25f75b7983dc2c8d3cd5495efbd504ef7041cfe14"
+    },
+    {
+      "category": "historical_source",
+      "commit": "beab3df10ec2951d214b7422e4dc565a1a83582f",
+      "source_path": "backend/app/services/decision/personalized_turn_orchestrator_v01.py",
+      "archive_path": "history/13E-2A_teaching_turn_wiring/backend/app/services/decision/personalized_turn_orchestrator_v01.py",
+      "size_bytes": 6466,
+      "sha256": "a5b2a7c7c81a0cd649e67ecdbe6bef5e4ca5f789871b974aa4732a257ad9d92a"
+    },
+    {
+      "category": "historical_source",
+      "commit": "beab3df10ec2951d214b7422e4dc565a1a83582f",
+      "source_path": "backend/tests/test_evidence_driven_turn_wiring_v01.py",
+      "archive_path": "history/13E-2A_teaching_turn_wiring/backend/tests/test_evidence_driven_turn_wiring_v01.py",
+      "size_bytes": 6725,
+      "sha256": "edf69795afc7fafa62d116cc8438dfe068259120f8120140de988b6b571dd599"
+    },
+    {
+      "category": "historical_source",
+      "commit": "beab3df10ec2951d214b7422e4dc565a1a83582f",
+      "source_path": "docs/20_evidence_driven_turn_wiring_v0.1.md",
+      "archive_path": "history/13E-2A_teaching_turn_wiring/docs/20_evidence_driven_turn_wiring_v0.1.md",
+      "size_bytes": 2952,
+      "sha256": "9956894ee2cf5b062536a432878a08fdaddb99732879ebb6fb8cdd761ed0fa7a"
+    },
+    {
+      "category": "historical_patch",
+      "commit": "beab3df10ec2951d214b7422e4dc565a1a83582f",
+      "source_path": "<historical_git_diff>",
+      "archive_path": "diffs/13E-2A_teaching_turn_wiring.patch",
+      "size_bytes": 15207,
+      "sha256": "54a6a9a63fd2cd4eec57ed74edaa96c56b658bf5d237eff02c912392cfb379cb"
+    },
+    {
+      "category": "historical_source",
+      "commit": "836bb7137b72cb91aaca4ed8556060b2a56fe0ce",
+      "source_path": "backend/app/services/decision/evidence_driven_engine_v01.py",
+      "archive_path": "history/13E-2B_unknown_provenance/backend/app/services/decision/evidence_driven_engine_v01.py",
+      "size_bytes": 10805,
+      "sha256": "655ec4f3211f40f0ee99b2c7aa3abe187f6d553b28bebb3b5231107e60379949"
+    },
+    {
+      "category": "historical_source",
+      "commit": "836bb7137b72cb91aaca4ed8556060b2a56fe0ce",
+      "source_path": "backend/tests/test_evidence_driven_engine_v01.py",
+      "archive_path": "history/13E-2B_unknown_provenance/backend/tests/test_evidence_driven_engine_v01.py",
+      "size_bytes": 12514,
+      "sha256": "3a2d0c0cd4e99cc565c175dd040bdce13298330a4c5fcc9765f1e08976ca3315"
+    },
+    {
+      "category": "historical_source",
+      "commit": "836bb7137b72cb91aaca4ed8556060b2a56fe0ce",
+      "source_path": "backend/tests/test_personalized_numeric_session_sqlite_v01.py",
+      "archive_path": "history/13E-2B_unknown_provenance/backend/tests/test_personalized_numeric_session_sqlite_v01.py",
+      "size_bytes": 22009,
+      "sha256": "ae892b41ab463aad703d57922e6e3d62e00f217f9ff52fda7e8a8e089edb6dbe"
+    },
+    {
+      "category": "historical_source",
+      "commit": "836bb7137b72cb91aaca4ed8556060b2a56fe0ce",
+      "source_path": "docs/21_evidence_provenance_adaptive_loop_v0.1.md",
+      "archive_path": "history/13E-2B_unknown_provenance/docs/21_evidence_provenance_adaptive_loop_v0.1.md",
+      "size_bytes": 3441,
+      "sha256": "1cb2d161c17f521f228e57187ee254d409fc6437436e236ff4ca8a650973884f"
+    },
+    {
+      "category": "historical_patch",
+      "commit": "836bb7137b72cb91aaca4ed8556060b2a56fe0ce",
+      "source_path": "<historical_git_diff>",
+      "archive_path": "diffs/13E-2B_unknown_provenance.patch",
+      "size_bytes": 16611,
+      "sha256": "c098c50bba2c12efbe921c03c2c0276188a413384199f0433a7156ddd473641d"
+    },
+    {
+      "category": "historical_source",
+      "commit": "add51d0026559b7705df1e4ade24ff9782d560db",
+      "source_path": "backend/app/repositories/assessment_assistance_log_v01.py",
+      "archive_path": "history/13E-3A_assistance_logging/backend/app/repositories/assessment_assistance_log_v01.py",
+      "size_bytes": 10465,
+      "sha256": "0ef66199584b0a7c05528e21f722925717edbede6f77add8027023a9158c0827"
+    },
+    {
+      "category": "historical_source",
+      "commit": "add51d0026559b7705df1e4ade24ff9782d560db",
+      "source_path": "backend/tests/test_assessment_assistance_log_v01.py",
+      "archive_path": "history/13E-3A_assistance_logging/backend/tests/test_assessment_assistance_log_v01.py",
+      "size_bytes": 9693,
+      "sha256": "df600b98098dc5143b2292467d20dd74f55e605e8c545369b980b5258c643382"
+    },
+    {
+      "category": "historical_source",
+      "commit": "add51d0026559b7705df1e4ade24ff9782d560db",
+      "source_path": "docs/22_assessment_assistance_log_v0.1.md",
+      "archive_path": "history/13E-3A_assistance_logging/docs/22_assessment_assistance_log_v0.1.md",
+      "size_bytes": 3284,
+      "sha256": "2b36f819b6299b05a68442f293cf51a5958ae36427ab528d6cb8401a295ddcd1"
+    },
+    {
+      "category": "historical_patch",
+      "commit": "add51d0026559b7705df1e4ade24ff9782d560db",
+      "source_path": "<historical_git_diff>",
+      "archive_path": "diffs/13E-3A_assistance_logging.patch",
+      "size_bytes": 25403,
+      "sha256": "7eb707b57fb7b6f2b40a345e438cd335e5f4bb6f96a0162b1daef8f80b69b3eb"
+    },
+    {
+      "category": "historical_source",
+      "commit": "6dc1bd45d0750788272ec2c7d388ac3734376ed9",
+      "source_path": "backend/app/services/decision/assessment_assistance_presentation_v01.py",
+      "archive_path": "history/13E-3B_assistance_presentation/backend/app/services/decision/assessment_assistance_presentation_v01.py",
+      "size_bytes": 7240,
+      "sha256": "852a7cbe92be68444a4635805c3a614a31ee83c1f4674845a92665c6ade4ed55"
+    },
+    {
+      "category": "historical_source",
+      "commit": "6dc1bd45d0750788272ec2c7d388ac3734376ed9",
+      "source_path": "backend/tests/test_assessment_assistance_log_v01.py",
+      "archive_path": "history/13E-3B_assistance_presentation/backend/tests/test_assessment_assistance_log_v01.py",
+      "size_bytes": 19398,
+      "sha256": "8e5c73ffc46fb9c800cbcadb527d4f5db47252ccac37985829d882f6c98f0ee3"
+    },
+    {
+      "category": "historical_source",
+      "commit": "6dc1bd45d0750788272ec2c7d388ac3734376ed9",
+      "source_path": "docs/23_assessment_assistance_presentation_v0.1.md",
+      "archive_path": "history/13E-3B_assistance_presentation/docs/23_assessment_assistance_presentation_v0.1.md",
+      "size_bytes": 3622,
+      "sha256": "eeb8ce10910a8b4f390f93c6f9a98bb706bca84445b1f8d2b539bb56a672d805"
+    },
+    {
+      "category": "historical_patch",
+      "commit": "6dc1bd45d0750788272ec2c7d388ac3734376ed9",
+      "source_path": "<historical_git_diff>",
+      "archive_path": "diffs/13E-3B_assistance_presentation.patch",
+      "size_bytes": 22616,
+      "sha256": "b56e3d3c72224be8455d664abe1c94b0f39ca367a243e757d13c059ba69be994"
+    },
+    {
+      "category": "historical_source",
+      "commit": "b8abf719932430d0473d711990286ab628c8c3a1",
+      "source_path": "backend/tests/test_local_numeric_lesson_cli_v01.py",
+      "archive_path": "history/13E-3C_local_numeric_cli/backend/tests/test_local_numeric_lesson_cli_v01.py",
+      "size_bytes": 6315,
+      "sha256": "629304bb91cbddfed0b4d6a58fca203e18e93c08b7e02f378cd3e40a88f2a80e"
+    },
+    {
+      "category": "historical_source",
+      "commit": "b8abf719932430d0473d711990286ab628c8c3a1",
+      "source_path": "docs/24_local_numeric_teaching_cli_v0.1.md",
+      "archive_path": "history/13E-3C_local_numeric_cli/docs/24_local_numeric_teaching_cli_v0.1.md",
+      "size_bytes": 4533,
+      "sha256": "7f13733ca07bf5ebf9b78fc4375b1d777a7dea61f8965a2539bf13b1fa984288"
+    },
+    {
+      "category": "historical_source",
+      "commit": "b8abf719932430d0473d711990286ab628c8c3a1",
+      "source_path": "scripts/run_local_numeric_lesson_v01.py",
+      "archive_path": "history/13E-3C_local_numeric_cli/scripts/run_local_numeric_lesson_v01.py",
+      "size_bytes": 16109,
+      "sha256": "b9bfcf3c620c926fcc607581a490cea707906383b6b74911efabd195486a8b5b"
+    },
+    {
+      "category": "historical_patch",
+      "commit": "b8abf719932430d0473d711990286ab628c8c3a1",
+      "source_path": "<historical_git_diff>",
+      "archive_path": "diffs/13E-3C_local_numeric_cli.patch",
+      "size_bytes": 29030,
+      "sha256": "8fe24e2ec2d745025ebc19de327c3b9628deeceee8a8a4b623ac16c16263fd53"
+    },
+    {
+      "category": "historical_source",
+      "commit": "ccb4a5a23f7c8ef1b3068e9bd9e1ff7d848733fb",
+      "source_path": "backend/app/services/assessment/numeric_attempt_provenance_snapshot_v01.py",
+      "archive_path": "history/13E-4A_provenance_snapshot/backend/app/services/assessment/numeric_attempt_provenance_snapshot_v01.py",
+      "size_bytes": 6846,
+      "sha256": "b0575c5001e818e8f5c6347e51d222988cd45b5e87f99bea235efaaaba6ea056"
+    },
+    {
+      "category": "historical_source",
+      "commit": "ccb4a5a23f7c8ef1b3068e9bd9e1ff7d848733fb",
+      "source_path": "backend/tests/test_assessment_assistance_log_v01.py",
+      "archive_path": "history/13E-4A_provenance_snapshot/backend/tests/test_assessment_assistance_log_v01.py",
+      "size_bytes": 25337,
+      "sha256": "be289202f2f0c9e4fad38c31b168f5cac7b10dc76dee22ed132bcb237557e6f3"
+    },
+    {
+      "category": "historical_source",
+      "commit": "ccb4a5a23f7c8ef1b3068e9bd9e1ff7d848733fb",
+      "source_path": "docs/25_numeric_attempt_provenance_snapshot_v0.1.md",
+      "archive_path": "history/13E-4A_provenance_snapshot/docs/25_numeric_attempt_provenance_snapshot_v0.1.md",
+      "size_bytes": 3104,
+      "sha256": "7f7a7c0e531bcf17a6bfaa005dbbcdb222f38c2442f94b6aeb31bed56c7c878b"
+    },
+    {
+      "category": "historical_patch",
+      "commit": "ccb4a5a23f7c8ef1b3068e9bd9e1ff7d848733fb",
+      "source_path": "<historical_git_diff>",
+      "archive_path": "diffs/13E-4A_provenance_snapshot.patch",
+      "size_bytes": 17757,
+      "sha256": "2d3c0689f2857414de7c3e2f405127d0004c94539447575230c6ecb10301bb9b"
+    },
+    {
+      "category": "historical_source",
+      "commit": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3",
+      "source_path": "backend/app/services/assessment/numeric_provenance_review_candidate_v01.py",
+      "archive_path": "history/13E-4B_review_candidate/backend/app/services/assessment/numeric_provenance_review_candidate_v01.py",
+      "size_bytes": 6796,
+      "sha256": "a0d47a7bfa2960c49ab2c3b0ac1176020101491642a95b1e30362a16661d596d"
+    },
+    {
+      "category": "historical_source",
+      "commit": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3",
+      "source_path": "backend/tests/test_numeric_provenance_review_candidate_v01.py",
+      "archive_path": "history/13E-4B_review_candidate/backend/tests/test_numeric_provenance_review_candidate_v01.py",
+      "size_bytes": 8091,
+      "sha256": "f20979b77c4513a0b75b57272abfac5986ff83341c4717df1ee957a62ef0e00c"
+    },
+    {
+      "category": "historical_source",
+      "commit": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3",
+      "source_path": "docs/26_numeric_provenance_review_candidate_v0.1.md",
+      "archive_path": "history/13E-4B_review_candidate/docs/26_numeric_provenance_review_candidate_v0.1.md",
+      "size_bytes": 2781,
+      "sha256": "78b849c8670bebb3c23b19270116fa4cd1270c29ab95ed124298a1ad5f0f108d"
+    },
+    {
+      "category": "historical_patch",
+      "commit": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3",
+      "source_path": "<historical_git_diff>",
+      "archive_path": "diffs/13E-4B_review_candidate.patch",
+      "size_bytes": 19500,
+      "sha256": "b16f22d5d5f8cdc00487158d829e9cd1f3cd25a4982f12af23dbbe8867d2a1a9"
+    },
+    {
+      "category": "final_snapshot",
+      "commit": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3",
+      "source_path": "backend/app/repositories/assessment_assistance_log_v01.py",
+      "archive_path": "final_snapshot/backend/app/repositories/assessment_assistance_log_v01.py",
+      "size_bytes": 10465,
+      "sha256": "0ef66199584b0a7c05528e21f722925717edbede6f77add8027023a9158c0827"
+    },
+    {
+      "category": "final_snapshot",
+      "commit": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3",
+      "source_path": "backend/app/services/assessment/numeric_attempt_provenance_snapshot_v01.py",
+      "archive_path": "final_snapshot/backend/app/services/assessment/numeric_attempt_provenance_snapshot_v01.py",
+      "size_bytes": 6846,
+      "sha256": "b0575c5001e818e8f5c6347e51d222988cd45b5e87f99bea235efaaaba6ea056"
+    },
+    {
+      "category": "final_snapshot",
+      "commit": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3",
+      "source_path": "backend/app/services/assessment/numeric_provenance_review_candidate_v01.py",
+      "archive_path": "final_snapshot/backend/app/services/assessment/numeric_provenance_review_candidate_v01.py",
+      "size_bytes": 6796,
+      "sha256": "a0d47a7bfa2960c49ab2c3b0ac1176020101491642a95b1e30362a16661d596d"
+    },
+    {
+      "category": "final_snapshot",
+      "commit": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3",
+      "source_path": "backend/app/services/decision/assessment_assistance_presentation_v01.py",
+      "archive_path": "final_snapshot/backend/app/services/decision/assessment_assistance_presentation_v01.py",
+      "size_bytes": 7240,
+      "sha256": "852a7cbe92be68444a4635805c3a614a31ee83c1f4674845a92665c6ade4ed55"
+    },
+    {
+      "category": "final_snapshot",
+      "commit": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3",
+      "source_path": "backend/app/services/decision/evidence_driven_engine_v01.py",
+      "archive_path": "final_snapshot/backend/app/services/decision/evidence_driven_engine_v01.py",
+      "size_bytes": 10805,
+      "sha256": "655ec4f3211f40f0ee99b2c7aa3abe187f6d553b28bebb3b5231107e60379949"
+    },
+    {
+      "category": "final_snapshot",
+      "commit": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3",
+      "source_path": "backend/app/services/decision/evidence_driven_turn_wiring_v01.py",
+      "archive_path": "final_snapshot/backend/app/services/decision/evidence_driven_turn_wiring_v01.py",
+      "size_bytes": 2531,
+      "sha256": "4eceae65d972eec26ef937a25f75b7983dc2c8d3cd5495efbd504ef7041cfe14"
+    },
+    {
+      "category": "final_snapshot",
+      "commit": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3",
+      "source_path": "backend/tests/test_assessment_assistance_log_v01.py",
+      "archive_path": "final_snapshot/backend/tests/test_assessment_assistance_log_v01.py",
+      "size_bytes": 25337,
+      "sha256": "be289202f2f0c9e4fad38c31b168f5cac7b10dc76dee22ed132bcb237557e6f3"
+    },
+    {
+      "category": "final_snapshot",
+      "commit": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3",
+      "source_path": "backend/tests/test_evidence_driven_engine_v01.py",
+      "archive_path": "final_snapshot/backend/tests/test_evidence_driven_engine_v01.py",
+      "size_bytes": 12514,
+      "sha256": "3a2d0c0cd4e99cc565c175dd040bdce13298330a4c5fcc9765f1e08976ca3315"
+    },
+    {
+      "category": "final_snapshot",
+      "commit": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3",
+      "source_path": "backend/tests/test_evidence_driven_turn_wiring_v01.py",
+      "archive_path": "final_snapshot/backend/tests/test_evidence_driven_turn_wiring_v01.py",
+      "size_bytes": 6725,
+      "sha256": "edf69795afc7fafa62d116cc8438dfe068259120f8120140de988b6b571dd599"
+    },
+    {
+      "category": "final_snapshot",
+      "commit": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3",
+      "source_path": "backend/tests/test_local_numeric_lesson_cli_v01.py",
+      "archive_path": "final_snapshot/backend/tests/test_local_numeric_lesson_cli_v01.py",
+      "size_bytes": 6315,
+      "sha256": "629304bb91cbddfed0b4d6a58fca203e18e93c08b7e02f378cd3e40a88f2a80e"
+    },
+    {
+      "category": "final_snapshot",
+      "commit": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3",
+      "source_path": "backend/tests/test_numeric_provenance_review_candidate_v01.py",
+      "archive_path": "final_snapshot/backend/tests/test_numeric_provenance_review_candidate_v01.py",
+      "size_bytes": 8091,
+      "sha256": "f20979b77c4513a0b75b57272abfac5986ff83341c4717df1ee957a62ef0e00c"
+    },
+    {
+      "category": "final_snapshot",
+      "commit": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3",
+      "source_path": "docs/19_evidence_driven_decision_v0.1.md",
+      "archive_path": "final_snapshot/docs/19_evidence_driven_decision_v0.1.md",
+      "size_bytes": 3689,
+      "sha256": "331c6e7c0423c7cfe4aa8eb4869059c780a67f728e65736dc988d473c41ffb2a"
+    },
+    {
+      "category": "final_snapshot",
+      "commit": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3",
+      "source_path": "docs/20_evidence_driven_turn_wiring_v0.1.md",
+      "archive_path": "final_snapshot/docs/20_evidence_driven_turn_wiring_v0.1.md",
+      "size_bytes": 2952,
+      "sha256": "9956894ee2cf5b062536a432878a08fdaddb99732879ebb6fb8cdd761ed0fa7a"
+    },
+    {
+      "category": "final_snapshot",
+      "commit": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3",
+      "source_path": "docs/21_evidence_provenance_adaptive_loop_v0.1.md",
+      "archive_path": "final_snapshot/docs/21_evidence_provenance_adaptive_loop_v0.1.md",
+      "size_bytes": 3441,
+      "sha256": "1cb2d161c17f521f228e57187ee254d409fc6437436e236ff4ca8a650973884f"
+    },
+    {
+      "category": "final_snapshot",
+      "commit": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3",
+      "source_path": "docs/22_assessment_assistance_log_v0.1.md",
+      "archive_path": "final_snapshot/docs/22_assessment_assistance_log_v0.1.md",
+      "size_bytes": 3284,
+      "sha256": "2b36f819b6299b05a68442f293cf51a5958ae36427ab528d6cb8401a295ddcd1"
+    },
+    {
+      "category": "final_snapshot",
+      "commit": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3",
+      "source_path": "docs/23_assessment_assistance_presentation_v0.1.md",
+      "archive_path": "final_snapshot/docs/23_assessment_assistance_presentation_v0.1.md",
+      "size_bytes": 3622,
+      "sha256": "eeb8ce10910a8b4f390f93c6f9a98bb706bca84445b1f8d2b539bb56a672d805"
+    },
+    {
+      "category": "final_snapshot",
+      "commit": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3",
+      "source_path": "docs/25_numeric_attempt_provenance_snapshot_v0.1.md",
+      "archive_path": "final_snapshot/docs/25_numeric_attempt_provenance_snapshot_v0.1.md",
+      "size_bytes": 3104,
+      "sha256": "7f7a7c0e531bcf17a6bfaa005dbbcdb222f38c2442f94b6aeb31bed56c7c878b"
+    },
+    {
+      "category": "final_snapshot",
+      "commit": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3",
+      "source_path": "docs/26_numeric_provenance_review_candidate_v0.1.md",
+      "archive_path": "final_snapshot/docs/26_numeric_provenance_review_candidate_v0.1.md",
+      "size_bytes": 2781,
+      "sha256": "78b849c8670bebb3c23b19270116fa4cd1270c29ab95ed124298a1ad5f0f108d"
+    },
+    {
+      "category": "final_snapshot",
+      "commit": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3",
+      "source_path": "scripts/run_local_numeric_lesson_v01.py",
+      "archive_path": "final_snapshot/scripts/run_local_numeric_lesson_v01.py",
+      "size_bytes": 16109,
+      "sha256": "b9bfcf3c620c926fcc607581a490cea707906383b6b74911efabd195486a8b5b"
+    }
+  ]
+}
