@@ -49,6 +49,11 @@ from app.repositories.course_teaching_trace_v01 import (
     course_teaching_traces_v01,
 )
 
+from app.repositories.course_learning_response_v01 import (
+    CourseLearningResponseRepositoryV01,
+    course_learning_responses_v01,
+)
+
 from app.services.course_knowledge.course_pack_v01 import (
     CoursePackV01,
 )
@@ -90,6 +95,14 @@ PACK_REVISION = "synthetic-pack-revision-001"
 TRACE_ID = "synthetic-trace-001"
 DECISION_ID = "synthetic-decision-001"
 PRESENTATION_ID = "synthetic-presentation-001"
+
+ACTIVITY_ID = "synthetic-activity-001"
+RESPONSE_ID = "synthetic-response-001"
+
+ACTIVITY_PROMPT = (
+    "SYNTHETIC ACTIVITY: Explain one reason a "
+    "matrix decomposition can be useful."
+)
 
 REQUESTED_AT = datetime(
     2026,
@@ -181,6 +194,14 @@ def initialize_database(path):
         )
 
         course_teaching_presentations_v01.create(
+            engine,
+            checkfirst=False,
+        )
+
+        # Only new, explicitly initialized demo databases
+        # receive the response table. Existing databases
+        # are never silently migrated by this CLI.
+        course_learning_responses_v01.create(
             engine,
             checkfirst=False,
         )
@@ -459,6 +480,149 @@ def run_present(factory):
     )
 
 
+def load_response(factory):
+    return CourseLearningResponseRepositoryV01(
+        factory
+    ).load(
+        response_id=RESPONSE_ID,
+        trace_id=TRACE_ID,
+        student_id=STUDENT_ID,
+        course_id=COURSE_ID,
+        objective_id=OBJECTIVE_ID,
+    )
+
+
+def run_activity(factory):
+    """
+    Output a synthetic learning prompt.
+
+    This action does not submit a response, record mastery,
+    or create a durable claim that the student read the prompt.
+    """
+
+    delivery = load_delivery_state(factory)
+
+    if delivery.status != "presentation_reported":
+        raise ValueError(
+            "Run present before requesting the learning activity."
+        )
+
+    emit(
+        status="synthetic_activity_prompt",
+        trace_id=TRACE_ID,
+        activity_id=ACTIVITY_ID,
+        activity_prompt=ACTIVITY_PROMPT,
+        response_status="not_submitted_or_not_checked",
+    )
+
+
+def run_answer(factory):
+    """
+    Prompt for one line of caller-supplied response text.
+
+    A previously stored response is returned without reading
+    stdin again. Its original answer is never overwritten.
+    """
+
+    try:
+        stored = load_response(factory)
+    except LookupError:
+        stored = None
+
+    if stored is not None:
+        emit(
+            status="response_recorded",
+            response_id=stored.response_id,
+            activity_id=stored.activity_id,
+            response_text=stored.response_text,
+            already_submitted=True,
+        )
+        return
+
+    delivery = load_delivery_state(factory)
+
+    if delivery.status != "presentation_reported":
+        raise ValueError(
+            "Run present before submitting a learning response."
+        )
+
+    # Output the activity prompt before accepting an answer.
+    # Only the submitted response is durably recorded by
+    # CourseLearningResponseRepositoryV01.
+    emit(
+        status="synthetic_activity_prompt",
+        trace_id=TRACE_ID,
+        activity_id=ACTIVITY_ID,
+        activity_prompt=ACTIVITY_PROMPT,
+    )
+
+    print(
+        "Your answer (one line): ",
+        end="",
+        file=sys.stderr,
+        flush=True,
+    )
+
+    entered = sys.stdin.readline()
+
+    if entered == "":
+        raise ValueError(
+            "No response was received. Nothing was saved."
+        )
+
+    # Remove only the input line terminator. Preserve the
+    # caller's actual leading and trailing spaces.
+    answer = entered.rstrip("\\r\\n")
+
+    repository = CourseLearningResponseRepositoryV01(
+        factory
+    )
+
+    stored = repository.record_response(
+        response_id=RESPONSE_ID,
+        trace_id=TRACE_ID,
+        student_id=STUDENT_ID,
+        course_id=COURSE_ID,
+        objective_id=OBJECTIVE_ID,
+        activity_id=ACTIVITY_ID,
+        activity_prompt=ACTIVITY_PROMPT,
+        response_text=answer,
+        submitted_at=datetime.now(timezone.utc),
+    )
+
+    emit(
+        status="response_recorded",
+        response_id=stored.response_id,
+        activity_id=stored.activity_id,
+        response_text=stored.response_text,
+        already_submitted=False,
+    )
+
+
+def run_response(factory):
+    """Recover an existing response without requesting new input."""
+
+    try:
+        stored = load_response(factory)
+    except LookupError:
+        emit(
+            status="not_submitted",
+            trace_id=TRACE_ID,
+            activity_id=ACTIVITY_ID,
+        )
+        return
+
+    emit(
+        status="response_recorded",
+        trace_id=stored.trace_id,
+        response_id=stored.response_id,
+        activity_id=stored.activity_id,
+        activity_prompt=stored.activity_prompt,
+        response_text=stored.response_text,
+        submitted_at_utc=stored.submitted_at.isoformat(),
+    )
+
+
 def main():
     parser = argparse.ArgumentParser(
         description=(
@@ -473,6 +637,9 @@ def main():
             "teach",
             "present",
             "status",
+            "activity",
+            "answer",
+            "response",
         ],
     )
 
@@ -502,6 +669,15 @@ def main():
 
         elif args.action == "present":
             run_present(factory)
+
+        elif args.action == "activity":
+            run_activity(factory)
+
+        elif args.action == "answer":
+            run_answer(factory)
+
+        elif args.action == "response":
+            run_response(factory)
 
         else:
             run_status(factory)
