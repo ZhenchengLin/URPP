@@ -9,7 +9,7 @@ mastery, persist a session, or implement a real LLM Agent.
 """
 
 from datetime import datetime
-from typing import Protocol
+from typing import TYPE_CHECKING, Protocol
 
 from pydantic import (
     BaseModel,
@@ -40,6 +40,15 @@ from app.services.decision.turn_orchestrator_v01 import (
     DecisionContextBuilderV01,
 )
 
+
+
+if TYPE_CHECKING:
+    from app.services.decision.post_turn_shadow_observer_v01 import (
+        PostTurnShadowOutcomeV01,
+    )
+    from app.services.decision.teaching_observation_context_v01 import (
+        TeachingObservationContextV01,
+    )
 
 class PersonalizedDecisionPortV01(Protocol):
     """
@@ -156,6 +165,99 @@ class PersonalizedTeachingTurnOrchestratorV01:
         student_request: StudentLearningRequestV01 | None = None,
     ) -> PersonalizedTeachingTurnResultV01:
         """
+        Preserve the existing public teaching interface.
+
+        One Decision Engine call and one Teaching Agent call.
+        No shadow observation is performed.
+        """
+        _, completed_turn = self._execute_turn_with_context(
+            objective_state,
+            decision_id=decision_id,
+            requested_at=requested_at,
+            student_request=student_request,
+        )
+        return completed_turn
+
+    def run_turn_observed(
+        self,
+        objective_state: ObjectiveStateV02,
+        *,
+        decision_id: str,
+        requested_at: datetime,
+        observation_context: "TeachingObservationContextV01 | None",
+        student_request: StudentLearningRequestV01 | None = None,
+    ) -> "PostTurnShadowOutcomeV01":
+        """
+        Opt-in post-turn observation.
+
+        The actual teaching flow runs once. Its exact
+        Decision Context is passed to the optional observer.
+
+        This method does not retrieve Observation data
+        or authorize the caller to access Student State.
+        """
+        from app.services.decision.post_turn_shadow_observer_v01 import (
+            observe_completed_turn_v01,
+        )
+        from app.services.decision.teaching_observation_context_v01 import (
+            TeachingObservationContextV01,
+        )
+
+        # Reject programming errors before executing the
+        # authoritative teaching turn. A valid but mismatched
+        # Observation Context is handled by the observer.
+        if (
+            observation_context is not None
+            and not isinstance(
+                observation_context,
+                TeachingObservationContextV01,
+            )
+        ):
+            raise TypeError(
+                "observation_context must be "
+                "TeachingObservationContextV01 or None."
+            )
+
+        context, completed_turn = self._execute_turn_with_context(
+            objective_state,
+            decision_id=decision_id,
+            requested_at=requested_at,
+            student_request=student_request,
+        )
+
+        # Only post-turn observation is fail-open.
+        # Authoritative Decision Engine and Agent failures
+        # have already occurred outside this exception handler.
+        try:
+            return observe_completed_turn_v01(
+                decision_context=context,
+                completed_turn=completed_turn,
+                observation_context=observation_context,
+            )
+        except Exception:
+            from app.services.decision.post_turn_shadow_observer_v01 import (
+                PostTurnShadowOutcomeV01,
+            )
+
+            # Preserve the completed teaching result even if
+            # the Observer itself unexpectedly fails.
+            # Do not expose the original exception.
+            return PostTurnShadowOutcomeV01(
+                completed_turn=completed_turn,
+                status="failed",
+                report=None,
+                failure_code="shadow_evaluation_failed",
+            )
+
+    def _execute_turn_with_context(
+        self,
+        objective_state: ObjectiveStateV02,
+        *,
+        decision_id: str,
+        requested_at: datetime,
+        student_request: StudentLearningRequestV01 | None = None,
+    ) -> tuple[PersonalizedDecisionContextV01, PersonalizedTeachingTurnResultV01]:
+        """
         Build a personalized context, decide once, and call
         exactly one Agent.
 
@@ -239,8 +341,10 @@ class PersonalizedTeachingTurnOrchestratorV01:
                 "Teaching Agent must return a string."
             )
 
-        return PersonalizedTeachingTurnResultV01(
+        completed_turn = PersonalizedTeachingTurnResultV01(
             decision=personalized_decision,
             agent_kind=agent_kind,
             content=content,
         )
+
+        return context, completed_turn
