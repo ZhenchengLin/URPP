@@ -103,11 +103,15 @@ def setup_storage(tmp_path):
         submitted_at=datetime.now(timezone.utc),
     )
 
-    # Explicit test-only schema provisioning. The feedback
-    # Service does not create or migrate its table.
-    course_learning_feedback_v01.create(
-        engine,
-        checkfirst=False,
+    # The updated Synthetic Demo initializer has already
+    # provisioned this table. Do not CREATE TABLE again.
+    # The feedback Service itself still does not provision
+    # or migrate database schemas.
+    from sqlalchemy import inspect
+
+    assert (
+        "course_learning_feedback_v01"
+        in inspect(engine).get_table_names()
     )
 
     return database, engine, factory, stored_response

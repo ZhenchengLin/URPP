@@ -54,6 +54,11 @@ from app.repositories.course_learning_response_v01 import (
     course_learning_responses_v01,
 )
 
+from app.services.course_knowledge.durable_learning_feedback_v01 import (
+    DurableLearningFeedbackV01,
+    course_learning_feedback_v01,
+)
+
 from app.services.course_knowledge.course_pack_v01 import (
     CoursePackV01,
 )
@@ -98,6 +103,9 @@ PRESENTATION_ID = "synthetic-presentation-001"
 
 ACTIVITY_ID = "synthetic-activity-001"
 RESPONSE_ID = "synthetic-response-001"
+
+FEEDBACK_ID = "synthetic-feedback-001"
+FEEDBACK_VERSION = "synthetic-feedback-policy-v01"
 
 ACTIVITY_PROMPT = (
     "SYNTHETIC ACTIVITY: Explain one reason a "
@@ -202,6 +210,14 @@ def initialize_database(path):
         # receive the response table. Existing databases
         # are never silently migrated by this CLI.
         course_learning_responses_v01.create(
+            engine,
+            checkfirst=False,
+        )
+
+        # Feedback is a separate durable record, linked to
+        # the original response. Only explicitly initialized
+        # NEW demo databases receive this table.
+        course_learning_feedback_v01.create(
             engine,
             checkfirst=False,
         )
@@ -572,7 +588,7 @@ def run_answer(factory):
 
     # Remove only the input line terminator. Preserve the
     # caller's actual leading and trailing spaces.
-    answer = entered.rstrip("\\r\\n")
+    answer = entered.rstrip("\r\n")
 
     repository = CourseLearningResponseRepositoryV01(
         factory
@@ -623,6 +639,117 @@ def run_response(factory):
     )
 
 
+class FakeLearningFeedbackAgent:
+    """
+    Deterministic instructional wording plus a generation token.
+
+    The token lets integration tests detect a second Agent call.
+    This is synthetic teaching guidance, not answer grading,
+    a correctness judgment, or Mastery Evidence.
+    """
+
+    def produce(self, *, response):
+        return (
+            "SYNTHETIC FEEDBACK — Fake Professor\\n"
+            f"Activity: {response.activity_id}\\n"
+            "Your response was recorded. To develop your "
+            "explanation, consider adding a concrete "
+            "computational example.\\n"
+            f"Generation token: {uuid4().hex}"
+        )
+
+
+def make_feedback_service(factory):
+    return DurableLearningFeedbackV01(
+        session_factory=factory,
+        feedback_agent=FakeLearningFeedbackAgent(),
+    )
+
+
+def feedback_scope():
+    return {
+        "feedback_id": FEEDBACK_ID,
+        "response_id": RESPONSE_ID,
+        "trace_id": TRACE_ID,
+        "student_id": STUDENT_ID,
+        "course_id": COURSE_ID,
+        "objective_id": OBJECTIVE_ID,
+        "feedback_version": FEEDBACK_VERSION,
+    }
+
+
+def emit_feedback(stored, *, recovered):
+    emit(
+        status=stored.status,
+        feedback_id=stored.feedback_id,
+        response_id=stored.response_id,
+        trace_id=stored.trace_id,
+        activity_id=stored.activity_id,
+        feedback_version=stored.feedback_version,
+        feedback_text=stored.feedback_text,
+        recovered=recovered,
+    )
+
+
+def run_feedback(factory):
+    """
+    Create or recover feedback for the STORED student response.
+
+    A missing response fails before any feedback reservation.
+    The Service prevents duplicate Agent invocation after
+    completed feedback and blocks ambiguous reservations.
+    """
+
+    # Do not accept a new answer as a feedback argument.
+    # Reuse the same scope-checked original submission.
+    load_response(factory)
+
+    service = make_feedback_service(factory)
+
+    try:
+        stored = service.load(**feedback_scope())
+
+    except LookupError:
+        # Feedback does not exist yet. run_or_resume() owns
+        # the durable reservation and generation lifecycle.
+        stored = service.run_or_resume(
+            **feedback_scope(),
+            requested_at=datetime.now(timezone.utc),
+        )
+
+        emit_feedback(stored, recovered=False)
+        return
+
+    # A completed feedback was recovered without Agent work.
+    emit_feedback(stored, recovered=True)
+
+
+def run_feedback_status(factory):
+    """
+    Read completed feedback without invoking the Agent.
+
+    A missing record is not confused with a reserved record:
+    the latter raises FeedbackRecoveryRequiredV01.
+    """
+
+    load_response(factory)
+
+    service = make_feedback_service(factory)
+
+    try:
+        stored = service.load(**feedback_scope())
+
+    except LookupError:
+        emit(
+            status="feedback_not_generated",
+            response_id=RESPONSE_ID,
+            feedback_id=FEEDBACK_ID,
+        )
+        return
+
+    emit_feedback(stored, recovered=True)
+
+
 def main():
     parser = argparse.ArgumentParser(
         description=(
@@ -640,6 +767,8 @@ def main():
             "activity",
             "answer",
             "response",
+            "feedback",
+            "feedback-status",
         ],
     )
 
@@ -678,6 +807,12 @@ def main():
 
         elif args.action == "response":
             run_response(factory)
+
+        elif args.action == "feedback":
+            run_feedback(factory)
+
+        elif args.action == "feedback-status":
+            run_feedback_status(factory)
 
         else:
             run_status(factory)

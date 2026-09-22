@@ -122,7 +122,7 @@ def test_activity_answer_and_recovery_across_processes(
     entered, completed = invoke(
         database,
         "answer",
-        answer=ANSWER + "\\n",
+        answer=ANSWER + "\n",
     )
 
     assert len(entered) == 2
@@ -171,13 +171,13 @@ def test_duplicate_answer_returns_original_without_reading_stdin(
     first, _ = invoke(
         database,
         "answer",
-        answer="First submitted answer.\\n",
+        answer="First submitted answer.\n",
     )
 
     repeated, _ = invoke(
         database,
         "answer",
-        answer="Changed answer that must not be stored.\\n",
+        answer="Changed answer that must not be stored.\n",
     )
 
     assert first[-1]["response_text"] == (
@@ -213,7 +213,7 @@ def test_activity_and_answer_require_presentation(
     _, answer_result = invoke(
         database,
         "answer",
-        answer="Do not store this.\\n",
+        answer="Do not store this.\n",
         success=False,
     )
 
@@ -246,7 +246,7 @@ def test_empty_or_missing_input_does_not_save_a_response(
     _, blank_input = invoke(
         database,
         "answer",
-        answer="   \\n",
+        answer="   \n",
         success=False,
     )
 
@@ -267,7 +267,7 @@ def test_status_and_presentation_remain_separate_from_response(
     invoke(
         database,
         "answer",
-        answer="My actual typed text.\\n",
+        answer="My actual typed text.\n",
     )
 
     delivery, _ = invoke(database, "status")
@@ -315,7 +315,7 @@ def test_activity_response_does_not_modify_teaching_trace(
     invoke(
         database,
         "answer",
-        answer="Student input is not mastery evidence.\\n",
+        answer="Student input is not mastery evidence.\n",
     )
 
     with sqlite3.connect(database) as connection:
