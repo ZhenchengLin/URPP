@@ -35,6 +35,12 @@
     <div id="history" class="history" role="log" aria-live="polite">
       <p class="hint">导入资料或恢复之前的 Session 后开始提问。</p>
     </div>
+    <label>回答模式
+      <select id="answer-mode">
+        <option value="course">仅根据上传资料</option>
+        <option value="general">一般知识（不加载上传资料）</option>
+      </select>
+    </label>
     <label>你的问题
       <textarea id="question" rows="3" maxlength="1500" placeholder="根据这份资料，我想问……"></textarea>
     </label>
@@ -43,7 +49,7 @@
       <button id="refresh" type="button" class="secondary" disabled>刷新历史</button>
     </div>
     <p id="status" class="meta" role="status"></p>
-    <p class="hint">当前仅支持基于当前资料的 explanation；资料外问题不等于一般知识模式。回答不是 Mastery Evidence。单用户本地开发版，无正式 Authentication。</p>
+    <p class="hint">默认仅根据上传资料；一般知识模式不会向模型提供 Course Pack 或 Source ID；不会自动判断问题是否超出资料。该选择不是来源核验，回答不是 Mastery Evidence。单用户本地开发版，无正式 Authentication。</p>
   </section>
 </main>
 </body>

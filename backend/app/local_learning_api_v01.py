@@ -15,6 +15,7 @@ import threading
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from typing import Literal
 
 from app.services.course_knowledge.local_learning_workspace_v01 import (
     LocalLearningWorkspaceV01,
@@ -43,6 +44,7 @@ class _Upload(_Input):
 
 
 class _Chat(_Input):
+    mode: Literal["course", "general"] = "course"
     session_id: str = Field(min_length=1, max_length=128)
     pack_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     student_text: str = Field(min_length=1, max_length=1500)
@@ -193,14 +195,17 @@ def create_local_learning_api_v01(
 
         def complete_turn():
             with chat_lock:
-                return workspace.explain(
+                arguments = dict(
                     pack_sha256=data.pack_sha256,
                     session_id=data.session_id,
                     question=data.student_text,
                     expected_message_count=data.expected_message_count,
                 )
+                if data.mode == "general":
+                    return workspace.explain_general(**arguments)
+                return workspace.explain(**arguments).snapshot
         try:
-            result = await run_in_threadpool(complete_turn)
+            snapshot = await run_in_threadpool(complete_turn)
         except LookupError as exc:
             raise HTTPException(404, "Exact local Session not found.") from exc
         except ValueError as exc:
@@ -210,6 +215,6 @@ def create_local_learning_api_v01(
         except Exception as exc:
             # Do not reflect private document text, model output or paths.
             raise HTTPException(502, "Local Professor turn failed; reload Session.") from exc
-        return _snapshot(result.snapshot)
+        return _snapshot(snapshot)
 
     return app

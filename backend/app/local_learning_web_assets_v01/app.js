@@ -122,7 +122,8 @@ el("send").addEventListener("click", () => run(async () => {
   setStatus("本地 Professor 正在生成回答……");
   try {
     const snapshot = await api("/api/chat", {
-      ...active, student_text: question, expected_message_count: messageCount
+      ...active, student_text: question, expected_message_count: messageCount,
+      mode: el("answer-mode").value
     });
     render(snapshot);
     el("question").value = "";

@@ -16,6 +16,10 @@ from pathlib import Path
 from typing import Callable
 
 from app.services.course_knowledge.course_pack_v01 import CoursePackV01
+from app.services.course_knowledge.local_chat_context_v01 import (
+    ConversationMessageV01, LocalChatContextV01,
+)
+from app.llm.local_general_knowledge_gateway_v01 import LocalGeneralKnowledgeGatewayV01
 from app.services.course_knowledge.knowledge_fetch_v01 import (
     canonical_pack_bytes_v01,
     course_pack_digest_v01,
@@ -55,9 +59,14 @@ class ImportedLocalCourseV01:
 class LocalLearningWorkspaceV01:
     """Store immutable uploads and pinned packs outside Git, with chat in SQLite."""
 
-    def __init__(self, *, data_root: Path, gateway_factory: Callable) -> None:
+    def __init__(
+        self, *, data_root: Path, gateway_factory: Callable,
+        general_gateway_factory: Callable | None = None,
+    ) -> None:
         if not callable(gateway_factory):
             raise TypeError("gateway_factory must be callable.")
+        if general_gateway_factory is not None and not callable(general_gateway_factory):
+            raise TypeError("general_gateway_factory must be callable.")
 
         supplied = Path(data_root).expanduser().absolute()
         if supplied.is_symlink():
@@ -83,6 +92,9 @@ class LocalLearningWorkspaceV01:
             else LocalChatStoreV01.create_new(database)
         )
         self._gateway_factory = gateway_factory
+        self._general_gateway_factory = (
+            general_gateway_factory or LocalGeneralKnowledgeGatewayV01
+        )
 
     @staticmethod
     def _save_once(directory: Path, name: str, content: bytes) -> None:
@@ -191,4 +203,52 @@ class LocalLearningWorkspaceV01:
             objective_id=OBJECTIVE_ID,
             student_text=question,
             expected_message_count=expected_message_count,
+        )
+
+    def explain_general(
+        self, *, pack_sha256: str, session_id: str,
+        question: str, expected_message_count: int,
+    ) -> LocalChatSnapshotV01:
+        """User-selected general answer, with no Course Pack text sent to model.
+
+        Session binding is still verified. No model call on invalid/stale input.
+        The fixed provenance label is persisted with the answer; it is not
+        an LLM-authored citation. Use a single process for this local pilot.
+        """
+        if (type(expected_message_count) is not int
+                or expected_message_count < 0 or expected_message_count % 2):
+            raise ValueError("Expected message count must be a nonnegative even integer.")
+        # Reuse exact pack/session verification rather than looking up a user-
+        # supplied Session ID without its pinned Course Pack identity.
+        snapshot = self.resume(pack_sha256=pack_sha256, session_id=session_id)
+        if len(snapshot.messages) != expected_message_count:
+            raise ValueError("Chat Session advanced since the caller loaded its history.")
+        # Do not pass prior course dialogue or uploaded excerpts into the
+        # source-free general path, even when the gateway is injected.
+        student = ConversationMessageV01(role="student", text=question)
+        context = LocalChatContextV01(
+            course_id=snapshot.course_id,
+            objective_id=snapshot.objective_id,
+            current_student_message=student.text,
+        )
+        gateway = self._general_gateway_factory()
+        if not callable(getattr(gateway, "generate_general", None)):
+            raise TypeError("General gateway must implement generate_general.")
+        answer = gateway.generate_general(context=context)
+        if type(answer) is not str or not answer.strip() or len(answer) > 1300:
+            raise ValueError("General answer is empty or oversized.")
+        # This label survives Session recovery; it cannot be supplied by model.
+        labeled = "[GENERAL KNOWLEDGE — not from uploaded material]\n" + answer.strip()
+        ConversationMessageV01(role="professor", text=labeled)
+        return self.store.append_exchange(
+            session_id=snapshot.session_id,
+            local_profile_id=snapshot.local_profile_id,
+            course_id=snapshot.course_id,
+            objective_id=snapshot.objective_id,
+            pack_id=snapshot.pack_id,
+            pack_revision=snapshot.pack_revision,
+            pack_sha256=snapshot.pack_sha256,
+            expected_message_count=expected_message_count,
+            student_text=context.current_student_message,
+            professor_text=labeled,
         )
