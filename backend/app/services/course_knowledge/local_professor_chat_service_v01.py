@@ -35,6 +35,10 @@ from app.services.course_knowledge.knowledge_fetch_v01 import (
     course_pack_digest_v01,
 )
 
+from app.services.course_knowledge.local_course_source_selector_v01 import (
+    select_course_source_ids_v01,
+)
+
 from app.services.course_knowledge.local_chat_context_v01 import (
     ConversationMessageV01,
     ConversationScopedGatewayV01,
@@ -328,6 +332,11 @@ class LocalProfessorChatServiceV01:
 
         professor = StructuredProfessorAdapterV01(
             gateway=scoped_gateway,
+            source_selector=lambda sources: select_course_source_ids_v01(
+                sources=sources,
+                current_question=chat_context.current_student_message,
+                history=chat_context.history,
+            ),
         )
 
         harness = CourseGroundedTeachingHarnessV01(

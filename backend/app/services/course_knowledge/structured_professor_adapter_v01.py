@@ -84,6 +84,7 @@ class StructuredProfessorAdapterV01:
         self,
         *,
         gateway: SynchronousStructuredGenerationPortV01,
+        source_selector=None,
     ) -> None:
         if inspect.iscoroutinefunction(
             getattr(gateway, "generate_structured", None)
@@ -99,7 +100,10 @@ class StructuredProfessorAdapterV01:
                 "Professor gateway has no generation method."
             )
 
+        if source_selector is not None and not callable(source_selector):
+            raise TypeError("Source selector must be callable.")
         self._gateway = gateway
+        self._source_selector = source_selector
         self._answer_status: str | None = None
 
     @property
@@ -192,6 +196,21 @@ class StructuredProfessorAdapterV01:
                     "content": source.content,
                 }
             )
+
+        if self._source_selector is not None:
+            # Selection happens AFTER Course Knowledge and permission
+            # validation, and BEFORE the model request is assembled.
+            # The selected subset is authoritative for output IDs.
+            selection = self._source_selector(tuple(dict(s) for s in sources))
+            all_ids = {source["source_id"] for source in sources}
+            if (
+                type(selection) is not tuple
+                or len(selection) != 1
+                or type(selection[0]) is not str
+                or selection[0] not in all_ids
+            ):
+                raise ValueError("Invalid bounded Course Source selection.")
+            sources = [s for s in sources if s["source_id"] == selection[0]]
 
         request = context.student_request
 
@@ -305,9 +324,12 @@ class StructuredProfessorAdapterV01:
                 "Course-grounded answer cannot impersonate evidence status."
             )
 
+        # Only sources actually included in THIS model request may
+        # be cited. The full authorized Course Pack is not the
+        # citation boundary after per-turn source selection.
         allowed_ids = {
-            source.source_id
-            for source in knowledge.sources
+            source["source_id"]
+            for source in sources
         }
 
         if not set(claimed_ids).issubset(allowed_ids):

@@ -396,6 +396,7 @@ class LocalOllamaProfessorGatewayV01:
             "think": False,
             "options": {
                 "temperature": 0,
+                "num_ctx": 8192,
                 "num_predict": 1024,
             },
             "keep_alive": "0",
