@@ -17,6 +17,9 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 from typing import Literal
 
+from app.services.course_knowledge.structured_professor_adapter_v01 import (
+    ProfessorOutputContractErrorV01,
+)
 from app.services.course_knowledge.local_learning_workspace_v01 import (
     LocalLearningWorkspaceV01,
 )
@@ -206,6 +209,13 @@ def create_local_learning_api_v01(
                 return workspace.explain(**arguments).snapshot
         try:
             snapshot = await run_in_threadpool(complete_turn)
+        except ProfessorOutputContractErrorV01 as exc:
+            # A valid HTTP request reached the model, but generated
+            # output violated the Professor response contract.
+            # Never reflect untrusted model output to the browser.
+            raise HTTPException(
+                502, "Local Professor output failed validation; reload Session."
+            ) from exc
         except LookupError as exc:
             raise HTTPException(404, "Exact local Session not found.") from exc
         except ValueError as exc:

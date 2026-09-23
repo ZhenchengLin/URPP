@@ -38,6 +38,17 @@ from app.services.decision.turn_orchestrator_v01 import (
 )
 
 
+INSUFFICIENT_COURSE_MESSAGE_V01 = (
+    "[INSUFFICIENT COURSE EVIDENCE]\\n"
+    "上传的资料不足以回答当前问题。"
+    "如果希望使用一般知识回答，请切换到 General Knowledge 模式。"
+)
+
+
+class ProfessorOutputContractErrorV01(ValueError):
+    """Generated Professor output violated its response contract."""
+
+
 class SynchronousStructuredGenerationPortV01(Protocol):
     """
     A synchronous gateway returning one JSON-like dictionary.
@@ -187,8 +198,11 @@ class StructuredProfessorAdapterV01:
                 "application. Do not claim that the student has "
                 "mastered the objective. Do not issue an assessment "
                 "result or request Student State changes. Return "
-                "only an object containing 'content' (a string) "
-                "and 'source_ids' (a list of referenced Source IDs)."
+                "a JSON object containing content, source_ids, "
+                "and answer_status. Use course_grounded with "
+                "nonempty permitted source_ids only when the "
+                "excerpts support the current answer. Otherwise "
+                "use insufficient_evidence with source_ids=[]."
             ),
             "objective": {
                 "course_id": knowledge.course_id,
@@ -223,9 +237,24 @@ class StructuredProfessorAdapterV01:
                 "Professor gateway must return a dictionary."
             )
 
-        if set(result) != {"content", "source_ids"}:
-            raise ValueError(
+        if set(result) not in (
+            {"content", "source_ids"},
+            {"content", "source_ids", "answer_status"},
+        ):
+            raise ProfessorOutputContractErrorV01(
                 "Unexpected Professor output fields."
+            )
+
+        answer_status = result.get(
+            "answer_status", "course_grounded"
+        )
+
+        if answer_status not in (
+            "course_grounded",
+            "insufficient_evidence",
+        ):
+            raise ProfessorOutputContractErrorV01(
+                "Invalid Professor answer status."
             )
 
         content = result["content"]
@@ -236,18 +265,36 @@ class StructuredProfessorAdapterV01:
             or not content.strip()
             or len(content) > self.MAX_OUTPUT_CHARS
         ):
-            raise ValueError(
+            raise ProfessorOutputContractErrorV01(
                 "Professor content is empty or invalid."
             )
 
         if (
             type(claimed_ids) is not list
-            or not claimed_ids
             or not all(type(item) is str for item in claimed_ids)
             or len(claimed_ids) != len(set(claimed_ids))
         ):
-            raise ValueError(
+            raise ProfessorOutputContractErrorV01(
                 "Professor source references are invalid."
+            )
+
+        if answer_status == "insufficient_evidence":
+            if claimed_ids:
+                raise ProfessorOutputContractErrorV01(
+                    "Insufficient evidence cannot cite a course source."
+                )
+            # Never persist model-authored unsupported claims as an
+            # insufficient-evidence explanation.
+            return INSUFFICIENT_COURSE_MESSAGE_V01
+
+        if not claimed_ids:
+            raise ProfessorOutputContractErrorV01(
+                "Course-grounded answer requires a source reference."
+            )
+
+        if content.strip() == INSUFFICIENT_COURSE_MESSAGE_V01:
+            raise ProfessorOutputContractErrorV01(
+                "Course-grounded answer cannot impersonate evidence status."
             )
 
         allowed_ids = {
@@ -256,7 +303,7 @@ class StructuredProfessorAdapterV01:
         }
 
         if not set(claimed_ids).issubset(allowed_ids):
-            raise ValueError(
+            raise ProfessorOutputContractErrorV01(
                 "Professor cited a source outside Course Knowledge."
             )
 

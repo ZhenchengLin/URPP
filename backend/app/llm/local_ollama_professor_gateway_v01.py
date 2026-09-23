@@ -77,9 +77,16 @@ class LocalOllamaProfessorGatewayV01:
                 "items": {
                     "type": "string",
                 },
-                "minItems": 1,
+                "minItems": 0,
                 "maxItems": 8,
                 "uniqueItems": True,
+            },
+            "answer_status": {
+                "type": "string",
+                "enum": [
+                    "course_grounded",
+                    "insufficient_evidence",
+                ],
             },
         },
         "required": [
@@ -108,8 +115,13 @@ class LocalOllamaProfessorGatewayV01:
         "knowledge or answer an unrelated older question instead. "
         "Do not invent source IDs, grades, mastery evidence, "
         "or permission to update Student State. "
-        "Return a JSON object with exactly 'content' and "
-        "'source_ids'. A cited source ID is not proof that "
+        "Return JSON with content, source_ids, and "
+        "answer_status. Set answer_status to course_grounded "
+        "only when the supplied excerpts support the current "
+        "question; otherwise set insufficient_evidence and "
+        "return source_ids=[]. Never invent or attach an "
+        "unrelated source merely to fill a citation field. "
+        "A cited source ID is not proof that "
         "the explanation is mathematically correct."
     )
 
@@ -441,13 +453,24 @@ class LocalOllamaProfessorGatewayV01:
                 "Local model JSON output must be an object."
             )
 
-        if set(parsed) != {
-            "content",
-            "source_ids",
-        }:
+        if set(parsed) not in (
+            {"content", "source_ids"},
+            {"content", "source_ids", "answer_status"},
+        ):
 
             raise LocalProfessorGenerationErrorV01(
                 "Local model output fields are invalid."
+            )
+
+        if (
+            "answer_status" in parsed
+            and parsed["answer_status"] not in (
+                "course_grounded",
+                "insufficient_evidence",
+            )
+        ):
+            raise LocalProfessorGenerationErrorV01(
+                "Local model answer status is invalid."
             )
 
         # Structural validation continues in the existing
