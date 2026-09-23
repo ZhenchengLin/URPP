@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>URPP · Local Professor</title>
+  <link rel="stylesheet" href="/assets/local-learning.css">
+  <script src="/assets/local-learning.js" defer></script>
+</head>
+<body>
+<header>
+  <h1>URPP <span>Personal Professor</span></h1>
+  <p>Local learning · 资料导入与可恢复教学对话</p>
+</header>
+<main>
+  <section aria-labelledby="upload-title">
+    <h2 id="upload-title">导入学习资料</h2>
+    <label>选择 TXT / Markdown / 文字型 PDF
+      <input id="material" type="file" accept=".txt,.md,.markdown,.pdf">
+    </label>
+    <label>本次学习目标
+      <textarea id="objective" rows="4">从基础开始，逐步讲解这份资料，并结合我的问题解释关键概念。</textarea>
+    </label>
+    <label class="permission"><input id="permission" type="checkbox">
+      我确认有权将这份资料用于自己的本地学习。</label>
+    <button id="upload" type="button">导入并开始新 Session</button>
+    <p class="hint">TXT / Markdown 最多 128 KiB；PDF 最多 8 MiB、32 页，当前不支持扫描版 OCR。</p>
+    <hr>
+    <h2>恢复对话</h2>
+    <button id="resume" type="button" class="secondary">恢复最近 Session</button>
+    <p id="session" class="meta">尚未选择 Session。</p>
+  </section>
+  <section aria-labelledby="chat-title">
+    <h2 id="chat-title">Professor</h2>
+    <div id="history" class="history" role="log" aria-live="polite">
+      <p class="hint">导入资料或恢复之前的 Session 后开始提问。</p>
+    </div>
+    <label>你的问题
+      <textarea id="question" rows="3" maxlength="1500" placeholder="根据这份资料，我想问……"></textarea>
+    </label>
+    <div class="actions">
+      <button id="send" type="button" disabled>发送</button>
+      <button id="refresh" type="button" class="secondary" disabled>刷新历史</button>
+    </div>
+    <p id="status" class="meta" role="status"></p>
+    <p class="hint">当前仅支持基于当前资料的 explanation；资料外问题不等于一般知识模式。回答不是 Mastery Evidence。单用户本地开发版，无正式 Authentication。</p>
+  </section>
+</main>
+</body>
+</html>
