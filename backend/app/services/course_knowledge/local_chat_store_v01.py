@@ -37,6 +37,7 @@ class LocalChatSnapshotV01:
     pack_revision: str
     pack_sha256: str
     messages: tuple[ConversationMessageV01, ...]
+    answer_statuses: tuple[str, ...] = ()  # Per Professor turn; legacy is unclassified.
 
     @property
     def turn_count(self) -> int:
@@ -51,6 +52,10 @@ class LocalChatStoreV01:
     by exactly one Professor message. A failed write cannot
     leave a half-completed turn.
     """
+
+    ANSWER_STATUSES = frozenset({
+        "course_grounded", "insufficient_evidence", "general_knowledge",
+    })
 
     CREATE_SCHEMA = """
     CREATE TABLE local_chat_sessions_v01 (
@@ -70,6 +75,13 @@ class LocalChatStoreV01:
             CHECK (role IN ('student', 'professor')),
         text TEXT NOT NULL
             CHECK (length(text) BETWEEN 1 AND 1500),
+        answer_status TEXT CHECK (
+            answer_status IS NULL OR (
+                role = 'professor' AND answer_status IN (
+                    'course_grounded', 'insufficient_evidence', 'general_knowledge'
+                )
+            )
+        ),
 
         PRIMARY KEY (session_id, position),
 
@@ -174,6 +186,24 @@ class LocalChatStoreV01:
             raise ValueError(
                 "Database does not contain the expected Chat schema."
             )
+
+        # One atomic SQLite schema change; old rows retain NULL metadata.
+        # Do not infer provenance from historical answer text or prefixes.
+        with store._connect() as connection:
+            columns = {
+                row[1] for row in connection.execute(
+                    "PRAGMA table_info(local_chat_messages_v01)"
+                )
+            }
+            if "answer_status" not in columns:
+                connection.execute(
+                    "ALTER TABLE local_chat_messages_v01 "
+                    "ADD COLUMN answer_status TEXT CHECK ("
+                    "answer_status IS NULL OR ("
+                    "role = 'professor' AND answer_status IN ("
+                    "'course_grounded', 'insufficient_evidence', 'general_knowledge'"
+                    ")))"
+                )
 
         return store
 
@@ -290,7 +320,7 @@ class LocalChatStoreV01:
 
         rows = connection.execute(
             """
-            SELECT position, role, text
+            SELECT position, role, text, answer_status
             FROM local_chat_messages_v01
             WHERE session_id = ?
             ORDER BY position
@@ -299,9 +329,10 @@ class LocalChatStoreV01:
         ).fetchall()
 
         messages = []
+        answer_statuses = []
 
         for expected_position, row in enumerate(rows):
-            position, role, text = row
+            position, role, text, answer_status = row
 
             expected_role = (
                 "student"
@@ -316,6 +347,14 @@ class LocalChatStoreV01:
                 raise ValueError(
                     "Stored Chat message sequence is invalid."
                 )
+
+            if role == "professor":
+                if (answer_status is not None
+                        and answer_status not in LocalChatStoreV01.ANSWER_STATUSES):
+                    raise ValueError("Stored Professor answer status is invalid.")
+                answer_statuses.append(answer_status or "legacy_unclassified")
+            elif answer_status is not None:
+                raise ValueError("Student message cannot have answer status.")
 
             messages.append(
                 ConversationMessageV01(
@@ -338,6 +377,7 @@ class LocalChatStoreV01:
             pack_revision=pack_revision,
             pack_sha256=pack_sha256,
             messages=tuple(messages),
+            answer_statuses=tuple(answer_statuses),
         )
 
     def load_session(
@@ -392,6 +432,7 @@ class LocalChatStoreV01:
         expected_message_count: int,
         student_text: str,
         professor_text: str,
+        answer_status: str | None = None,
         **binding,
     ) -> LocalChatSnapshotV01:
         """
@@ -414,6 +455,12 @@ class LocalChatStoreV01:
                 "Expected message count must be a nonnegative "
                 "even integer."
             )
+
+        if answer_status is not None and (
+            type(answer_status) is not str
+            or answer_status not in self.ANSWER_STATUSES
+        ):
+            raise ValueError("Invalid Professor answer status.")
 
         student = ConversationMessageV01(
             role="student",
@@ -505,14 +552,15 @@ class LocalChatStoreV01:
                 connection.execute(
                     """
                     INSERT INTO local_chat_messages_v01
-                        (session_id, position, role, text)
-                    VALUES (?, ?, ?, ?)
+                        (session_id, position, role, text, answer_status)
+                    VALUES (?, ?, ?, ?, ?)
                     """,
                     (
                         session_id,
                         expected_message_count + 1,
                         "professor",
                         professor.text,
+                        answer_status,
                     ),
                 )
 

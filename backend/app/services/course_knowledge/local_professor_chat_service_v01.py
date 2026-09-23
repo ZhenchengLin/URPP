@@ -402,6 +402,7 @@ class LocalProfessorChatServiceV01:
             expected_message_count=expected_message_count,
             student_text=chat_context.current_student_message,
             professor_text=professor_text,
+            answer_status=professor.answer_status,
         )
 
         return LocalProfessorChatTurnV01(

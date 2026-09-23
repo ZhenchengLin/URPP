@@ -62,7 +62,14 @@ def _snapshot(snapshot) -> dict:
         "pack_sha256": snapshot.pack_sha256,
         "turn_count": snapshot.turn_count,
         "message_count": len(snapshot.messages),
-        "messages": [message.model_dump(mode="json") for message in snapshot.messages],
+        "messages": [
+            {
+                **message.model_dump(mode="json"),
+                **({"answer_status": snapshot.answer_statuses[index // 2]}
+                   if message.role == "professor" else {}),
+            }
+            for index, message in enumerate(snapshot.messages)
+        ],
     }
 
 

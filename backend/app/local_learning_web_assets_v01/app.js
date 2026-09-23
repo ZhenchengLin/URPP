@@ -43,7 +43,14 @@ function render(snapshot) {
     const box = document.createElement("div");
     box.className = "message " + (entry.role === "student" ? "student" : "professor");
     const label = document.createElement("strong");
-    label.textContent = entry.role === "student" ? "You" : "Professor";
+    const names = {
+      course_grounded: "资料回答",
+      insufficient_evidence: "资料不足",
+      general_knowledge: "一般知识",
+      legacy_unclassified: "旧记录 · 来源未分类"
+    };
+    label.textContent = entry.role === "student" ? "You" :
+      "Professor · " + (names[entry.answer_status] || "来源未分类");
     const body = document.createElement("div");
     // Untrusted course text and generated output must NEVER become HTML.
     body.textContent = entry.text;

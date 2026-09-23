@@ -251,4 +251,5 @@ class LocalLearningWorkspaceV01:
             expected_message_count=expected_message_count,
             student_text=context.current_student_message,
             professor_text=labeled,
+            answer_status="general_knowledge",
         )

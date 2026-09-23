@@ -100,6 +100,12 @@ class StructuredProfessorAdapterV01:
             )
 
         self._gateway = gateway
+        self._answer_status: str | None = None
+
+    @property
+    def answer_status(self) -> str | None:
+        """Validated status of the last successful generation on this adapter."""
+        return self._answer_status
 
     def produce(
         self,
@@ -109,6 +115,7 @@ class StructuredProfessorAdapterV01:
         course_knowledge: CourseKnowledgeContextV01,
     ) -> str:
 
+        self._answer_status = None
         if not isinstance(
             context,
             PersonalizedDecisionContextV01,
@@ -285,6 +292,7 @@ class StructuredProfessorAdapterV01:
                 )
             # Never persist model-authored unsupported claims as an
             # insufficient-evidence explanation.
+            self._answer_status = "insufficient_evidence"
             return INSUFFICIENT_COURSE_MESSAGE_V01
 
         if not claimed_ids:
@@ -310,4 +318,5 @@ class StructuredProfessorAdapterV01:
         # Membership checking is not semantic source verification.
         # The existing Harness records input source references,
         # not proof that all generated statements are supported.
+        self._answer_status = "course_grounded"
         return content.strip()
