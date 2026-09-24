@@ -203,14 +203,22 @@ class StructuredProfessorAdapterV01:
             # The selected subset is authoritative for output IDs.
             selection = self._source_selector(tuple(dict(s) for s in sources))
             all_ids = {source["source_id"] for source in sources}
+            # 14D-4B4C: bilingual bounded source selection. Empty selection
+            # fails closed without calling Ollama or inventing an excerpt ID.
+            # Multiple complete original excerpts remain in original pack order.
             if (
                 type(selection) is not tuple
-                or len(selection) != 1
-                or type(selection[0]) is not str
-                or selection[0] not in all_ids
+                or len(selection) > 2
+                or len(set(selection)) != len(selection)
+                or not all(type(sid) is str and sid in all_ids for sid in selection)
             ):
                 raise ValueError("Invalid bounded Course Source selection.")
-            sources = [s for s in sources if s["source_id"] == selection[0]]
+            if not selection:
+                self._answer_status = "insufficient_evidence"
+                return INSUFFICIENT_COURSE_MESSAGE_V01
+            sources = [s for s in sources if s["source_id"] in selection]
+            if sum(len(s["content"]) for s in sources) > 12000:
+                raise ValueError("Selected Course Sources exceed local context budget.")
 
         request = context.student_request
 
