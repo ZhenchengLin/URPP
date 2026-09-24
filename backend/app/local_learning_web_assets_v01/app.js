@@ -13,6 +13,7 @@ function updateButtons() {
   el("refresh").disabled = busy || active === null;
   el("upload").disabled = busy;
   el("resume").disabled = busy;
+  el("inspect").disabled = busy || active === null;
 }
 async function api(path, payload) {
   const config = {
@@ -61,6 +62,74 @@ function render(snapshot) {
   el("session").textContent = "Session ID: " + snapshot.session_id +
     "\nSaved turns: " + snapshot.turn_count +
     "\nPack SHA-256: " + snapshot.pack_sha256;
+  renderGenerated(snapshot.messages);
+}
+function node(tag, value, className) {
+  const item = document.createElement(tag);
+  if (className) item.className = className;
+  item.textContent = value;
+  return item;
+}
+function renderGenerated(messages) {
+  const output = el("generated-view");
+  output.replaceChildren();
+  const generated = messages.filter((message) => message.role === "professor");
+  if (!generated.length) {
+    output.append(node("p", "这段 Session 尚无模型回答。", "hint"));
+    return;
+  }
+  generated.forEach((message, index) => {
+    const item = node("article", "", "model-output");
+    const label = message.answer_status === "insufficient_evidence" ?
+      "系统资料不足提示" : message.answer_status === "legacy_unclassified" ?
+      "旧回复 · 生成来源未分类" : "模型回答 · " +
+      (message.answer_status || "来源未分类");
+    item.append(node("strong", "回复 " + (index + 1) + " · " + label));
+    item.append(node("div", message.text));
+    output.append(item);
+  });
+}
+function renderCoursePack(pack) {
+  const view = el("pack-view");
+  view.replaceChildren();
+  const flow = node("div", "", "pack-flow");
+  const steps = [
+    ["1 · 保存原件", "上传文件以 SHA-256 标识"],
+    ["2 · 提取原文", pack.sources.length + " 段带出处摘录"],
+    ["3 · 建立资料包", "目标 + 摘录引用；版本固定"],
+    ["4 · 教授对话", "回答见下方，生成后持久保存"]
+  ];
+  for (const [title, description] of steps) {
+    const item = node("div", "", "pack-step");
+    item.append(node("strong", title), node("span", description));
+    flow.append(item);
+  }
+  view.append(flow);
+  const info = node("dl", "", "pack-meta");
+  for (const [label, value] of [
+    ["资料包", pack.pack_id], ["Pack SHA-256", pack.pack_sha256],
+    ["学习目标来源", "你在上传时填写"], ["学习目标", pack.objective.description],
+    ["课程路径", "尚未由模型生成；当前只有一个学习目标"]
+  ]) {
+    info.append(node("dt", label), node("dd", value));
+  }
+  view.append(info, node("h3", "资料包里的原文摘录（点击展开）"));
+  for (const [index, source] of pack.sources.entries()) {
+    const detail = node("details", "", "excerpt");
+    const where = source.pages ? " · 第 " + source.pages + " 页" : "";
+    detail.append(node("summary", "摘录 " + (index + 1) + " · " + source.filename + where));
+    detail.append(node("p", "Source ID: " + source.source_id +
+      " · 原文内容 SHA-256: " + source.content_sha256, "hint"));
+    detail.append(node("pre", source.excerpt_text));
+    view.append(detail);
+  }
+}
+async function loadCoursePack() {
+  if (!active) throw new Error("No active Session.");
+  const query = new URLSearchParams({ pack_sha256: active.pack_sha256 });
+  const pack = await api("/api/session/" + encodeURIComponent(active.session_id) +
+    "/course-pack?" + query);
+  renderCoursePack(pack);
 }
 function remember(snapshot) {
   active = { session_id: snapshot.session_id, pack_sha256: snapshot.pack_sha256 };
@@ -107,6 +176,7 @@ el("upload").addEventListener("click", () => run(async () => {
     objective_description: el("objective").value.trim(), allow_local_teaching: true
   });
   remember(snapshot);
+  await loadCoursePack();
   setStatus("资料已导入，Session 已保存在本地。");
 }));
 el("resume").addEventListener("click", () => run(async () => {
@@ -116,11 +186,17 @@ el("resume").addEventListener("click", () => run(async () => {
   }
   active = saved;
   await refresh();
+  await loadCoursePack();
   setStatus("已从 SQLite 恢复对话。");
 }));
 el("refresh").addEventListener("click", () => run(async () => {
   await refresh();
+  await loadCoursePack();
   setStatus("已重新加载对话历史。");
+}));
+el("inspect").addEventListener("click", () => run(async () => {
+  await loadCoursePack();
+  setStatus("已重新读取保存的 Course Pack。");
 }));
 el("send").addEventListener("click", () => run(async () => {
   if (!active) throw new Error("请先导入资料或恢复 Session。");

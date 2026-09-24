@@ -78,3 +78,15 @@ def test_web_entrypoint_uses_existing_upload_chat_resume_api(tmp_path):
     })
     assert resumed.status_code == 200
     assert resumed.json()["messages"] == turn.json()["messages"]
+
+
+def test_inspector_ui_uses_saved_pack_and_safe_text_rendering(tmp_path):
+    client = client_for(tmp_path)
+    page = client.get("/").text
+    script = client.get("/assets/local-learning.js").text
+    assert "Course Pack · 建立过程与内容" in page
+    assert "Professor 生成的回答与系统提示" in page
+    assert "/course-pack?" in script
+    assert 'detail.append(node("pre", source.excerpt_text))' in script
+    assert 'item.append(node("div", message.text))' in script
+    assert "innerHTML" not in script

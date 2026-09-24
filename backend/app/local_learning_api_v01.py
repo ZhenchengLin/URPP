@@ -195,6 +195,22 @@ def create_local_learning_api_v01(
             raise HTTPException(400, "Saved Session could not be validated.") from exc
         return _snapshot(snapshot)
 
+    @app.get("/api/session/{session_id}/course-pack")
+    def inspect_course_pack(
+        session_id: str,
+        pack_sha256: str = Query(min_length=64, max_length=64, pattern="^" + _SHA256 + "$"),
+    ):
+        if not 1 <= len(session_id) <= 128:
+            raise HTTPException(400, "Invalid Session ID.")
+        try:
+            return workspace.inspect_course_pack(
+                pack_sha256=pack_sha256, session_id=session_id,
+            )
+        except LookupError as exc:
+            raise HTTPException(404, "Exact local Session not found.") from exc
+        except (ValueError, TypeError) as exc:
+            raise HTTPException(400, "Saved Course Pack could not be validated.") from exc
+
     @app.post("/api/chat")
     async def chat(request: Request):
         data = await _bounded_json(request, _Chat, limit=MAX_CHAT_BODY_BYTES)

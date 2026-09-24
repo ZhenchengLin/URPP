@@ -52,5 +52,18 @@
     <p class="hint">默认仅根据上传资料；一般知识模式不会向模型提供 Course Pack 或 Source ID；不会自动判断问题是否超出资料。该选择不是来源核验，回答不是 Mastery Evidence。单用户本地开发版，无正式 Authentication。</p>
   </section>
 </main>
+<section class="inspector" aria-labelledby="inspector-title">
+  <div class="inspector-heading">
+    <div>
+      <h2 id="inspector-title">Course Pack · 建立过程与内容</h2>
+      <p class="hint">读取当前 Session 已保存的资料和对话，不触发模型生成。</p>
+    </div>
+    <button id="inspect" type="button" class="secondary" disabled>重新读取</button>
+  </div>
+  <div id="pack-view" aria-live="polite"><p class="hint">导入资料或恢复 Session 后查看。</p></div>
+  <h3>Professor 生成的回答与系统提示</h3>
+  <div id="generated-view"><p class="hint">这段 Session 尚无模型回答。</p></div>
+  <p class="hint">当前 PDF 导入建立一个由你填写的学习目标及原文摘录组成的 Course Pack；没有自动生成章节、题目或个性化课程路径。聊天回答不是评分或 Mastery Evidence。</p>
+</section>
 </body>
 </html>

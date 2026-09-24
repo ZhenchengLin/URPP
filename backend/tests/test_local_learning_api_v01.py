@@ -169,3 +169,58 @@ def test_testserver_is_explicitly_disabled_by_default(tmp_path):
     )
     app = create_local_learning_api_v01(workspace=workspace)
     assert TestClient(app).get("/api/health").status_code == 403
+
+
+def test_course_pack_inspector_reads_saved_excerpts_without_model_call(tmp_path):
+    client, gateway = make_client(tmp_path)
+    start = upload(client).json()
+    path = "/api/session/" + start["session_id"] + "/course-pack"
+    params = {"pack_sha256": start["pack_sha256"]}
+    inspected = client.get(path, params=params)
+    assert inspected.status_code == 200, inspected.text
+    pack = inspected.json()
+    assert pack["pack_sha256"] == start["pack_sha256"]
+    assert pack["objective"] == {
+        "objective_id": "uploaded-material",
+        "description": "Explain CT projection from the notes.",
+        "origin": "user_supplied",
+    }
+    assert pack["model_generated_course_path"] is False
+    assert len(pack["sources"]) == 1
+    assert pack["sources"][0]["excerpt_text"] == (
+        "# CT notes\nProjection is a line integral."
+    )
+    assert pack["sources"][0]["filename"] == "notes.md"
+    assert pack["sources"][0]["origin"] == "extracted_upload"
+    assert gateway.calls == []
+    assert client.get("/api/session/" + start["session_id"], params=params).json()[
+        "message_count"
+    ] == 0
+
+    reopened, another_gateway = make_client(tmp_path)
+    assert reopened.get(path, params=params).json() == pack
+    assert another_gateway.calls == []
+    assert reopened.get(path, params={"pack_sha256": "f" * 64}).status_code == 404
+    assert reopened.get(
+        "/api/session/unknown/course-pack", params=params,
+    ).status_code == 404
+    assert another_gateway.calls == []
+
+
+def test_course_pack_inspector_rejects_non_visible_sources(tmp_path):
+    client, _ = make_client(tmp_path)
+    start = upload(client).json()
+    path = "/api/session/" + start["session_id"] + "/course-pack"
+    pack_path = tmp_path / "local-learning" / "packs" / (start["pack_sha256"] + ".json")
+    import json
+
+    original = pack_path.read_bytes()
+    altered = json.loads(original)
+    altered["sources"][0]["visibility"] = "restricted"
+    pack_path.write_text(json.dumps(altered), encoding="utf-8")
+    try:
+        result = client.get(path, params={"pack_sha256": start["pack_sha256"]})
+        assert result.status_code == 400
+        assert "Projection is a line integral" not in result.text
+    finally:
+        pack_path.write_bytes(original)
