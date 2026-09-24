@@ -407,51 +407,89 @@ class LocalOllamaProfessorGatewayV01:
             "keep_alive": "0",
         }
 
-        response = self._transport(request_payload)
+        for attempt in range(2):
+            response = self._transport(request_payload)
 
-        if inspect.isawaitable(response):
+            if inspect.isawaitable(response):
 
-            if inspect.iscoroutine(response):
-                response.close()
+                if inspect.iscoroutine(response):
+                    response.close()
 
-            raise TypeError(
-                "Local transport returned an awaitable."
-            )
+                raise TypeError(
+                    "Local transport returned an awaitable."
+                )
 
-        if (
-            type(response) is not dict
-            or response.get("done") is not True
-            or response.get("done_reason") != "stop"
-        ):
+            if (
+                type(response) is not dict
+                or response.get("done") is not True
+                or response.get("done_reason") != "stop"
+            ):
 
-            raise LocalProfessorGenerationErrorV01(
-                "Local model generation did not complete normally."
-            )
+                raise LocalProfessorGenerationErrorV01(
+                    "Local model generation did not complete normally."
+                )
 
-        message = response.get("message")
+            message = response.get("message")
 
-        if (
-            type(message) is not dict
-            or message.get("role") != "assistant"
-        ):
+            if (
+                type(message) is not dict
+                or message.get("role") != "assistant"
+            ):
 
-            raise LocalProfessorGenerationErrorV01(
-                "Local model returned an invalid message."
-            )
+                raise LocalProfessorGenerationErrorV01(
+                    "Local model returned an invalid message."
+                )
 
-        content = message.get("content")
+            content = message.get("content")
 
-        if (
-            type(content) is not str
-            or not content.strip()
-            or len(content) > 20000
-        ):
+            if (
+                type(content) is not str
+                or not content.strip()
+                or len(content) > 20000
+            ):
 
-            raise LocalProfessorGenerationErrorV01(
-                "Local model returned empty or oversized content."
-            )
+                raise LocalProfessorGenerationErrorV01(
+                    "Local model returned empty or oversized content."
+                )
 
-        parsed = self._decode_json(content)
+            try:
+                parsed = self._decode_json(content)
+            except LocalProfessorGenerationErrorV01 as exc:
+                cause = exc.__cause__
+                # Only a real JSONDecodeError with an invalid backslash
+                # escape is retried. Duplicate keys, nonfinite values,
+                # incomplete model responses and transport failures are not.
+                if (
+                    attempt != 0
+                    or not isinstance(cause, json.JSONDecodeError)
+                    or cause.msg != r"Invalid \escape"
+                ):
+                    raise
+                request_payload = {
+                    **request_payload,
+                    "messages": [
+                        {
+                            **request_payload["messages"][0],
+                            "content": (
+                                self.SYSTEM_INSTRUCTIONS
+                                + "\nJSON ESCAPE CORRECTION (ONE RETRY): "
+                                  "The previous model answer had an invalid JSON "
+                                  "backslash escape inside a JSON string. "
+                                  "Regenerate the answer using ONLY the same "
+                                  "current question and permitted sources. "
+                                  "Within the JSON string, each literal "
+                                  "LaTeX backslash must be escaped as two "
+                                  "backslash characters. Do not drop terms or "
+                                  "alter mathematical expressions to fix JSON. "
+                                  "Return exactly content, source_ids, "
+                                  "answer_status; no extra fields."
+                            ),
+                        },
+                        request_payload["messages"][1],
+                    ],
+                }
+                continue
+            break
 
         if type(parsed) is not dict:
 
