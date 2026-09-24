@@ -57,6 +57,13 @@ def create_local_learning_web_v01(
             headers={"Cache-Control": "no-store"},
         )
 
+    @app.get("/assets/local-learning-markdown.js", include_in_schema=False)
+    def markdown_javascript():
+        return FileResponse(
+            ASSETS / "markdown_v01.js", media_type="text/javascript; charset=utf-8",
+            headers={"Cache-Control": "no-store"},
+        )
+
     @app.get("/assets/local-learning.css", include_in_schema=False)
     def stylesheet():
         return FileResponse(

@@ -39,7 +39,7 @@ from app.services.decision.turn_orchestrator_v01 import (
 
 
 INSUFFICIENT_COURSE_MESSAGE_V01 = (
-    "[INSUFFICIENT COURSE EVIDENCE]\\n"
+    "[INSUFFICIENT COURSE EVIDENCE]\n"
     "上传的资料不足以回答当前问题。"
     "如果希望使用一般知识回答，请切换到 General Knowledge 模式。"
 )
@@ -224,8 +224,10 @@ class StructuredProfessorAdapterV01:
                 "application. Do not claim that the student has "
                 "mastered the objective. Do not issue an assessment "
                 "result or request Student State changes. Return "
-                "a JSON object containing content, source_ids, "
-                "and answer_status. Use course_grounded with "
+                "a JSON object with exactly three fields: "
+                "content, source_ids, and answer_status. Do not "
+                "output assessment flags, state flags, notes, or "
+                "any additional JSON fields. Use course_grounded with "
                 "nonempty permitted source_ids only when the "
                 "excerpts support the current answer. Otherwise "
                 "use insufficient_evidence with source_ids=[]."

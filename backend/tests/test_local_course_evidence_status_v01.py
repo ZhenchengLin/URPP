@@ -165,3 +165,8 @@ def test_live_course_schema_exposes_insufficient_evidence_status():
     assert "insufficient_evidence" in (
         LocalOllamaProfessorGatewayV01.SYSTEM_INSTRUCTIONS
     )
+
+
+def test_insufficient_evidence_fixed_message_uses_real_newline():
+    assert "[INSUFFICIENT COURSE EVIDENCE]\n" in INSUFFICIENT_COURSE_MESSAGE_V01
+    assert "\\n" not in INSUFFICIENT_COURSE_MESSAGE_V01

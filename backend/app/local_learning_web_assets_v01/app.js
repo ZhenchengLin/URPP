@@ -53,8 +53,12 @@ function render(snapshot) {
     label.textContent = entry.role === "student" ? "You" :
       "Professor · " + (names[entry.answer_status] || "来源未分类");
     const body = document.createElement("div");
-    // Untrusted course text and generated output must NEVER become HTML.
-    body.textContent = entry.text;
+    // Untrusted model text is converted to safe DOM nodes, never parsed as HTML.
+    if (entry.role === "professor" && entry.answer_status !== "insufficient_evidence") {
+      window.URPPMarkdownV01.renderInto(body, entry.text);
+    } else {
+      body.textContent = entry.text;
+    }
     box.append(label, body);
     log.append(box);
   }
@@ -85,7 +89,13 @@ function renderGenerated(messages) {
       "旧回复 · 生成来源未分类" : "模型回答 · " +
       (message.answer_status || "来源未分类");
     item.append(node("strong", "回复 " + (index + 1) + " · " + label));
-    item.append(node("div", message.text));
+    const detail = node("div", "");
+    if (message.answer_status === "insufficient_evidence") {
+      detail.textContent = message.text;
+    } else {
+      window.URPPMarkdownV01.renderInto(detail, message.text);
+    }
+    item.append(detail);
     output.append(item);
   });
 }

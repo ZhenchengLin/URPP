@@ -133,6 +133,7 @@ def test_local_gateway_request_contract():
     assert set(request["format"]["required"]) == {
         "content",
         "source_ids",
+        "answer_status",
     }
 
     assert request["options"]["temperature"] == 0
@@ -322,3 +323,26 @@ def test_async_transport_rejected():
         LocalOllamaProfessorGatewayV01(
             transport=async_transport,
         )
+
+
+def test_local_gateway_explicit_three_field_output_contract():
+    gateway, transport = make_gateway()
+    generate(gateway)
+    request = transport.calls[0]
+    expected = {"content", "source_ids", "answer_status"}
+    assert set(request["format"]["required"]) == expected
+    assert set(request["format"]["properties"]) == expected
+    assert request["format"]["additionalProperties"] is False
+    instructions = request["messages"][0]["content"]
+    assert "exactly three top-level keys" in instructions
+    assert "student state metadata" in instructions
+
+
+def test_local_gateway_rejects_extra_assessment_metadata_even_if_false():
+    output = {**VALID_OUTPUT, "answer_status": "course_grounded",
+              "student_state_updated": False, "instruction_note": None}
+    gateway, transport = make_gateway(make_response(output))
+    with pytest.raises(LocalProfessorGenerationErrorV01,
+                       match="output fields are invalid"):
+        generate(gateway)
+    assert len(transport.calls) == 1

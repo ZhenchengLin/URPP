@@ -92,6 +92,7 @@ class LocalOllamaProfessorGatewayV01:
         "required": [
             "content",
             "source_ids",
+            "answer_status",
         ],
         "additionalProperties": False,
     }
@@ -122,7 +123,11 @@ class LocalOllamaProfessorGatewayV01:
         "return source_ids=[]. Never invent or attach an "
         "unrelated source merely to fill a citation field. "
         "A cited source ID is not proof that "
-        "the explanation is mathematically correct."
+        "the explanation is mathematically correct. "
+        "OUTPUT FORMAT: Return exactly one JSON object with exactly "
+        "three top-level keys: content (string), source_ids (array), "
+        "and answer_status (string). Include no additional keys, "
+        "notes, booleans, assessment metadata, or student state metadata."
     )
 
     def __init__(
