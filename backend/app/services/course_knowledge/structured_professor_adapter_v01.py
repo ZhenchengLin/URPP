@@ -265,6 +265,49 @@ class StructuredProfessorAdapterV01:
                 "Professor gateway must return a dictionary."
             )
 
+        # One bounded correction for contradictory local-model status/citations.
+        # A fabricated or unselected citation is NEVER retried as a route to
+        # acceptance. The second response must pass every existing check.
+        # No model-authored text or citation is silently rewritten or saved.
+        selected_source_ids = {source["source_id"] for source in sources}
+        if (
+            self._source_selector is not None
+            and set(result) == {"content", "source_ids", "answer_status"}
+            and result["answer_status"] == "insufficient_evidence"
+            and type(result["source_ids"]) is list
+            and bool(result["source_ids"])
+            and all(
+                type(source_id) is str and source_id in selected_source_ids
+                for source_id in result["source_ids"]
+            )
+        ):
+            corrected_payload = {
+                **payload,
+                "instructions": (
+                    payload["instructions"]
+                    + "\nOUTPUT CONTRACT CORRECTION (ONE RETRY): Your previous "
+                    "JSON response declared insufficient_evidence with nonempty "
+                    "source_ids. That combination is invalid. Re-evaluate the "
+                    "CURRENT student question using ONLY the supplied excerpts. "
+                    "If they support the answer, respond with course_grounded, "
+                    "the corresponding selected source_ids, and a concise "
+                    "supported content. Otherwise respond with "
+                    "insufficient_evidence, source_ids=[], and a brief content. "
+                    "Return exactly the three required fields. Do not invent "
+                    "citations, answer unrelated questions, or add metadata."
+                ),
+            }
+            result = self._gateway.generate_structured(
+                prompt_name=self.PROMPT_NAME,
+                payload=corrected_payload,
+            )
+            if inspect.isawaitable(result):
+                if inspect.iscoroutine(result):
+                    result.close()
+                raise TypeError("Professor gateway returned an awaitable.")
+            if type(result) is not dict:
+                raise TypeError("Professor gateway must return a dictionary.")
+
         if set(result) not in (
             {"content", "source_ids"},
             {"content", "source_ids", "answer_status"},
