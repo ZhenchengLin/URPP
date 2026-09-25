@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
+
+    <title>URPP Engineering Archive</title>
+
+    <link
+        rel="stylesheet"
+        href="assets/styles.css"
+    >
+</head>
+
+<body>
+
+<header class="topbar">
+    <div class="brand">
+        <span class="brand-symbol">U</span>
+
+        <div>
+            <strong>URPP Engineering Archive</strong>
+            <small>Development History · Technical Handbook</small>
+        </div>
+    </div>
+
+    <div class="top-status">
+        IMPLEMENTATION 0–13
+    </div>
+</header>
+
+<div class="layout">
+
+    <aside class="sidebar">
+
+        <div class="sidebar-heading">
+            DOCUMENTATION
+        </div>
+
+        <nav class="primary-nav">
+            <a href="#overview">Project Overview</a>
+            <a href="#timeline">Development Timeline</a>
+            <a href="#implementations">Implementation 0–13</a>
+            <a href="#casebook">Engineering Casebook</a>
+            <a href="#sources">Source Registry</a>
+            <a href="#gaps">Reconstruction Status</a>
+        </nav>
+
+        <div class="sidebar-heading">
+            IMPLEMENTATIONS
+        </div>
+
+        <nav id="chapter-navigation"></nav>
+
+        <div class="sidebar-footer">
+            Local-first technical archive
+
+            <br><br>
+
+            Historical records must remain
+            distinguishable from later interpretations.
+        </div>
+
+    </aside>
+
+    <main class="content">
+
+        <section id="overview" class="hero">
+
+            <div class="eyebrow">
+                ENGINEERING HISTORY / V0.1
+            </div>
+
+            <h1>
+                Building the Personal Professor
+            </h1>
+
+            <p class="hero-description">
+                A source-backed engineering record of URPP,
+                from its initial architecture to the
+                Implementation 13 teaching workflow.
+            </p>
+
+            <p>
+                这里保存项目为什么这样设计、
+                每个版本如何实现、真实发生过哪些错误、
+                如何调查根因，以及怎样证明修复有效。
+            </p>
+
+            <div class="notice">
+                <strong>Historical accuracy policy</strong>
+
+                <p>
+                    本网站区分原始记录、现有代码、
+                    事后技术分析和未来设计。
+                    无法确认的开发细节不会被编造成历史。
+                </p>
+            </div>
+
+            <div class="search-panel">
+
+                <label for="global-search">
+                    Search the engineering archive
+                </label>
+
+                <input
+                    id="global-search"
+                    type="search"
+                    placeholder="搜索 Implementation、Commit、函数或错误..."
+                >
+
+                <p id="search-status" class="muted">
+                    Search includes the currently loaded archive.
+                </p>
+
+            </div>
+
+        </section>
+
+        <section id="timeline" class="section">
+            <div class="section-label">
+                HISTORY
+            </div>
+
+            <h2>Development Timeline</h2>
+
+            <p class="section-intro">
+                根据已经恢复的开发记录整理。
+                后续将用本地 Git History 验证并补齐各阶段。
+            </p>
+
+            <div id="timeline-content"></div>
+        </section>
+
+        <section id="implementations" class="section">
+            <div class="section-label">
+                IMPLEMENTATIONS
+            </div>
+
+            <h2>Implementation 0–13</h2>
+
+            <p class="section-intro">
+                每个阶段将记录背景、目标、代码、
+                技术推导、开发过程、错误、修复与测试。
+            </p>
+
+            <div id="implementation-content"></div>
+        </section>
+
+        <section id="casebook" class="section">
+            <div class="section-label">
+                DEBUGGING
+            </div>
+
+            <h2>Engineering Casebook</h2>
+
+            <p class="section-intro">
+                保存完整的问题调查过程。
+                失败的修复和不正确的假设也属于工程历史。
+            </p>
+
+            <div id="casebook-content"></div>
+        </section>
+
+        <section id="sources" class="section">
+            <div class="section-label">
+                PROVENANCE
+            </div>
+
+            <h2>Source Registry</h2>
+
+            <p class="section-intro">
+                每项重要历史陈述都应指向
+                代码、Git Commit、原始日志或设计文档。
+            </p>
+
+            <div id="source-content"></div>
+        </section>
+
+        <section id="gaps" class="section">
+            <div class="section-label">
+                RECONSTRUCTION
+            </div>
+
+            <h2>Missing Evidence & Open Questions</h2>
+
+            <div id="gap-content"></div>
+        </section>
+
+        <footer class="footer">
+            URPP Engineering Archive · Local Copy
+
+            <br>
+
+            Website foundation created during Reply 1 / 10.
+        </footer>
+
+    </main>
+
+</div>
+
+<script src="assets/archive-data.js"></script>
+<script src="assets/local-history.js"></script>
+<script src="assets/app.js"></script>
+
+</body>
+</html>

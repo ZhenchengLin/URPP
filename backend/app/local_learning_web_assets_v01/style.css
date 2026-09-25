@@ -1,0 +1,45 @@
+:root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#17263a;background:#f3f6fa}
+*{box-sizing:border-box}body{margin:0}header{padding:23px max(20px,calc((100vw - 1050px)/2));background:#182e4c;color:white}
+header h1{margin:0;font-size:25px;letter-spacing:-.5px}header h1 span{font-weight:400;color:#cfe0f9}header p{margin:7px 0 0;color:#d2e0f0;font-size:13px}
+main{max-width:1050px;margin:24px auto;padding:0 18px;display:grid;grid-template-columns:315px minmax(0,1fr);gap:16px}
+section{background:white;border:1px solid #dae3ed;border-radius:12px;padding:20px;min-width:0}
+h2{font-size:17px;margin:0 0 16px}label{display:block;font-size:13px;font-weight:600;margin:15px 0 8px}
+textarea,input[type=file]{display:block;width:100%;margin-top:7px;font:inherit;font-weight:400}
+textarea{border:1px solid #bacbdb;border-radius:8px;padding:11px;resize:vertical;line-height:1.45}
+.permission{display:flex;gap:7px;align-items:start;font-weight:400;line-height:1.5}button{padding:10px 13px;border:0;border-radius:8px;background:#245b99;color:white;font-weight:600;cursor:pointer}
+button:disabled{opacity:.52;cursor:not-allowed}.secondary{background:#eaf0f7;color:#254663}.actions{display:flex;gap:8px}
+.history{height:460px;overflow:auto;overflow-wrap:anywhere;border:1px solid #dce5ed;border-radius:9px;background:#f9fbff;padding:13px;margin-bottom:16px}
+.message{border-radius:8px;padding:10px 12px;margin-bottom:12px;white-space:pre-wrap;line-height:1.5;font-size:14px}
+.message.student{margin-left:30px;background:#e0eefa}.message.professor{margin-right:30px;background:#e9edf3}
+.message>strong{display:block;font-size:12px;margin-bottom:5px}.hint,.meta{color:#5b6d82;font-size:12px;line-height:1.55;overflow-wrap:anywhere}.meta{white-space:pre-wrap}hr{border:0;border-top:1px solid #e2e8f0;margin:25px 0}
+@media(max-width:740px){main{grid-template-columns:1fr}.history{height:340px}}
+.inspector{max-width:1014px;margin:0 auto 28px}
+.inspector-heading{display:flex;justify-content:space-between;align-items:start;gap:12px}
+.inspector h3{font-size:15px;margin:20px 0 10px}
+.pack-flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:16px 0}
+.pack-step{padding:12px;border:1px solid #dae3ed;border-radius:9px;background:#f9fbff;min-width:0}
+.pack-step strong,.pack-step span{display:block;overflow-wrap:anywhere}
+.pack-step span{font-size:12px;color:#5b6d82;margin-top:5px}
+.pack-meta{display:grid;grid-template-columns:110px minmax(0,1fr);gap:9px;margin:14px 0;font-size:13px}
+.pack-meta dt{font-weight:600;color:#5b6d82}.pack-meta dd{margin:0;overflow-wrap:anywhere}
+.excerpt{border:1px solid #dae3ed;border-radius:9px;margin:8px 0}
+.excerpt summary{cursor:pointer;padding:12px;overflow-wrap:anywhere;font-weight:600}
+.excerpt p{margin:0;padding:0 12px 12px}
+.excerpt pre{white-space:pre-wrap;overflow-wrap:anywhere;margin:0;padding:12px;border-top:1px solid #dae3ed;background:#f9fbff;font-family:inherit;font-size:13px;line-height:1.55}
+.model-output{border-left:3px solid #245b99;padding:9px 13px;margin:8px 0;background:#f9fbff;white-space:pre-wrap;overflow-wrap:anywhere}
+.model-output>strong{display:block;font-size:12px;margin-bottom:5px}
+/* Bounded Markdown display for Professor answers and the generated-answer inspector. */
+.message.professor .md-body,.model-output .md-body{white-space:normal;overflow-wrap:anywhere;line-height:1.55}
+.md-body p{margin:0 0 9px;white-space:pre-wrap}
+.md-body p:last-child{margin-bottom:0}
+.md-body h4,.md-body h5{margin:11px 0 6px;line-height:1.3;font-size:1em}
+.md-body ul,.md-body ol{margin:6px 0 10px;padding-left:23px}
+.md-body li{margin:4px 0;white-space:pre-wrap}
+.md-body blockquote{margin:9px 0;padding:3px 10px;border-left:3px solid #9aafc5;color:#425874}
+.md-body code{padding:1px 4px;border-radius:4px;background:#f6f8fc;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.9em}
+.md-body .md-code-block,.md-body .md-tex-block{margin:9px 0;padding:10px;border:1px solid #d5deea;border-radius:7px;background:#f8fbff;overflow-x:auto;white-space:pre;font-size:12px;line-height:1.5}
+.md-body .md-code-block code,.md-body .md-tex-block code{padding:0;background:transparent;white-space:pre;font-size:inherit}
+.md-body .md-tex{white-space:pre-wrap}
+.md-body hr{margin:10px 0}
+@media(max-width:740px){.inspector{margin:0 18px 24px}.pack-flow{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:390px){.pack-flow{grid-template-columns:1fr}.inspector-heading{flex-direction:column}}

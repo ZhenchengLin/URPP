@@ -1,0 +1,141 @@
+{
+  "archive_version": "reply7-v0.1",
+  "source_pack": "decision_orchestration_history_source_pack.zip",
+  "historical_checkpoints": [
+    "0e9b77b1",
+    "5aec0609",
+    "ad0f9a51",
+    "9ea307b7",
+    "e52095f"
+  ],
+  "source_files": [
+    {
+      "archive_path": "1b26d215/backend/app/services/decision/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "archive_path": "1b26d215/backend/app/services/decision/engine_v01.py",
+      "sha256": "d48b93d218188f2094c74b93c815f18afc085edf01b447e98e79114142faa6fe",
+      "bytes": 4025
+    },
+    {
+      "archive_path": "1b26d215/backend/app/services/decision/models_v01.py",
+      "sha256": "9a9bccafe298889f9dc55de699767dcb60919a2a93f77fd61b9c53a4dd106d59",
+      "bytes": 2607
+    },
+    {
+      "archive_path": "1b26d215/backend/app/services/decision/policy_v01.py",
+      "sha256": "092c70b8e566728ba59fce362c9b76d0e3359017295272811e35c803246521ec",
+      "bytes": 1845
+    },
+    {
+      "archive_path": "1b26d215/backend/tests/test_decision_engine_v01.py",
+      "sha256": "ff65fd7842f0c563d060b8030e472a2a5b20846ed0ab8c1038c253aac5e9fb59",
+      "bytes": 4602
+    },
+    {
+      "archive_path": "1b26d215/docs/03d_logical_decision_engine.md",
+      "sha256": "c9491dd150cd04a5505cda654d081a47c59c5cfb5f00c96b6a625f268d3a66a4",
+      "bytes": 1565
+    },
+    {
+      "archive_path": "9151b227/backend/app/services/decision/turn_orchestrator_v01.py",
+      "sha256": "0a1d425ce1bbae47ba9ad3789f087327431c3be5f2c6c7792af124ddd27616a5",
+      "bytes": 6331
+    },
+    {
+      "archive_path": "9151b227/backend/tests/test_turn_orchestrator_v01.py",
+      "sha256": "59853456bbb5d73bc194531b50dac15c621b20d77be2fc64874a9eb234c7e022",
+      "bytes": 6974
+    },
+    {
+      "archive_path": "98f08802/backend/app/services/decision/numeric_teaching_session_v01.py",
+      "sha256": "80f9730ad92f200567be61e4e0e805219487397d0f621b5c0f9814d58368ed17",
+      "bytes": 9561
+    },
+    {
+      "archive_path": "98f08802/backend/tests/test_numeric_teaching_session_v01.py",
+      "sha256": "62e9342b2211954f9795d687647863d6b63f33a9a527023019df023f82948ad4",
+      "bytes": 10971
+    },
+    {
+      "archive_path": "99c983b8/backend/app/services/decision/numeric_teaching_session_v01.py",
+      "sha256": "f462261e2f0a9ce6af73e5377b5b47e1ae3376a581b630b07367f201fed73798",
+      "bytes": 13048
+    },
+    {
+      "archive_path": "99c983b8/backend/tests/test_numeric_teaching_session_v01.py",
+      "sha256": "1cc109ef5d2a56add3a21699f7a0c66d3fc0f1b009336a8a0bc2ef7b1a4904f4",
+      "bytes": 16902
+    },
+    {
+      "archive_path": "0e9b77b1/backend/app/services/decision/student_request_v01.py",
+      "sha256": "cbfa25b2a9e8cd725e5f4002bc09e5b97ba88912379be270dcef3ea70b7c1cd8",
+      "bytes": 2734
+    },
+    {
+      "archive_path": "0e9b77b1/backend/tests/test_student_request_v01.py",
+      "sha256": "4ad4932ac0f9836b4551fd781800cca750be076614f22bdef2fef06a8ae0c346",
+      "bytes": 3705
+    },
+    {
+      "archive_path": "0e9b77b1/docs/07_personalized_decision_policy_v0.1.md",
+      "sha256": "be828d57321e70a917b9028ea445432c9ea5b305a09cab9113f4885be88bbd45",
+      "bytes": 2725
+    },
+    {
+      "archive_path": "5aec0609/backend/app/services/decision/personalized_engine_v01.py",
+      "sha256": "5c97535d6c8f445f6987c5095dc4b6ba66533f11853f2fbfe40c4fc843674baf",
+      "bytes": 6240
+    },
+    {
+      "archive_path": "5aec0609/backend/tests/test_personalized_engine_v01.py",
+      "sha256": "4788de3c145779ce6daaaeafd9757daf8a201ddd5aae5a712a6913c2abb939ce",
+      "bytes": 6307
+    },
+    {
+      "archive_path": "5aec0609/docs/08_personalized_decision_selection_v0.1.md",
+      "sha256": "12eff5301248d612c9d83c10a8cfe1eae15982364157608acd407aa9a4ec74ae",
+      "bytes": 2474
+    },
+    {
+      "archive_path": "ad0f9a51/backend/app/services/decision/personalized_turn_orchestrator_v01.py",
+      "sha256": "160e21444bf4f80a3fb05bc18611bf1c4926b45dc9c771cc3f6a52ba9f5747ce",
+      "bytes": 6149
+    },
+    {
+      "archive_path": "ad0f9a51/backend/tests/test_personalized_turn_orchestrator_v01.py",
+      "sha256": "cfe2d1ea36cfd4de941e92173cd7c10b3cdbe27e51bd4573856c3cc8905d102c",
+      "bytes": 10469
+    },
+    {
+      "archive_path": "ad0f9a51/docs/09_personalized_teaching_turn_v0.1.md",
+      "sha256": "3b4f73a2bc56b80c38104ffe25f499a074ba262e883cfad43989e11672d181f0",
+      "bytes": 2604
+    },
+    {
+      "archive_path": "9ea307b7/backend/app/services/decision/personalized_numeric_session_adapter_v01.py",
+      "sha256": "68f088e3e51333d1b95618f729d589d87c3a64c79b61ea62e410c74a8c03f5e9",
+      "bytes": 7327
+    },
+    {
+      "archive_path": "9ea307b7/backend/tests/test_personalized_numeric_session_adapter_v01.py",
+      "sha256": "32d0c51ddd822fa80e5e8bbdfd9631dbe71bbfcc0a81f5205e5ba000cb1f1832",
+      "bytes": 7212
+    },
+    {
+      "archive_path": "9ea307b7/docs/10_personalized_numeric_session_adapter_v0.1.md",
+      "sha256": "1eb9e5cdb7dd377b182c89574e5a1b6b5290522f9a7210dfb887c28d08f570e4",
+      "bytes": 2604
+    }
+  ],
+  "external_user_log": {
+    "checkpoint": "e52095f",
+    "case": "incorrect Agent-existence assertion",
+    "observed_first_run": "1 failed, 25 passed",
+    "observed_after_fix": "26 passed; full backend 324 passed",
+    "status": "logs in prior user-provided conversation; e52095f code body not in source pack"
+  },
+  "unverified": "Original full Implementation 0-13 roadmap, actual completed website installation until user runs local script, later assessment performance not established"
+}

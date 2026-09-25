@@ -1,0 +1,513 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>URPP Reply 7 · Personalized Teaching</title><link rel="stylesheet" href="../assets/styles.css"><style>
+body{background:#0d1117;color:#e7edf4;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC",Arial,sans-serif;line-height:1.75;margin:0}a{color:#8ebcff} .wrap{display:grid;grid-template-columns:258px minmax(0,1fr);max-width:1600px;margin:auto}.nav{height:100vh;overflow:auto;position:sticky;top:0;padding:25px 18px;background:#111821;border-right:1px solid #303d4c;box-sizing:border-box}.nav h2{font-size:15px}.nav a{display:block;font-size:12px;text-decoration:none;margin:7px 0;padding:7px;color:#a9c8ed;border-radius:6px}.nav a:hover{background:#1c2633}.main{max-width:1000px;padding:30px 58px 80px;min-width:0}.main h1{font-size:36px;line-height:1.25}.main h2{margin-top:46px;border-top:1px solid #303d4c;padding-top:27px}.main h3{margin-top:30px}.main blockquote{border-left:3px solid #8ebcff;padding:6px 18px;margin:25px 0;background:#151c26;color:#bcd0e1}.main pre{white-space:pre;overflow:auto;background:#090e14;padding:18px;border:1px solid #303d4c;border-radius:8px;font-size:12px}.main code{color:#b9daf9}.main pre code{color:#c7d7eb}.main table{display:block;overflow-x:auto;border-collapse:collapse;width:100%}.main th,.main td{padding:9px 13px;border:1px solid #303d4c;font-size:12px;vertical-align:top}.main th{background:#1c2633}.tools{position:sticky;top:0;z-index:2;background:#0d1117;border-bottom:1px solid #303d4c;padding:12px 0;display:flex;gap:15px;flex-wrap:wrap}.tools input{min-width:240px;background:#151c26;color:white;padding:9px;border:1px solid #303d4c;border-radius:5px}.badge{color:#8ed5aa;font-size:12px}.note{color:#97a9bb;font-size:12px}mark{background:#715e25;color:white}@media(max-width:850px){.wrap{display:block}.nav{position:static;height:auto}.main{padding:24px}}</style></head><body><div class="wrap"><aside class="nav"><a href="../index.html">← URPP Archive 主页</a><h2>Reply 7 / 10</h2><p class="note">Student Request · Decision · Agent Routing · SQLite Integration</p><a href="#section-01">Personalized Teaching：Student Request、Decision、Agent Routing 与持久化 Assessment 的真实连接</a><a href="#section-02">1．为什么需要新增 Personalized Teaching，而不是直接修改旧 Decision Engine？</a><a href="#section-03">2．13B-1：把学生请求变成明确、可校验的对象</a><a href="#section-04">3．13B-2：何时遵循基线，何时允许明确学生请求？</a><a href="#section-05">4．13C-1：从「选中了动作」到「调用一次 Agent」</a><a href="#section-06">5．13C-2A：让 Personalized Turn 接入已有 Recoverable Numeric Session</a><a href="#section-07">6．13C-2B：真正的 SQLite Integration 与一次真实的 Test Oracle Bug</a><a href="#section-08">7．端到端执行示例：不要把一次请求变成一条“独立掌握”证据</a><a href="#section-09">8．从本章能证明的架构不变量</a><a href="#section-10">9．Guard Casebook：哪些只是预防性测试？</a><a href="#section-11">10．开发者学习：这些代码教会我们什么 C/SWE 设计原则？</a><a href="#section-12">11．给未来研究 Jev / Small Decision Model 保留怎样的对照基线？</a><a href="#section-13">12．可追溯来源、缺口与复查命令</a></aside><main class="main"><div class="tools"><input id="query" type="search" placeholder="搜索本章正文"><span id="matches" class="note">支持离线阅读</span><span class="badge">SOURCE-BACKED</span></div><article class="chapter"><h1>URPP Engineering Archive · Reply 7 / 10</h1>
+<h2 id="section-01">Personalized Teaching：Student Request、Decision、Agent Routing 与持久化 Assessment 的真实连接</h2>
+<blockquote>
+<p><strong>文档版本</strong>：Reply 7 / V0.1；<strong>历史范围</strong>：2026-09-19，<code>0e9b77b1</code> → <code>5aec0609</code> → <code>ad0f9a51</code> → <code>9ea307b7</code> → <code>e52095f</code>。本章的前四个节点以已经上传的历史 Git 源码、对应测试和设计文档为依据；<code>e52095f</code> 的真实失败／修复记录以此前用户提供的 Terminal 输出为依据。<strong>本章并未运行用户 Mac 上的测试，也不声称其内部系统现在已部署生产级 LLM、学生身份认证或正式教学成效评价。</strong></p>
+</blockquote>
+<p><a href="../index.html">返回网站主页</a> · <a href="decision-orchestration-v01.html">Reply 5：Decision / Orchestration</a> · <a href="persistence-recovery-v01.html">Reply 6：Persistence / Recovery</a></p>
+<h2 id="section-02">1．为什么需要新增 Personalized Teaching，而不是直接修改旧 Decision Engine？</h2>
+<p>在 Reply 5 中，我们已经介绍过原始的 <code>DecisionEngineV01</code>：它从权威 <code>ObjectiveStateV02</code> 构造 <code>DecisionContextV01</code>，由 <code>PedagogicalPolicyV01</code> 给出与状态有关的可选动作，Controller 提出建议，最后执行 Policy Check。如果建议不在允许集合中，则采用确定性 Fallback。</p>
+<p>原始的单轮 Orchestrator 使用这份结果在 <code>ProfessorAgent</code> 和 <code>AssessmentAgent</code> 之间路由。<strong>该版本无法表达学生此次明确要求什么。</strong>如果只把一个字符串 <code>"Please explain"</code> 塞进旧 <code>DecisionContextV01</code> 的边角，旧逻辑可能照常依据状态选定 Diagnostic，而用户请求从未进入真正决策。</p>
+<p>后来产品目标增加了一条要求：一个学生即使处于 <code>STRONG</code> 状态，也可以要求教授重新解释基础概念；即使还没有充分的 Mastery Evidence，也可以要求进一步练习。这不是要求系统相信学生已经掌握知识，而是要求<strong>尊重可执行的学习活动选择，同时维持 Assessment、Evidence Eligibility 和 Session Integrity 的既有边界</strong>。</p>
+<p>由此产生两个彼此不同的问题：</p>
+<ol>
+<li><strong>Action Selection</strong>：学生这次想做什么？在当前系统支持的活动中，哪些可以选择？</li>
+<li><strong>Assessment Admission / Mastery</strong>：某次发放的题是否真正符合目标、Revision 与授权条件？答题记录是否足以更新 Student State？</li>
+</ol>
+<p>前者可以根据明确请求调整；后者不能因为请求而降低要求。这是 13B 和 13C 的共同设计动机。</p>
+<h3>本章的时间线：新增什么、不代表什么</h3>
+<table>
+<thead>
+<tr>
+<th>历史 Commit</th>
+<th>对应代码中的阶段</th>
+<th>确认引入的能力</th>
+<th>当时没有完成的能力</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>0e9b77b1</code></td>
+<td>Implementation 13B-1</td>
+<td>结构化请求枚举、请求契约、独立 Personalized Context</td>
+<td>不执行动作，不更新掌握状态，不改变旧 Decision Engine</td>
+</tr>
+<tr>
+<td><code>5aec0609</code></td>
+<td>Implementation 13B-2</td>
+<td>请求到动作的确定性映射、决策来源与动作集合扩展记录</td>
+<td>不调用 Agent，不持久化决定，不认证学生</td>
+</tr>
+<tr>
+<td><code>ad0f9a51</code></td>
+<td>Implementation 13C-1</td>
+<td>用一次 Personalized Decision 调用一个匹配的 Agent Port</td>
+<td>不发持久化 Assignment，不收答案，不恢复 Session</td>
+</tr>
+<tr>
+<td><code>9ea307b7</code></td>
+<td>Implementation 13C-2A</td>
+<td>将个性化 Assessment Turn 适配给既有 Recoverable Numeric Session</td>
+<td>适配器本身不存 Assignment，也不保存完整个性化来源</td>
+</tr>
+<tr>
+<td><code>e52095f</code></td>
+<td>Implementation 13C-2B</td>
+<td>SQLite 端到端集成测试，验证持久化、恢复和学生请求交互</td>
+<td>测试使用虚拟 Agent 和隔离数据库，不等于生产学生身份系统</td>
+</tr>
+</tbody>
+</table>
+<p><strong>编号注意</strong>：这些是相关源码的 docstring／设计文档实际标注的 13B／13C 子阶段。它们与 <code>docs/07_...</code> 等文件序号、Reply 7 编号不是一回事。完整 Implementation 0–13 的原始 Roadmap 仍需单独核对，不用这里的五个节点推定其他阶段。</p>
+<hr/>
+<h2 id="section-03">2．13B-1：把学生请求变成明确、可校验的对象</h2>
+<h3>2.1 <code>StudentLearningRequestKindV01</code> 不等于自由文本理解</h3>
+<p>历史文件：<code>0e9b77b1/backend/app/services/decision/student_request_v01.py</code>，源码第 24–30 行。六种请求为：</p>
+<table>
+<thead>
+<tr>
+<th>枚举</th>
+<th>值</th>
+<th>表达的学习意图</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>REQUEST_EXPLANATION</code></td>
+<td><code>request_explanation</code></td>
+<td>请求概念解释</td>
+</tr>
+<tr>
+<td><code>TRY_INDEPENDENTLY</code></td>
+<td><code>try_independently</code></td>
+<td>请求尝试自主练习</td>
+</tr>
+<tr>
+<td><code>REQUEST_HINT</code></td>
+<td><code>request_hint</code></td>
+<td>请求提示</td>
+</tr>
+<tr>
+<td><code>REQUEST_DIAGNOSTIC</code></td>
+<td><code>request_diagnostic</code></td>
+<td>请求诊断式 Assessment</td>
+</tr>
+<tr>
+<td><code>REQUEST_SELF_EXPLANATION</code></td>
+<td><code>request_self_explanation</code></td>
+<td>请求让学生自己解释</td>
+</tr>
+<tr>
+<td><code>REQUEST_TRANSFER</code></td>
+<td><code>request_transfer</code></td>
+<td>请求更广泛的应用/迁移评估</td>
+</tr>
+</tbody>
+</table>
+<p>这里的「请求」是<strong>来自上层应用的结构化输入</strong>，不是本阶段已经把学生任意自然语言转成枚举。源码并未实现真实的语言理解或用户身份认证。如果未来加入 LLM 意图识别，它不能绕过这些明确的 Value/Scope/Time 校验。</p>
+<p><code>StudentLearningRequestV01</code>（第 33–60 行）包含 <code>objective_id</code>、<code>request_kind</code>、<code>requested_at</code>。配置 <code>frozen=True, extra="forbid"</code>，时间必须有时区。</p>
+<pre><code class="language-python">class StudentLearningRequestV01(BaseModel):
+    model_config = ConfigDict(frozen=True, extra="forbid")
+    objective_id: str = Field(min_length=1)
+    request_kind: StudentLearningRequestKindV01
+    requested_at: datetime
+</code></pre>
+<p><strong>为什么有 <code>objective_id</code>？</strong> 如果当前教学目标是 Matrix Conditioning，却接收到上一轮 Dot Product 的请求，即使请求时间有效，也不该静默归到当前目标。<strong>为什么必须有时区？</strong> 没有时区的本地时间不能稳定比较不同持久化记录的发生顺序。</p>
+<h3>2.2 组合 Context，防止旧决策接口忽略请求</h3>
+<p><code>PersonalizedDecisionContextV01</code> 使用 <code>decision_context: DecisionContextV01</code> 与 <code>student_request: StudentLearningRequestV01 | None</code> 的组合，而不继承旧 <code>DecisionContextV01</code>。对应历史源码第 63–104 行；设计文档 <code>docs/07_personalized_decision_policy_v0.1.md</code> 明确说明了这一动机。</p>
+<pre><code class="language-text">ObjectiveStateV02 ──&gt; DecisionContextV01 ──┐
+                                           ├──&gt; PersonalizedDecisionContextV01
+StudentLearningRequestV01 / None ─────────┘
+</code></pre>
+<p>具体验证顺序：<code>request is None</code> → 允许基线执行；请求不为空 → 目标 ID 必须与 State 相同；<code>request.requested_at &gt;= state.as_of</code>；<code>request.requested_at &lt;= decision_context.requested_at</code>。因此成立的时间关系为：</p>
+<pre><code class="language-text">Student State as_of &lt;= Student Request requested_at &lt;= Decision requested_at
+</code></pre>
+<p>这不是在声称应用程序已经验证真正的学生身份，而是在规定<strong>三份结构化记录之间的时间一致性</strong>。如果状态快照比请求更新，旧请求就不能被当成当前状态下的用户意图。</p>
+<h3>2.3 本阶段测试实际覆盖的内容</h3>
+<p><code>backend/tests/test_student_request_v01.py</code> 至少包含八个命名测试：无请求基线、保留原始 State、错误 Objective、请求早于 State、请求晚于 Decision、缺失时区、额外字段拒绝、组合 Context 不继承旧 Context。它们证实了这组契约的预期行为，<strong>并不表示历史上真实用户曾经提交错误 Objective 或时间戳</strong>。</p>
+<p><strong>阶段验收结论</strong>：13B-1 引入了明确的请求语言和 Scope/Time 契约，没有在这一阶段改变学生 State 或原有 Teaching Action 的选择。</p>
+<hr/>
+<h2 id="section-04">3．13B-2：何时遵循基线，何时允许明确学生请求？</h2>
+<p>历史文件：<code>5aec0609/backend/app/services/decision/personalized_engine_v01.py</code>，配套 <code>docs/08_personalized_decision_selection_v0.1.md</code>、<code>backend/tests/test_personalized_engine_v01.py</code>。</p>
+<h3>3.1 六种请求和动作的精确映射</h3>
+<p>源码第 36–54 行记录：</p>
+<table>
+<thead>
+<tr>
+<th>Request Kind</th>
+<th>Selected Teaching Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>REQUEST_EXPLANATION</code></td>
+<td><code>CONCEPTUAL_REVIEW</code></td>
+</tr>
+<tr>
+<td><code>TRY_INDEPENDENTLY</code></td>
+<td><code>INDEPENDENT_PRACTICE</code></td>
+</tr>
+<tr>
+<td><code>REQUEST_HINT</code></td>
+<td><code>CONCEPTUAL_HINT</code></td>
+</tr>
+<tr>
+<td><code>REQUEST_DIAGNOSTIC</code></td>
+<td><code>DIAGNOSTIC_ASSESSMENT</code></td>
+</tr>
+<tr>
+<td><code>REQUEST_SELF_EXPLANATION</code></td>
+<td><code>SELF_EXPLANATION</code></td>
+</tr>
+<tr>
+<td><code>REQUEST_TRANSFER</code></td>
+<td><code>TRANSFER_ASSESSMENT</code></td>
+</tr>
+</tbody>
+</table>
+<p>这是 URPP V0.1 的确定性工程规则，<strong>不是教育研究已经证明的全局最优教学动作序列</strong>。例如，<code>REQUEST_TRANSFER</code> 选中 <code>TRANSFER_ASSESSMENT</code>，仅表示计划进行该教学活动，绝不能直接得出学生拥有 Transfer 能力的结论。</p>
+<h3>3.2 没有请求：直接委托旧版 Rule-Based Baseline</h3>
+<p>关键调用位于源码第 131–147 行：</p>
+<pre><code class="language-python">if student_request is None:
+    decision = self._baseline.decide(decision_context)
+    # selection_source = BASELINE
+    # selected_for_request = False
+    # request_expanded_allowed_actions = False
+</code></pre>
+<p>不要把「引入 Personalized Engine」误写成「替换旧 Decision Engine」。<strong>没有明确请求时，它复用现有 <code>DecisionEngineV01(RuleBasedControllerV01())</code>。</strong> 这样新的能力不会悄悄改变所有普通教学轮次；后续还可以把该基线当作对照实验条件。</p>
+<h3>3.3 有明确请求：扩展的是状态依赖教学列表，不是数据库或 Evidence 许可</h3>
+<p>源码第 159–184 行先调用旧 Policy 获取 <code>baseline_allowed</code>。如果请求映射的动作不在其中，构造：</p>
+<pre><code class="language-python">allowed = (*baseline_allowed, requested_action)
+</code></pre>
+<p>再产生 <code>DecisionResultV01</code>，将 <code>selected_action=requested_action</code>。结果用 <code>request_expanded_allowed_actions</code> 明确记录是否发生扩展。</p>
+<p><strong>举例：</strong> State 为 <code>STRONG</code>，学生要求概念解释。旧状态依赖列表可能不包含 <code>CONCEPTUAL_REVIEW</code>，而新的个性化结果可以增加这个原本受支持的动作，使请求被选中。这个例子对应 <code>test_strong_student_can_request_conceptual_review</code>，不是把强掌握变成未知，也不是让用户凭请求编辑 Mastery。</p>
+<p><strong>边界：</strong> 只能选已经在 <code>TeachingActionV01</code> 定义的动作；请求不能使不匹配的 Assessment Item 获准发放，不能使未知 <code>assistance_level</code> 被改成独立，也不能跳过已存在的 Session Registration 和 SQLite Integrity 检查。</p>
+<h3>3.4 Decision Provenance 是什么？它又不是什么？</h3>
+<p><code>PersonalizedDecisionResultV01</code> 中的字段包括：</p>
+<pre><code class="language-text">DecisionResultV01 decision
+DecisionSelectionSourceV01 selection_source
+bool selected_for_request
+bool request_expanded_allowed_actions
+str selection_reason
+</code></pre>
+<p><code>selection_source=explicit_student_request</code> 表示<strong>此次选择来自结构化请求</strong>，而不是「系统已经确认学生身份」或「学生已经完成所请求的动作」。<code>selection_reason</code> 是可检查的人类可读解释，不是评分证据。此时数据只是内存中的函数返回值，不能据此断言已经写入 SQLite。</p>
+<p>源码中通过前后 <code>objective_state.model_dump(mode="json")</code> 检查，避免决策函数在程序内意外修改传入 State。该检查不是进程沙箱，也不具备认证含义。</p>
+<h3>3.5 测试对照</h3>
+<p>原始测试涵盖：无请求时使用基线、六种请求映射、强状态请求解释、已在允许集合的动作不重复扩展、State 不变、旧 Context 不能被错用、Decision Result 不虚报 Agent 执行。它们证明的是<strong>动作选择层的合同</strong>，尚未说明 Agent 确实执行或 Assessment 确实发放。</p>
+<hr/>
+<h2 id="section-05">4．13C-1：从「选中了动作」到「调用一次 Agent」</h2>
+<p>历史文件：<code>ad0f9a51/backend/app/services/decision/personalized_turn_orchestrator_v01.py</code>；设计文档：<code>docs/09_personalized_teaching_turn_v0.1.md</code>。</p>
+<h3>4.1 为什么不能先调用 Personalized Engine，再调用旧 Orchestrator？</h3>
+<p>旧 <code>TeachingTurnOrchestratorV01</code> 会在 <code>run_turn()</code> 内部重新调用原始 <code>DecisionEngineV01</code>。如果我们先在 Personalized Engine 中选好了用户请求的动作，然后再把 Context 交给旧 Orchestrator，<strong>很可能得到第二次、不包含学生请求的决定</strong>。</p>
+<p>这将造成 <code>request_explanation → CONCEPTUAL_REVIEW</code> 与最终 Agent 实际收到的动作不一致。因而新的 <code>PersonalizedTeachingTurnOrchestratorV01</code> <strong>自己只调用一次个性化决策，再路由到一次 Agent 调用</strong>，而不是在已做出的个性化决定后再次使用旧 Orchestrator。这个限制直接写在源码第 98–105 行和原始设计文档中。</p>
+<pre><code class="language-text">ObjectiveStateV02 + optional StudentLearningRequestV01
+                          ↓
+             DecisionContextBuilderV01
+                          ↓
+            PersonalizedDecisionContextV01
+                          ↓
+           PersonalizedDecisionEngineV01
+                    一次决定
+                          ↓
+                 _route_action()
+                    ↙         ↘
+             Professor      Assessment
+               Agent          Agent
+                    ↘         ↙
+         PersonalizedTeachingTurnResultV01
+</code></pre>
+<h3>4.2 Agent Port 是接口，不等于真实 LLM</h3>
+<p>这里使用 <code>PersonalizedTeachingAgentPortV01(Protocol)</code>：</p>
+<pre><code class="language-python">def produce(
+    self,
+    *,
+    context: PersonalizedDecisionContextV01,
+    decision: PersonalizedDecisionResultV01,
+) -&gt; str: ...
+</code></pre>
+<p>Port 同时接收原始结构化 Student Request 和已选择的 Decision。这样 Agent 能知道学生请求的具体活动，以及决策为什么满足该请求。</p>
+<p><strong>但是：</strong> 这个 Interface 没有提供真实模型推理、HTTP 身份鉴别或 Learning Evidence 更新。13C-1 的测试使用 Recording Agent Doubles；即使内容字符串成功返回，也不能推出学生已阅读、已理解或已掌握。</p>
+<h3>4.3 Agent Routing 如何工作？</h3>
+<p>路由重用旧模块中的 <code>ASSESSMENT_ACTIONS</code> 与 <code>PROFESSOR_ACTIONS</code> 两组常量；<code>_route_action</code> 只在其中一组包含选中动作时返回相应 Agent 类型，否则抛出异常。然后仅调用被选中的 Agent 的 <code>produce()</code>。</p>
+<p>传给 Agent 的是完整 <code>PersonalizedDecisionContextV01</code> 和 <code>PersonalizedDecisionResultV01</code>，不是丢掉请求再要求 Agent 自己推断。</p>
+<p>调用前检查 <code>decision_id</code> 和所选动作必须包含在该 Decision 的允许列表中；决策调用前后、Agent 调用前后检查原始 State 的 JSON 序列化值是否发生变化；<code>content</code> 必须是字符串且非空白。Agent 抛出的异常不会被静默替换成伪成功的教学输出。</p>
+<h3>4.4 「完成一次 Turn」的真实语义</h3>
+<p><code>PersonalizedTeachingTurnResultV01</code> 包含 <code>decision</code>、<code>agent_kind</code>、<code>content</code>。它只表示<strong>内部教学内容生成调用返回了符合形状的内容</strong>，并非 Assessment Attempt、持久化 Assignment、学生已看到的信息或实际学习成效。</p>
+<p>本阶段原始测试包括：无请求的基线 Assessment 路由、强状态的解释请求交给 Professor、独立尝试请求交给 Assessment、支持请求的正确路由、错误 Objective 拒绝、无效 Agent Output 拒绝、Agent 异常不被隐藏、Agent 不能偷偷修改 State、教学文字不是 Assessment Evidence。</p>
+<hr/>
+<h2 id="section-06">5．13C-2A：让 Personalized Turn 接入已有 Recoverable Numeric Session</h2>
+<p>历史文件：<code>9ea307b7/backend/app/services/decision/personalized_numeric_session_adapter_v01.py</code>，设计文档 <code>docs/10_personalized_numeric_session_adapter_v0.1.md</code>。</p>
+<h3>5.1 为什么需要 Adapter，而不是复制一个新的 Numeric Session？</h3>
+<p>已有 <code>RecoverableNumericSessionServiceV01</code> 期待内部 Orchestrator 提供旧式接口：</p>
+<pre><code class="language-python">run_turn(objective_state, *, decision_id, requested_at)
+</code></pre>
+<p>新 Personalized Orchestrator 则需要额外参数 <code>student_request</code>，而且返回结构包含 <code>PersonalizedDecisionResultV01</code>，不等于旧 <code>TeachingTurnResultV01</code>。</p>
+<p>如果直接复制整个 Recoverable Session 来支持请求，容易出现两份 Assignment 发放逻辑、两份 Assessment Item Scope/Revision 校验、两份 Atomic Submission 与恢复逻辑。以后修复一个版本的 SQLite Bug，另一个版本可能落后。</p>
+<p>因此这次采用适配器：<strong>将一次 Student Request 绑定到适配器实例，调用个性化 Orchestrator 一次，再把结果转换成旧 Session 可识别的返回合同。</strong> Assignment 真正发放的权威边界，仍然在已有 Recoverable Session 和 Repository 中。</p>
+<h3>5.2 精确的适配流程</h3>
+<pre><code class="language-text">Structured Student Request
+           ↓  构造新 Adapter
+PersonalizedNumericSessionTurnAdapterV01
+           ↓  交给 RecoverableNumericSessionServiceV01
+Recoverable Service 获取 State 和待发放 Assessment Item
+           ↓  调用 adapter.run_turn(...)
+Adapter 校验 Objective / Time / Request One-shot
+           ↓  Personalized Orchestrator 做一次决定+调用 Agent
+Adapter 校验结果确实指向 assessment 类型动作
+           ↓  转换为旧 TeachingTurnResultV01
+Recoverable Service 校验存储的 Item 与 Scope / Revision
+           ↓  按原逻辑创建 persisted Assignment
+</code></pre>
+<p>注意：<code>RecoverableNumericSessionServiceV01</code> 具体在某条函数路径上检查 Item、是否允许发放和创建 Assignment，应以对应历史版本源码为准；这张图表示职责边界，不宣称所有检查必须按图中一模一样的细粒度顺序执行。</p>
+<h3>5.3 为什么 Explanation / Hint 不能进入 Numeric Assignment Path？</h3>
+<p>适配器构造时先把请求映射为动作，要求映射结果属于 <code>ASSESSMENT_ACTIONS</code>。<code>REQUEST_EXPLANATION</code> 与 <code>REQUEST_HINT</code> 不符合要求，因此被拒绝；它们应通过不发持久化 Numeric Assignment 的教学路径执行。</p>
+<p>即使上游交给适配器的是一个看似合法的请求，适配器在运行后仍检查：<code>agent_kind == "assessment"</code> 且 <code>selected_action in ASSESSMENT_ACTIONS</code>，避免意外地将 Professor Agent 的解释文字作为数值题目发放。</p>
+<p><strong>教学解释与可持久化的 Assessment Item 不是同一类数据。</strong> 这并不表示系统禁止学生请求解释，而是拒绝将该请求错用到「发放 Numeric Assignment」这条 API 路径。</p>
+<h3>5.4 一次性请求、时间约束与持久化边界</h3>
+<p><code>_explicit_request_used</code> 防止同一个 Adapter 实例重复用于多个教学决定。这个一次性标志是<strong>内存中的对象状态</strong>，不是经 SQLite 认证的全局防重凭据，也不是同一真实用户只能请求一次。</p>
+<p>为匹配 Recoverable Service V0.1 的 State Snapshot 时间契约，适配器要求：</p>
+<pre><code class="language-python">request.requested_at == requested_at
+</code></pre>
+<p>这比 13B-1 普通 Personalized Context 的时间区间关系更严格。它是<strong>该兼容适配路径的版本约束</strong>，不应该外推成所有教学请求都必须与 Decision 精确同秒。</p>
+<p>适配器返回旧 <code>TeachingTurnResultV01</code> 时，只有 Decision、Agent Kind、Content。原 Personalized Decision 的 <code>selection_source</code>、<code>request_expanded_allowed_actions</code> 等仍只留在中间对象；<strong>本阶段并没有将完整个性化来源写进 Assignment Schema</strong>。</p>
+<h3>5.5 何以判定「13C-2A 做到了什么」？</h3>
+<p><code>test_personalized_numeric_session_adapter_v01.py</code> 的测试覆盖：请求独立尝试交给 Assessment Agent、请求 Transfer 不等于 Transfer Success、无请求基线、Explanation/Hint 不能误变成 Numeric Assignment、Objective 不匹配、时间不一致、同一 Adapter 请求复用、错误路由至 Professor 的拒绝。</p>
+<p>这些是使用 Recording Agent 的接口测试。本阶段<strong>没有凭这些测试就声称已完成跨进程 SQLite 的个性化教学恢复</strong>。那属于后续 13C-2B 的集成工作。</p>
+<hr/>
+<h2 id="section-07">6．13C-2B：真正的 SQLite Integration 与一次真实的 Test Oracle Bug</h2>
+<p>13C-2B 的历史集成测试文件是 <code>backend/tests/test_personalized_numeric_session_sqlite_v01.py</code>。此前用户上传的 Terminal 日志记录：初次专项执行 <code>1 failed, 25 passed</code>；调整两个新测试断言后为 <code>26 passed</code>；完整 Backend 回归为 <code>324 passed</code>；最终提交 <code>e52095f</code>，提交消息为 <code>test: verify personalized numeric sessions across SQLite recovery</code>。</p>
+<h3>6.1 为什么这次失败不应归咎于 Assignment Repository？</h3>
+<p>失败测试名：</p>
+<pre><code class="language-python">test_explanation_request_cannot_issue_numeric_assignment
+</code></pre>
+<p>测试预期：对于请求概念解释的学生，Numeric Assessment Delivery Path 不能发放 Assignment。</p>
+<p>原始失败断言：</p>
+<pre><code class="language-python">assert not stack.last_assessment_agent
+</code></pre>
+<p>但 <code>stack.last_assessment_agent</code> 存放的是一个 <code>RecordingAgent</code> 对象。对象在测试夹具中被创建，<strong>与这个 Agent 是否真的调用过 <code>produce()</code> 并发放 Assessment 不是同一件事</strong>。</p>
+<p>所以观察到：</p>
+<pre><code class="language-text">AssertionError: assert not &lt;RecordingAgent object ...&gt;
+</code></pre>
+<p>只能说明「对象存在导致该断言为假」，不能证明系统已经错误发放了 Numeric Assignment。</p>
+<h3>6.2 如何分析：测试的观察对象错了</h3>
+<pre><code class="language-text">业务要求：不能发 Numeric Assignment
+            ↓
+测试试图证明：Assessment Agent 不存在
+            ↓
+RecordingAgent 在准备测试对象时已被创建
+            ↓
+即便没有发题，该断言仍失败
+            ↓
+根因：Test Oracle 验证了错误对象的存在性
+</code></pre>
+<p>这个问题属于 <strong>Test Oracle Bug</strong>：测试真正关心的是「是否有实际调用、是否产生数据库副作用」，而不是「依赖对象是否提前构造」。</p>
+<p>日志显示修复时修改了新测试文件中两个错误断言，并明确没有修改生产代码。由于本轮 Decision Source Pack 没有包含 <code>e52095f</code> 的提交前后测试正文，<strong>这里不虚构那两个断言修复后的准确源码</strong>；后续可以用 <code>git show e52095f:backend/tests/test_personalized_numeric_session_sqlite_v01.py</code> 将最终测试断言补到网站。</p>
+<h3>6.3 回归证据能证明什么？</h3>
+<table>
+<thead>
+<tr>
+<th>证据</th>
+<th>历史观察</th>
+<th>适当结论</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>第一次 13C-2B 专项运行</td>
+<td><code>1 failed, 25 passed</code></td>
+<td>有一个测试断言失败；不等于生产发题错误</td>
+</tr>
+<tr>
+<td>修改两个新测试断言</td>
+<td>记录显示仅改变测试，无生产文件修改</td>
+<td>修复范围是测试 Oracle</td>
+</tr>
+<tr>
+<td>重新运行专项测试</td>
+<td><code>26 passed</code></td>
+<td>这组 SQLite 集成测试通过</td>
+</tr>
+<tr>
+<td>完整 Backend 回归</td>
+<td><code>324 passed</code></td>
+<td>当时该分支的 324 项 Backend 测试通过</td>
+</tr>
+<tr>
+<td>Git Commit</td>
+<td><code>e52095f</code></td>
+<td>本次集成验证结果被提交</td>
+</tr>
+</tbody>
+</table>
+<p><strong>不要写成</strong>「所有外部服务与真正的用户环境经过验证」，也不要将 324 项历史测试结果冒充最新 479 项测试下的生产运行结果。</p>
+<hr/>
+<h2 id="section-08">7．端到端执行示例：不要把一次请求变成一条“独立掌握”证据</h2>
+<p>下面是<strong>根据上述组件合同构造的教学工作流示例，不是某个真实学生的历史记录</strong>。</p>
+<h3>示例 A：强状态学生主动要求重新解释</h3>
+<pre><code class="language-text">ObjectiveState = STRONG
+Request = request_explanation
+            ↓
+Personalized Context 校验 Objective 和时间
+            ↓
+Personalized Engine 映射 CONCEPTUAL_REVIEW
+            ↓
+必要时扩展状态依赖允许动作
+            ↓
+Personalized Orchestrator 路由 Professor Agent
+            ↓
+返回一段概念解释文字
+</code></pre>
+<p>能报告的事实是「选择了 <code>CONCEPTUAL_REVIEW</code> 并执行了 Agent 的内容生成」。不能因此改变 State，也不能认定生成文字已被学生看到或理解。由于 Request 是 Professor 类行为，不应接入 Numeric Assignment 发放适配器。</p>
+<h3>示例 B：学生要求独立做题</h3>
+<pre><code class="language-text">Request = try_independently
+            ↓
+Selected Action = INDEPENDENT_PRACTICE
+            ↓
+Assessment 路由
+            ↓
+Recoverable Session 验证 Assessment Item / Scope / Revision
+            ↓
+保存 Pending Assignment
+            ↓
+学生后来提交 Attempt
+            ↓
+Numeric Scorer 判断答案正确与否
+            ↓
+现有 Eligibility 判断可否用于 Mastery State
+</code></pre>
+<p>「请求独立做题」只是一条意图记录，不是对外部帮助不存在的验证。即使数值回答正确，也必须保留 <code>assistance_level</code> / <code>prior_solution_exposure</code> 等字段的真实来源和未知状态。</p>
+<h3>示例 C：学生要求 Transfer Assessment</h3>
+<p><code>REQUEST_TRANSFER → TRANSFER_ASSESSMENT</code> 的选中结果<strong>不等于</strong>当前 Numeric Scorer 已经获得了可靠的 Transfer Item，也不等于满足 Transfer Gate。后续发题仍需执行与 Item 类型、对齐关系、批准和题目修订相匹配的验证。不能拿一题普通数值题改标签就称其为 Transfer Evidence。这一问题的后续修复属于更晚的 Transfer Assessment 开发节点，应在后续章节单独写明。</p>
+<hr/>
+<h2 id="section-09">8．从本章能证明的架构不变量</h2>
+<p>这部分不是额外的设计愿景，而是上述阶段的合同与测试共同围绕的约束：</p>
+<ol>
+<li><strong>请求不是 Mastery Evidence</strong>：<code>StudentLearningRequestV01</code> 保存学习活动意图，不写 <code>ObjectiveStateV02</code>。</li>
+<li><strong>有请求／无请求分支不同</strong>：无请求沿用旧 <code>DecisionEngineV01</code>；有请求可在支持的动作内覆盖状态依赖教学列表，但不能绕过后续 Assessment Integrity。</li>
+<li><strong>做出 Decision ≠ 执行 Action</strong>：<code>PersonalizedDecisionResultV01</code> 与 <code>PersonalizedTeachingTurnResultV01</code> 表示不同阶段。</li>
+<li><strong>生成 Agent 文字 ≠ 发放持久化题目</strong>：Recorded Assessment Item 的版本与 Scope 仍由原有 Session / Repository 校验。</li>
+<li><strong>一次个性化请求只能驱动该 Adapter 实例中的一个决定</strong>：不是分布式全局去重，也不是身份认证。</li>
+<li><strong>旧 Orchestrator 不应在个性化决定之后再做第二次决定</strong>：否则会丢失原 Student Request 的选择语义。</li>
+<li><strong>状态与时间一致性</strong>：请求时间不能早于 State Snapshot 或晚于 Decision；适配器路径额外要求与 Assessment Decision 时间相等。</li>
+<li><strong>失败不能伪装成功</strong>：Agent 异常、非字符串或空白内容会被拒绝；这不证明已经实现端到端的学生可见交付确认。</li>
+<li><strong>本阶段的个性化来源不必然持久化</strong>：Adapter V0.1 明确不把 Request 和 <code>selection_source</code> 写入旧 Assignment。</li>
+</ol>
+<hr/>
+<h2 id="section-10">9．Guard Casebook：哪些只是预防性测试？</h2>
+<p>以下行为由历史测试覆盖，但在这批原始资料中<strong>没有相应真实生产事故日志</strong>，因此标记为 <code>GUARD</code> 而非 <code>BUG</code>。</p>
+<table>
+<thead>
+<tr>
+<th>Guard ID</th>
+<th>被覆盖的失效情境</th>
+<th>测试文件与函数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GUARD-13B-01</code></td>
+<td>请求 Objective 与 State 不匹配</td>
+<td><code>test_student_request_v01.py::test_request_must_match_current_objective</code></td>
+</tr>
+<tr>
+<td><code>GUARD-13B-02</code></td>
+<td>请求早于 State Snapshot 或晚于 Decision</td>
+<td><code>test_request_cannot_be_older_than_state_snapshot</code>、<code>test_request_cannot_occur_after_decision</code></td>
+</tr>
+<tr>
+<td><code>GUARD-13B-03</code></td>
+<td>时间缺失时区或夹带任意字段</td>
+<td><code>test_request_timestamp_must_be_timezone_aware</code>、<code>test_request_contract_rejects_unstructured_extra_fields</code></td>
+</tr>
+<tr>
+<td><code>GUARD-13B-04</code></td>
+<td>旧 Decision Context 静默忽略学生请求</td>
+<td><code>test_personalized_context_does_not_inherit_old_context</code></td>
+</tr>
+<tr>
+<td><code>GUARD-13B-05</code></td>
+<td>没有请求时意外改变旧策略</td>
+<td><code>test_no_request_uses_existing_baseline</code></td>
+</tr>
+<tr>
+<td><code>GUARD-13B-06</code></td>
+<td>Request 被错误宣称为 Agent 已执行或 Mastery 已更新</td>
+<td><code>test_decision_result_does_not_claim_agent_execution</code>、<code>test_request_does_not_modify_authoritative_student_state</code></td>
+</tr>
+<tr>
+<td><code>GUARD-13C-01</code></td>
+<td>Personalized Decision 之后旧 Orchestrator 再决定一次</td>
+<td><code>ad0f9a51</code> Orchestrator 的单次决策结构和相关路由测试</td>
+</tr>
+<tr>
+<td><code>GUARD-13C-02</code></td>
+<td>Agent 返回空白或无效内容、失败被静默隐藏</td>
+<td><code>test_invalid_agent_output_is_rejected</code>、<code>test_agent_failure_is_not_silently_replaced</code></td>
+</tr>
+<tr>
+<td><code>GUARD-13C-03</code></td>
+<td>Explanation / Hint 被作为 Numeric Assignment 发放</td>
+<td><code>test_explanation_request_cannot_become_numeric_assignment</code>、<code>test_hint_request_cannot_become_numeric_assignment</code></td>
+</tr>
+<tr>
+<td><code>GUARD-13C-04</code></td>
+<td>同一个 Adapter 重复消费请求或时间不匹配</td>
+<td><code>test_explicit_request_cannot_be_reused_for_another_turn</code>、<code>test_request_timestamp_must_match_decision</code></td>
+</tr>
+<tr>
+<td><code>GUARD-13C-05</code></td>
+<td>“请求 Transfer”被误认为“Transfer 成功”</td>
+<td><code>test_transfer_request_does_not_claim_transfer_success</code></td>
+</tr>
+</tbody>
+</table>
+<p>唯一作为本章 <strong>Historical Bug</strong> 写入的是 13C-2B 的错误测试断言，因为我们拥有用户提供的真实失败、修复及回归输出。</p>
+<hr/>
+<h2 id="section-11">10．开发者学习：这些代码教会我们什么 C/SWE 设计原则？</h2>
+<h3>10.1 Domain Contract 不等于 Transport Contract</h3>
+<p><code>StudentLearningRequestV01</code> 是教学意图的 Domain Contract，而 API 的登录 Session、HTTP 请求来源和 Student Identity 是外层 Transport / Authorization 的事情。Domain Contract 检查 Scope 和时间，却不会自动认证 HTTP 调用方。这能让本地 CLI 与未来 Web 应用复用核心契约，但前提是外层真的承担认证责任。</p>
+<h3>10.2 Composition 避免静默语义丢失</h3>
+<p>当新 Context 比旧 Context 多了关键的 <code>student_request</code>，不要简单继承或把字段隐藏在 dict 中交给旧函数。显式组合让函数签名能表达「这次决策必须考虑 Student Request」，并防止原始 <code>DecisionEngineV01</code> 被误用。</p>
+<h3>10.3 Adapter 负责协议转换，不应复制业务规则</h3>
+<p><code>PersonalizedNumericSessionTurnAdapterV01</code> 让新 Orchestrator 满足旧 Session 的 <code>run_turn</code> Interface，转换必要的 Decision / Agent Kind / Content；但 Item Revision、Assignment INSERT 和 Attempt 提交仍由现有 Service 负责。复用让旧系统的数据库修复不用分别复制到两套发题路径。</p>
+<h3>10.4 Test Oracle 必须观察业务结果</h3>
+<p>依赖对象存在，并不表示发生了业务调用。禁止发题的测试应通过 Recording Agent 的调用记录和／或 Assignment Repository 的数据库状态观察，而不是要求 <code>RecordingAgent</code> 对象在夹具中根本不存在。本章真实错误正好说明了这一点。</p>
+<h3>10.5 留住三层不同的“成功”</h3>
+<ul>
+<li><code>decision selected</code>：函数返回一个合法 Teaching Action。</li>
+<li><code>content produced</code>：匹配的 Agent Port 返回符合内容合同的字符串。</li>
+<li><code>assessment completed</code>：数据库持久化的 Assignment 接收到 Attempt，评分与 Evidence Eligibility 进一步处理。</li>
+</ul>
+<p>这三层不可以互相代替；更远的「学生真正学会」还需要后续新题、保持和迁移证据。</p>
+<hr/>
+<h2 id="section-12">11．给未来研究 Jev / Small Decision Model 保留怎样的对照基线？</h2>
+<p><strong>以下是本次历史分析推导出的未来研究建议，不能写成 13B／13C 当时已实现的系统能力。</strong></p>
+<p>未来若引入 Jev 或其他结构化 Decision Model，可以沿用明确的输入与输出边界：输入脱敏的 Objective State Snapshot、明确 Request、支持的动作与版本；输出单个建议动作及其原始结果。保留原本的 Policy Constraints 和现有 Student State / Assessment 服务，让模型无权直接写 Mastery。</p>
+<p>实验必须分别记录：模型是否按规则输出、实际调用了什么 Agent、是否成功交付，以及学生在新题和延迟练习上的表现。只比较「模型和旧 Policy 选择的动作一致率」，验证的是模仿程度，而不是教学效果。不得将现有 13B/13C 的确定性决策流程改写为已经训练的小型模型或真实 Jev 调用。</p>
+<hr/>
+<h2 id="section-13">12．可追溯来源、缺口与复查命令</h2>
+<p><strong>历史源码包</strong>：<code>decision_orchestration_history_source_pack.zip</code>。本章主要引用该 ZIP 中以下路径：</p>
+<pre><code class="language-text">0e9b77b1/backend/app/services/decision/student_request_v01.py
+0e9b77b1/backend/tests/test_student_request_v01.py
+0e9b77b1/docs/07_personalized_decision_policy_v0.1.md
+5aec0609/backend/app/services/decision/personalized_engine_v01.py
+5aec0609/backend/tests/test_personalized_engine_v01.py
+5aec0609/docs/08_personalized_decision_selection_v0.1.md
+ad0f9a51/backend/app/services/decision/personalized_turn_orchestrator_v01.py
+ad0f9a51/backend/tests/test_personalized_turn_orchestrator_v01.py
+ad0f9a51/docs/09_personalized_teaching_turn_v0.1.md
+9ea307b7/backend/app/services/decision/personalized_numeric_session_adapter_v01.py
+9ea307b7/backend/tests/test_personalized_numeric_session_adapter_v01.py
+9ea307b7/docs/10_personalized_numeric_session_adapter_v0.1.md
+</code></pre>
+<p><strong>真实错误日志</strong>：此前用户提供的 13C-2B Terminal 记录：<code>1 failed, 25 passed → 两个测试断言修复 → 26 passed → 324 passed → e52095f</code>。该测试提交版本未被包含在本章的 Decision Source Pack 中，仍需补充 <code>e52095f</code> 的测试正文和 <code>docs/11_personalized_numeric_sqlite_integration_v0.1.md</code> 才能给出完整的 Assertion 前后 Diff。<strong>已确认的原始错误断言可以引用，未知的最终断言不能凭空补写。</strong></p>
+<p>只读复查示例：</p>
+<pre><code class="language-bash"># 仅查看历史文件；不要在工作区写回任何版本
+git show 0e9b77b1:backend/app/services/decision/student_request_v01.py
+git show 5aec0609:backend/app/services/decision/personalized_engine_v01.py
+git show ad0f9a51:backend/app/services/decision/personalized_turn_orchestrator_v01.py
+git show 9ea307b7:backend/app/services/decision/personalized_numeric_session_adapter_v01.py
+git show e52095f:backend/tests/test_personalized_numeric_session_sqlite_v01.py
+</code></pre>
+<p><strong>结论</strong>：13B 引入不改变 Mastery 的学生请求和确定性动作选择；13C 将动作选择接到真实 Agent Port 与既有 Recoverable Numeric Session；13C-2B 的原始集成日志确认一项测试 Oracle Bug 被修复。后续的 Assistance Presentation、可恢复 CLI 和 Provenance Snapshot 属于更晚阶段，应在下一章独立考察。</p>
+</article><p class="note">本章正文与来源索引一同打包，原始业务源码没有修改。</p></main></div><script>const q=document.getElementById('query'),counter=document.getElementById('matches');const root=document.querySelector('.chapter');q.addEventListener('input',()=>{root.querySelectorAll('mark[data-search]').forEach(m=>m.replaceWith(document.createTextNode(m.textContent)));root.normalize();let term=q.value.trim();if(!term){counter.textContent='清除搜索';return;}const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode(n){return n.parentElement && !['SCRIPT','STYLE','PRE','CODE'].includes(n.parentElement.tagName) && n.textContent.toLowerCase().includes(term.toLowerCase()) ? NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT}});let nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);let count=0;for(let n of nodes){let source=n.textContent;let ix=source.toLowerCase().indexOf(term.toLowerCase());if(ix<0)continue;let frag=document.createDocumentFragment();frag.append(document.createTextNode(source.slice(0,ix)));let mark=document.createElement('mark');mark.dataset.search='1';mark.textContent=source.slice(ix,ix+term.length);frag.append(mark,document.createTextNode(source.slice(ix+term.length)));n.replaceWith(frag);count++;}counter.textContent=`本章匹配段落：${count}（代码请用浏览器查找）`;});</script></body></html>
