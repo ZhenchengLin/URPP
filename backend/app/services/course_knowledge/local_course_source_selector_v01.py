@@ -26,7 +26,7 @@ _WORDS = re.compile(r"[a-z][a-z0-9_-]{2,}", re.I)
 _SECTION = re.compile(r"\b(?:section|chapter)\s+([IVX]{1,5}|[1-6])\b", re.I)
 _HEADING = re.compile(r"(?m)^\s*([IVX]{1,5})\.\s+([A-Z][A-Z0-9 /\-]{3,})")
 _PAGE = re.compile(r"第\s*([一二三四五六七八九十\d]+)\s*页|\bpage\s+(\d{1,2})\b", re.I)
-_EQUATION = re.compile(r"(?:公式|方程|equation|eq\.?)\s*[（(]?\s*(\d{1,2})\s*[)）]?", re.I)
+_EQUATION = re.compile(r"(?:公式|方程|式|equation|eq\.?)\s*[（(]?\s*(\d{1,2})\s*[)）]?", re.I)
 _ROMAN = {"1": "I", "2": "II", "3": "III", "4": "IV", "5": "V", "6": "VI"}
 _CN = {"一": 1, "二": 2, "三": 3, "四": 4, "五": 5, "六": 6,
        "七": 7, "八": 8, "九": 9, "十": 10}
