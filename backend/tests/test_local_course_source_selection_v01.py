@@ -123,3 +123,79 @@ def test_citing_authorized_but_unselected_source_fails_and_saves_nothing(tmp_pat
     assert len(gateway.calls[0]["sources"]) == 1
     assert workspace.resume(pack_sha256=snapshot.pack_sha256,
                              session_id=snapshot.session_id).messages == ()
+
+def _cross_page_equation_sources():
+    return (
+        {
+            "source_id": "page5",
+            "source_locator": (
+                "local-pdf://synthetic.pdf?"
+                "sha256=abc&pages=5-5&excerpt=5"
+            ),
+            "content": (
+                "C. Height Approximation Methods\n"
+                "1) Regression Method :\n"
+                "Discussion continues on the next page."
+            ),
+        },
+        {
+            "source_id": "page6",
+            "source_locator": (
+                "local-pdf://synthetic.pdf?"
+                "sha256=abc&pages=6-6&excerpt=6"
+            ),
+            "content": (
+                "height = piece-wise approximation. (15)\n"
+                "2) Distance Method :\n"
+                "h_eff = interval overlap. (16)"
+            ),
+        },
+    )
+
+def test_eq15_method_attribution_adds_prior_page_context():
+    chosen = select_course_source_ids_v01(
+        sources=_cross_page_equation_sources(),
+        current_question=(
+            "Which approximation method does Equation (15) belong to?"
+        ),
+    )
+
+    assert chosen == ("page6", "page5")
+
+def test_eq15_formula_request_does_not_add_prior_method_context():
+    chosen = select_course_source_ids_v01(
+        sources=_cross_page_equation_sources(),
+        current_question="Write Equation (15).",
+    )
+
+    assert chosen == ("page6",)
+
+def test_eq16_method_attribution_uses_heading_on_equation_page():
+    chosen = select_course_source_ids_v01(
+        sources=_cross_page_equation_sources(),
+        current_question=(
+            "Which approximation method does Equation (16) belong to?"
+        ),
+    )
+
+    assert chosen == ("page6",)
+
+def test_method_context_does_not_cross_nonadjacent_pages():
+    page5, page6 = _cross_page_equation_sources()
+
+    page7 = {
+        **page6,
+        "source_locator": (
+            "local-pdf://synthetic.pdf?"
+            "sha256=abc&pages=7-7&excerpt=7"
+        ),
+    }
+
+    chosen = select_course_source_ids_v01(
+        sources=(page5, page7),
+        current_question=(
+            "Which method does Equation (15) belong to?"
+        ),
+    )
+
+    assert chosen == ("page6",)

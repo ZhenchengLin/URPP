@@ -27,6 +27,15 @@ _SECTION = re.compile(r"\b(?:section|chapter)\s+([IVX]{1,5}|[1-6])\b", re.I)
 _HEADING = re.compile(r"(?m)^\s*([IVX]{1,5})\.\s+([A-Z][A-Z0-9 /\-]{3,})")
 _PAGE = re.compile(r"第\s*([一二三四五六七八九十\d]+)\s*页|\bpage\s+(\d{1,2})\b", re.I)
 _EQUATION = re.compile(r"(?:公式|方程|式|equation|eq\.?)\s*[（(]?\s*(\d{1,2})\s*[)）]?", re.I)
+
+# 14D-4B4D6D: method attribution can straddle adjacent PDF excerpts.
+_METHOD_ATTRIBUTION = re.compile(
+    r"(?:\bmethod\b|方法|\bbelong(?:s)?\s+to\b|属于)",
+    re.I,
+)
+_NUMBERED_METHOD_HEADING = re.compile(
+    r"(?im)^\s*\d+\)\s+[A-Z][A-Za-z0-9 -]{0,60}\bMethod\s*:"
+)
 _ROMAN = {"1": "I", "2": "II", "3": "III", "4": "IV", "5": "V", "6": "VI"}
 _CN = {"一": 1, "二": 2, "三": 3, "四": 4, "五": 5, "六": 6,
        "七": 7, "八": 8, "九": 9, "十": 10}
@@ -64,6 +73,45 @@ def _pages(source: dict) -> tuple[int, int] | None:
     match = re.fullmatch(r"(\d+)-(\d+)", field)
     return (int(match[1]), int(match[2])) if match else None
 
+
+
+def _is_contiguous_previous_pdf(
+    previous: dict,
+    current: dict,
+) -> bool:
+    previous_pages = _pages(previous)
+    current_pages = _pages(current)
+
+    if previous_pages is None or current_pages is None:
+        return False
+
+    previous_url = urlsplit(previous.get("source_locator", ""))
+    current_url = urlsplit(current.get("source_locator", ""))
+
+    if (
+        previous_url.scheme,
+        previous_url.netloc,
+        previous_url.path,
+    ) != (
+        current_url.scheme,
+        current_url.netloc,
+        current_url.path,
+    ):
+        return False
+
+    previous_sha = parse_qs(
+        previous_url.query
+    ).get("sha256", [""])[0]
+
+    current_sha = parse_qs(
+        current_url.query
+    ).get("sha256", [""])[0]
+
+    return (
+        bool(previous_sha)
+        and previous_sha == current_sha
+        and previous_pages[1] + 1 == current_pages[0]
+    )
 
 def _choose(sources: tuple[dict, ...], indices: list[int]) -> tuple[str, ...]:
     result = []
@@ -114,9 +162,55 @@ def select_course_source_ids_v01(*, sources: tuple[dict, ...],
     requested_equation = _EQUATION.search(question)
     if requested_equation:
         number = requested_equation[1]
-        pattern = re.compile(r"(?<!\d)\(\s*" + re.escape(number) + r"\s*\)(?!\d)")
-        matches = [i for i, source in enumerate(sources) if pattern.search(source["content"])]
-        return _choose(sources, matches[:1])
+        pattern = re.compile(
+            r"(?<!\d)\(\s*"
+            + re.escape(number)
+            + r"\s*\)(?!\d)"
+        )
+
+        matches = [
+            i
+            for i, source in enumerate(sources)
+            if pattern.search(source["content"])
+        ]
+
+        if not matches:
+            return ()
+
+        equation_index = matches[0]
+        indices = [equation_index]
+
+        # For an explicit method-attribution question, preserve the
+        # equation excerpt and additionally expose only the immediately
+        # preceding page when it contains the numbered Method heading
+        # that the PDF split left behind.
+        if (
+            _METHOD_ATTRIBUTION.search(question)
+            and equation_index > 0
+        ):
+            equation_match = pattern.search(
+                sources[equation_index]["content"]
+            )
+
+            prefix = sources[equation_index]["content"][
+                :equation_match.start()
+            ]
+
+            previous = sources[equation_index - 1]
+
+            if (
+                not _NUMBERED_METHOD_HEADING.search(prefix)
+                and _NUMBERED_METHOD_HEADING.search(
+                    previous["content"]
+                )
+                and _is_contiguous_previous_pdf(
+                    previous,
+                    sources[equation_index],
+                )
+            ):
+                indices.append(equation_index - 1)
+
+        return _choose(sources, indices)
 
     section = _SECTION.search(question)
     if section:
