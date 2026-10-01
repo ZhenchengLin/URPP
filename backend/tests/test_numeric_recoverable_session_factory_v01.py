@@ -55,6 +55,17 @@ NOW = datetime(
     tzinfo=timezone.utc,
 )
 
+# The repository stamps submitted_at with the real clock, so this must stay later.
+AS_OF_AFTER_SUBMISSION = max(
+    NOW + timedelta(days=7),
+    (
+        datetime.now(timezone.utc)
+        if NOW.tzinfo is not None
+        else datetime.now(timezone.utc).replace(tzinfo=None)
+    )
+    + timedelta(days=1),
+)
+
 STUDENT_ID = "student-factory-001"
 COURSE_ID = "course-factory-001"
 OBJECTIVE_ID = "objective-factory-001"
@@ -295,7 +306,7 @@ def test_delivery_submission_state_and_restart_use_shared_database(
             progress = service.submit_numeric_answer(
                 assignment_id=delivery.assignment_id,
                 response_text="5",
-                as_of=NOW + timedelta(days=7),
+                as_of=AS_OF_AFTER_SUBMISSION,
             )
 
             assert progress.pending is None
@@ -335,7 +346,7 @@ def test_delivery_submission_state_and_restart_use_shared_database(
             )
 
             recovered = recovered_service.resume(
-                as_of=NOW + timedelta(days=7),
+                as_of=AS_OF_AFTER_SUBMISSION,
             )
 
             assert recovered.pending is None
