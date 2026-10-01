@@ -40,6 +40,30 @@ button:disabled{opacity:.52;cursor:not-allowed}.secondary{background:#eaf0f7;col
 .md-body .md-code-block,.md-body .md-tex-block{margin:9px 0;padding:10px;border:1px solid #d5deea;border-radius:7px;background:#f8fbff;overflow-x:auto;white-space:pre;font-size:12px;line-height:1.5}
 .md-body .md-code-block code,.md-body .md-tex-block code{padding:0;background:transparent;white-space:pre;font-size:inherit}
 .md-body .md-tex{white-space:pre-wrap}
+/* MathJax 3 local SVG; a failed/unavailable formula remains visible as TeX source. */
+.md-body .md-formula{min-width:0;max-width:100%;overflow-x:auto;overflow-y:hidden}
+.md-body .md-formula.md-tex-inline{display:inline-block;vertical-align:middle;max-width:100%}
+.md-body .md-formula.md-tex-block{display:block;text-align:center;white-space:normal}
+.md-body .md-formula mjx-container{max-width:100%;margin:0!important}
+.md-body .md-formula mjx-container svg{max-width:none;vertical-align:middle}
+
+/* MathJax v3 can insert assistive MathML alongside its SVG. The local
+   CSP blocks dynamically injected styles; clip this copy visually via
+   the already-authorized same-origin stylesheet, retaining AT access. */
+.md-body mjx-assistive-mml{
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  overflow:hidden!important;
+  clip:rect(0,0,0,0)!important;
+  clip-path:inset(50%)!important;
+  white-space:nowrap!important;
+}
+
+.md-body .md-formula .md-tex-source{overflow-wrap:anywhere}
 .md-body hr{margin:10px 0}
 @media(max-width:740px){.inspector{margin:0 18px 24px}.pack-flow{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:390px){.pack-flow{grid-template-columns:1fr}.inspector-heading{flex-direction:column}}

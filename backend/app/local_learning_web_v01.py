@@ -57,6 +57,21 @@ def create_local_learning_web_v01(
             headers={"Cache-Control": "no-store"},
         )
 
+    @app.get("/assets/local-learning-math.js", include_in_schema=False)
+    def math_javascript():
+        return FileResponse(
+            ASSETS / "math_v01.js", media_type="text/javascript; charset=utf-8",
+            headers={"Cache-Control": "no-store"},
+        )
+
+    @app.get("/assets/vendor/mathjax-3.2.2-tex-svg.js", include_in_schema=False)
+    def mathjax_vendor_javascript():
+        return FileResponse(
+            ASSETS / "mathjax_3_2_2_tex_svg.js",
+            media_type="text/javascript; charset=utf-8",
+            headers={"Cache-Control": "no-store"},
+        )
+
     @app.get("/assets/local-learning-markdown.js", include_in_schema=False)
     def markdown_javascript():
         return FileResponse(

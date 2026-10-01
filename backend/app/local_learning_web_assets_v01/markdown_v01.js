@@ -14,6 +14,18 @@
     return node;
   }
 
+  // The SVG typesetter accepts bounded TeX only; raw text is kept as fallback.
+  // Code fences and inline code never pass through the math typesetter.
+  function formula(tex, display) {
+    const wrap = element(display ? "div" : "span", undefined,
+      display ? "md-tex-block md-formula" : "md-tex md-tex-inline md-formula");
+    wrap.append(element("code", tex, "md-tex-source"));
+    if (globalThis.URPPMathV01 && typeof globalThis.URPPMathV01.typeset === "function") {
+      globalThis.URPPMathV01.typeset(wrap, tex, display);
+    }
+    return wrap;
+  }
+
   function inline(target, value) {
     let start = 0;
     for (const found of value.matchAll(MARK)) {
@@ -21,9 +33,9 @@
       if (found.index > start) target.append(document.createTextNode(value.slice(start, found.index)));
       let item;
       if (token.startsWith("$$")) {
-        item = element("code", token.slice(2, -2), "md-tex md-tex-inline");
+        item = formula(token.slice(2, -2), true);
       } else if (token.startsWith("$")) {
-        item = element("code", token.slice(1, -1), "md-tex md-tex-inline");
+        item = formula(token.slice(1, -1), false);
       } else if (token.startsWith("**") || token.startsWith("__")) {
         item = element("strong", token.slice(2, -2));
       } else if (token.startsWith("`")) {
@@ -91,9 +103,7 @@
           content.push(lines[pos]); pos++;
         }
         if (pos < lines.length) pos++;
-        const pre = element("pre", undefined, "md-tex-block");
-        pre.append(element("code", content.join("\n")));
-        target.append(pre);
+        target.append(formula(content.join("\n"), true));
         continue;
       }
 
