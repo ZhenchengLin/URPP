@@ -1,6 +1,6 @@
 # URPP Implementation 15 — Course Timeline and Syllabus Intelligence Taskbook v0.1
 
-**Status:** PROPOSED FREEZE v0.1 — pending owner approval.
+**Status:** FROZEN v0.1 — owner approval recorded 2026-10-01 (blanket approval via Relay).
 
 ## 1. Evidence basis and scope boundary
 
@@ -313,14 +313,8 @@ For each stage 15A–15E:
 
 The first implementation milestone is **M-15A-FREEZE**. Work should not begin beyond its frozen boundary until the owner approves this proposed taskbook.
 
-## 10. Freeze decision required
+## 10. Freeze decision recorded
 
-Owner approval should confirm or revise:
+Owner blanket approval was recorded on 2026-10-01 via Relay. The v0.1 taskbook is therefore frozen with the 15A–15E boundaries, proposed v01 contract names, evaluation discipline, and execution order stated above.
 
-- the 15A–15E boundaries;
-- the proposed v01 contract names;
-- whether inferred requirements/dependencies may exist at all in v0.1;
-- the exact frozen evaluation corpus policy;
-- whether candidate math-fidelity remediation from Implementation 14 blocks or runs in parallel with Implementation 15.
-
-Until that decision, this document remains a proposed freeze and no Implementation 15 production behavior is authorized by this taskbook alone.
+Professor math-fidelity remediation (14F) is approved to precede Implementation 15 execution. The approval was blanket approval, not an itemised review of each taskbook field.

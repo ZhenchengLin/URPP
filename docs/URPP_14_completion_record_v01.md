@@ -97,3 +97,15 @@ The frozen real run must not be edited, deleted, or regenerated merely to obtain
 ## 9. Closure interpretation
 
 Implementation 14 closes as a completed evaluation harness and preserved evidence path, not as a claim that the current candidate has acceptable mathematical fidelity. The observed candidate remains below the current L1 equation-marker acceptance expectation on four frozen cases, and L2 human review plus owner gold sign-off remain outstanding.
+
+## 10. Owner decisions (2026-10-01)
+
+The owner provided blanket approval via Relay on 2026-10-01: “Go ahead and do what u need to do and I approve all u need.” This is recorded as project authorization, not as an itemised technical re-check.
+
+- Push to `origin/design/logical-decision-engine` is approved.
+- Gold status is: source image review completed by assistant; project-owner blanket approval recorded 2026-10-01 (not an itemised re-check).
+- The frozen 14E fixture and existing 14E run artifacts still state owner sign-off pending because they predate this approval and remain immutable.
+- L2 human review remains pending, with no verdicts recorded.
+- Professor math-fidelity remediation (14F) is approved and will precede Implementation 15 execution.
+- `docs/URPP_15_course_timeline_syllabus_taskbook_v01.md` is frozen as v0.1.
+- Untracked-file outcome: `scripts/run_local_professor_chat_v01.py` passed the no-absolute-path, pinned-pack leak, `py_compile`, and side-effect-free `--help` checks and was committed separately as `984955a`; `scripts/audit_v4_gate1c_feature_artifact.py` and `engineering-archive/` were not committed or deleted and are locally excluded through `.git/info/exclude`.

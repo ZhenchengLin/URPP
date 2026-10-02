@@ -6,8 +6,7 @@ Purpose: establish an independently checked mathematical reference for
 evaluating the local Professor's answers about equations (7), (10), (15),
 and (16).
 
-Status: SOURCE IMAGE REVIEW COMPLETED BY ASSISTANT.
-Final project-owner sign-off and evaluator implementation remain pending.
+Status: source image review completed by assistant; project-owner blanket approval recorded 2026-10-01 (not an itemised re-check).
 
 This document records mathematical relationships and source locations.
 It is not a claim that URPP can already verify arbitrary mathematical
