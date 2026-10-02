@@ -1,0 +1,377 @@
+{
+  "schema_version": "urpp-nanojev-shadow-manifest-v02",
+  "status": "developer_audit_only",
+  "source_protocol": "docs/29_nanojev_shadow_eval_v0.2_protocol.md",
+  "starting_commit": "7262d37",
+  "checkpoint_revision": "047b927b30882a1138fc504821b82ac145a4b81a",
+  "checkpoint_sha256": "f68c47d66998231b86b7e91b4ed5e82ae23acf104c8b7cd6d165c3ac7b7ffe1b",
+  "experiment_controls": {
+    "candidate_orders": [
+      "original",
+      "reversed"
+    ],
+    "repeats_per_configuration": 2,
+    "candidate_count_per_question": 2,
+    "questions_per_case": 2
+  },
+  "reference_policy_meaning": "Agreement with the registered LU Pilot only; not independently established pedagogical ground truth.",
+  "ambiguous_case_policy": "Diagnostic only. No forced correctness label. Current two-choice contract has no clarification or abstention action.",
+  "distinct_case_count": 10,
+  "student_delivery_authorized": false,
+  "cases": [
+    {
+      "case_id": "baseline_sign_relation_01",
+      "group": "baseline",
+      "baseline_focus_id": "sign_relation",
+      "description": "Exact original v0.1 synthetic input.",
+      "reference_policy": {
+        "plan_id": "sign_first",
+        "check_id": "ask_sign_relation"
+      },
+      "request": {
+        "states": [
+          {
+            "id": "urpp_lu_pilot_01",
+            "state": "Synthetic LU teaching pilot. The student can calculate U but asks why the elimination matrix E and the lower triangular matrix L have opposite multiplier signs.",
+            "questions": {
+              "teaching_plan": {
+                "type": "choice",
+                "instructions": "Which registered teaching plan should be proposed for this student's current learning need?",
+                "criteria": {
+                  "sign_first": "Explain the sign relationship between the elimination matrix E and lower matrix L first.",
+                  "calculation_first": "Review the LU elimination calculation first."
+                }
+              },
+              "follow_up_check": {
+                "type": "choice",
+                "instructions": "Which registered follow-up question should be proposed for this learning need?",
+                "criteria": {
+                  "ask_sign_relation": "Ask the student to explain why E and L have opposite elimination multiplier signs.",
+                  "ask_row_operation": "Ask the student to independently write the row operation and calculate the second row of U."
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "baseline_calculation_01",
+      "group": "baseline",
+      "baseline_focus_id": "calculation",
+      "description": "Exact original v0.1 synthetic input.",
+      "reference_policy": {
+        "plan_id": "calculation_first",
+        "check_id": "ask_row_operation"
+      },
+      "request": {
+        "states": [
+          {
+            "id": "urpp_lu_pilot_01",
+            "state": "Synthetic LU teaching pilot. The student is reviewing the calculation of the elimination multiplier, row operation, and upper triangular matrix U.",
+            "questions": {
+              "teaching_plan": {
+                "type": "choice",
+                "instructions": "Which registered teaching plan should be proposed for this student's current learning need?",
+                "criteria": {
+                  "sign_first": "Explain the sign relationship between the elimination matrix E and lower matrix L first.",
+                  "calculation_first": "Review the LU elimination calculation first."
+                }
+              },
+              "follow_up_check": {
+                "type": "choice",
+                "instructions": "Which registered follow-up question should be proposed for this learning need?",
+                "criteria": {
+                  "ask_sign_relation": "Ask the student to explain why E and L have opposite elimination multiplier signs.",
+                  "ask_row_operation": "Ask the student to independently write the row operation and calculate the second row of U."
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "paraphrase_sign_relation_01",
+      "group": "paraphrase",
+      "baseline_focus_id": "sign_relation",
+      "description": "Same registered learning focus; alternate state wording only.",
+      "reference_policy": {
+        "plan_id": "sign_first",
+        "check_id": "ask_sign_relation"
+      },
+      "request": {
+        "states": [
+          {
+            "id": "urpp_lu_pilot_01",
+            "state": "The synthetic student can already calculate the upper triangular matrix U. Their remaining question is why E uses the negative elimination multiplier while L uses the positive counterpart.",
+            "questions": {
+              "teaching_plan": {
+                "type": "choice",
+                "instructions": "Which registered teaching plan should be proposed for this student's current learning need?",
+                "criteria": {
+                  "sign_first": "Explain the sign relationship between the elimination matrix E and lower matrix L first.",
+                  "calculation_first": "Review the LU elimination calculation first."
+                }
+              },
+              "follow_up_check": {
+                "type": "choice",
+                "instructions": "Which registered follow-up question should be proposed for this learning need?",
+                "criteria": {
+                  "ask_sign_relation": "Ask the student to explain why E and L have opposite elimination multiplier signs.",
+                  "ask_row_operation": "Ask the student to independently write the row operation and calculate the second row of U."
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "paraphrase_sign_relation_02",
+      "group": "paraphrase",
+      "baseline_focus_id": "sign_relation",
+      "description": "Same registered learning focus; alternate state wording only.",
+      "reference_policy": {
+        "plan_id": "sign_first",
+        "check_id": "ask_sign_relation"
+      },
+      "request": {
+        "states": [
+          {
+            "id": "urpp_lu_pilot_01",
+            "state": "In this synthetic LU exercise, computing U is not the student's difficulty. They want to understand the opposite multiplier signs in the elimination matrix E and lower matrix L.",
+            "questions": {
+              "teaching_plan": {
+                "type": "choice",
+                "instructions": "Which registered teaching plan should be proposed for this student's current learning need?",
+                "criteria": {
+                  "sign_first": "Explain the sign relationship between the elimination matrix E and lower matrix L first.",
+                  "calculation_first": "Review the LU elimination calculation first."
+                }
+              },
+              "follow_up_check": {
+                "type": "choice",
+                "instructions": "Which registered follow-up question should be proposed for this learning need?",
+                "criteria": {
+                  "ask_sign_relation": "Ask the student to explain why E and L have opposite elimination multiplier signs.",
+                  "ask_row_operation": "Ask the student to independently write the row operation and calculate the second row of U."
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "paraphrase_calculation_01",
+      "group": "paraphrase",
+      "baseline_focus_id": "calculation",
+      "description": "Same registered learning focus; alternate state wording only.",
+      "reference_policy": {
+        "plan_id": "calculation_first",
+        "check_id": "ask_row_operation"
+      },
+      "request": {
+        "states": [
+          {
+            "id": "urpp_lu_pilot_01",
+            "state": "The synthetic student is practicing the computational steps of LU factorization: finding the elimination multiplier, performing the row operation, and obtaining U.",
+            "questions": {
+              "teaching_plan": {
+                "type": "choice",
+                "instructions": "Which registered teaching plan should be proposed for this student's current learning need?",
+                "criteria": {
+                  "sign_first": "Explain the sign relationship between the elimination matrix E and lower matrix L first.",
+                  "calculation_first": "Review the LU elimination calculation first."
+                }
+              },
+              "follow_up_check": {
+                "type": "choice",
+                "instructions": "Which registered follow-up question should be proposed for this learning need?",
+                "criteria": {
+                  "ask_sign_relation": "Ask the student to explain why E and L have opposite elimination multiplier signs.",
+                  "ask_row_operation": "Ask the student to independently write the row operation and calculate the second row of U."
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "paraphrase_calculation_02",
+      "group": "paraphrase",
+      "baseline_focus_id": "calculation",
+      "description": "Same registered learning focus; alternate state wording only.",
+      "reference_policy": {
+        "plan_id": "calculation_first",
+        "check_id": "ask_row_operation"
+      },
+      "request": {
+        "states": [
+          {
+            "id": "urpp_lu_pilot_01",
+            "state": "In this synthetic LU exercise, the student needs a review of how to calculate the multiplier, eliminate the lower-left entry, and compute the resulting upper triangular U.",
+            "questions": {
+              "teaching_plan": {
+                "type": "choice",
+                "instructions": "Which registered teaching plan should be proposed for this student's current learning need?",
+                "criteria": {
+                  "sign_first": "Explain the sign relationship between the elimination matrix E and lower matrix L first.",
+                  "calculation_first": "Review the LU elimination calculation first."
+                }
+              },
+              "follow_up_check": {
+                "type": "choice",
+                "instructions": "Which registered follow-up question should be proposed for this learning need?",
+                "criteria": {
+                  "ask_sign_relation": "Ask the student to explain why E and L have opposite elimination multiplier signs.",
+                  "ask_row_operation": "Ask the student to independently write the row operation and calculate the second row of U."
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "candidate_description_sign_relation_01",
+      "group": "candidate_description",
+      "baseline_focus_id": "sign_relation",
+      "description": "Original learning state and question text; alternate descriptions for all four registered candidate actions.",
+      "reference_policy": {
+        "plan_id": "sign_first",
+        "check_id": "ask_sign_relation"
+      },
+      "request": {
+        "states": [
+          {
+            "id": "urpp_lu_pilot_01",
+            "state": "Synthetic LU teaching pilot. The student can calculate U but asks why the elimination matrix E and the lower triangular matrix L have opposite multiplier signs.",
+            "questions": {
+              "teaching_plan": {
+                "type": "choice",
+                "instructions": "Which registered teaching plan should be proposed for this student's current learning need?",
+                "criteria": {
+                  "sign_first": "Begin by explaining why the elimination matrix E and lower triangular matrix L contain opposite-signed elimination multipliers.",
+                  "calculation_first": "Begin by reviewing the calculation of the elimination multiplier, row operation, and upper triangular matrix U."
+                }
+              },
+              "follow_up_check": {
+                "type": "choice",
+                "instructions": "Which registered follow-up question should be proposed for this learning need?",
+                "criteria": {
+                  "ask_sign_relation": "Ask the learner to explain the relationship between the signs of the elimination multiplier in E and L.",
+                  "ask_row_operation": "Ask the learner to write the elimination row operation and independently calculate the resulting second row of U."
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "candidate_description_calculation_01",
+      "group": "candidate_description",
+      "baseline_focus_id": "calculation",
+      "description": "Original learning state and question text; alternate descriptions for all four registered candidate actions.",
+      "reference_policy": {
+        "plan_id": "calculation_first",
+        "check_id": "ask_row_operation"
+      },
+      "request": {
+        "states": [
+          {
+            "id": "urpp_lu_pilot_01",
+            "state": "Synthetic LU teaching pilot. The student is reviewing the calculation of the elimination multiplier, row operation, and upper triangular matrix U.",
+            "questions": {
+              "teaching_plan": {
+                "type": "choice",
+                "instructions": "Which registered teaching plan should be proposed for this student's current learning need?",
+                "criteria": {
+                  "sign_first": "Begin by explaining why the elimination matrix E and lower triangular matrix L contain opposite-signed elimination multipliers.",
+                  "calculation_first": "Begin by reviewing the calculation of the elimination multiplier, row operation, and upper triangular matrix U."
+                }
+              },
+              "follow_up_check": {
+                "type": "choice",
+                "instructions": "Which registered follow-up question should be proposed for this learning need?",
+                "criteria": {
+                  "ask_sign_relation": "Ask the learner to explain the relationship between the signs of the elimination multiplier in E and L.",
+                  "ask_row_operation": "Ask the learner to write the elimination row operation and independently calculate the resulting second row of U."
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "ambiguous_missing_focus_01",
+      "group": "ambiguous",
+      "baseline_focus_id": null,
+      "description": "Learning need is insufficiently specified.",
+      "reference_policy": null,
+      "request": {
+        "states": [
+          {
+            "id": "urpp_lu_pilot_01",
+            "state": "Synthetic LU teaching pilot. The student asks for help with LU factorization but does not identify whether the difficulty concerns the calculation of U or the sign relationship between E and L.",
+            "questions": {
+              "teaching_plan": {
+                "type": "choice",
+                "instructions": "Which registered teaching plan should be proposed for this student's current learning need?",
+                "criteria": {
+                  "sign_first": "Explain the sign relationship between the elimination matrix E and lower matrix L first.",
+                  "calculation_first": "Review the LU elimination calculation first."
+                }
+              },
+              "follow_up_check": {
+                "type": "choice",
+                "instructions": "Which registered follow-up question should be proposed for this learning need?",
+                "criteria": {
+                  "ask_sign_relation": "Ask the student to explain why E and L have opposite elimination multiplier signs.",
+                  "ask_row_operation": "Ask the student to independently write the row operation and calculate the second row of U."
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "ambiguous_conflicting_focus_01",
+      "group": "ambiguous",
+      "baseline_focus_id": null,
+      "description": "The synthetic state contains conflicting needs.",
+      "reference_policy": null,
+      "request": {
+        "states": [
+          {
+            "id": "urpp_lu_pilot_01",
+            "state": "Synthetic LU teaching pilot. One statement says the student can calculate U and needs only the sign relationship between E and L explained. A second statement says the student cannot calculate U and needs the elimination procedure reviewed. The two statements have not been reconciled.",
+            "questions": {
+              "teaching_plan": {
+                "type": "choice",
+                "instructions": "Which registered teaching plan should be proposed for this student's current learning need?",
+                "criteria": {
+                  "sign_first": "Explain the sign relationship between the elimination matrix E and lower matrix L first.",
+                  "calculation_first": "Review the LU elimination calculation first."
+                }
+              },
+              "follow_up_check": {
+                "type": "choice",
+                "instructions": "Which registered follow-up question should be proposed for this learning need?",
+                "criteria": {
+                  "ask_sign_relation": "Ask the student to explain why E and L have opposite elimination multiplier signs.",
+                  "ask_row_operation": "Ask the student to independently write the row operation and calculate the second row of U."
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

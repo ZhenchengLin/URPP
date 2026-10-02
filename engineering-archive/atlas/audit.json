@@ -1,0 +1,72 @@
+{
+  "archive": "URPP Engineering Archive — Reply 10 Atlas",
+  "source_checkpoint": "a82b2ad8a9b4d7ff812e08e8d956282a5a9256c3",
+  "timeline": {
+    "commits": 55,
+    "from": "2026-09-18T16:16:50-07:00",
+    "to": "2026-09-20T12:16:22-07:00",
+    "source": "urpp_history_metadata.zip/history_manifest.json; Git history as collected, not live HEAD"
+  },
+  "chapters": [
+    {
+      "chapter": "03",
+      "index": null,
+      "index_bytes": 0,
+      "source_pack": "early_architecture_source_pack.zip"
+    },
+    {
+      "chapter": "04",
+      "index": null,
+      "index_bytes": 0,
+      "source_pack": "assessment_history_source_pack.zip"
+    },
+    {
+      "chapter": "05",
+      "index": "evidence/reply5_chapter_source_index.json",
+      "index_bytes": 509,
+      "source_pack": "decision_orchestration_history_source_pack.zip"
+    },
+    {
+      "chapter": "06",
+      "index": "evidence/reply6_source_index.json",
+      "index_bytes": 29794,
+      "source_pack": "persistence_recovery_history_source_pack.zip"
+    },
+    {
+      "chapter": "07",
+      "index": "evidence/reply7_chapter_source_index.json",
+      "index_bytes": 5586,
+      "source_pack": "decision_orchestration_history_source_pack.zip"
+    },
+    {
+      "chapter": "08",
+      "index": "evidence/reply8_chapter_source_index.json",
+      "index_bytes": 28013,
+      "source_pack": "transfer_review_history_source_pack.zip"
+    },
+    {
+      "chapter": "09",
+      "index": "evidence/reply9_source_index.json",
+      "index_bytes": 35764,
+      "source_pack": "implementation_13e_history_source_pack.zip"
+    }
+  ],
+  "search": {
+    "basis": "Markdown technical chapter text from Release ZIPs 3–9",
+    "section_count": 233,
+    "limit": "section-to-HTML anchors matched by normalized heading similarity; otherwise opens chapter"
+  },
+  "early_architecture": "Exists on user Mac per terminal log, but exact page bytes not present in Reply 3–9 release ZIPs; linked, not re-audited here.",
+  "issues": {
+    "historical_feedback": 3,
+    "verified_code_diff": 1,
+    "defensive_test": 3
+  },
+  "warnings": [
+    "Replay of tests has not been performed for Reply 10.",
+    "Older chapter source indexes vary in completeness; file links are not proof of authentication or full runtime behavior.",
+    "CLI refuses to reopen an existing database even though lower-level session recovery exists.",
+    "Real external Reviewer authorization and independent mastery verification are not established by the present historical code.",
+    "Existing index.html and chapter HTML are not overwritten by the Atlas install."
+  ]
+}

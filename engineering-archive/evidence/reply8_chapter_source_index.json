@@ -1,0 +1,552 @@
+{
+  "chapter": "URPP Engineering Archive Reply 8",
+  "evidence_pack": "transfer_review_history_source_pack.zip",
+  "checkpoints": [
+    {
+      "label": "transfer_action_eligibility",
+      "commit": "e2ef14dd3eaed2939fe49391bc8d31b3c5e775e1"
+    },
+    {
+      "label": "transfer_design_review",
+      "commit": "1e6ca9802a13edb648a2ab8551279feebf09ba95"
+    },
+    {
+      "label": "transfer_delivery_gate",
+      "commit": "bbddaf38eda326ba403e0b0274ef93a29207904d"
+    },
+    {
+      "label": "reviewer_authorization",
+      "commit": "d8aac30f0856a7faef3f65036b6351e99deb1bc9"
+    },
+    {
+      "label": "review_decision_persistence",
+      "commit": "8c83c51ae6b4821349a4b54732e349a5708872fa"
+    },
+    {
+      "label": "review_lifecycle",
+      "commit": "bc79363d179b5a0b318b418c651d917e8c9bf976"
+    },
+    {
+      "label": "review_application",
+      "commit": "4e165f2b356e0af361c0e31ec107c7065a0ed20c"
+    }
+  ],
+  "aliases": {
+    "M01": "SOURCE_MANIFEST.json",
+    "S01": "final_snapshot/backend/app/services/decision/assessment_action_eligibility_v01.py",
+    "S02": "final_snapshot/backend/app/services/assessment/transfer_design_review_v01.py",
+    "S03": "final_snapshot/backend/app/services/decision/transfer_delivery_gate_v01.py",
+    "S04": "final_snapshot/backend/app/services/assessment/transfer_reviewer_authorization_v01.py",
+    "S05": "final_snapshot/backend/app/services/assessment/transfer_review_decision_v01.py",
+    "S07": "final_snapshot/backend/app/repositories/transfer_review_decisions_v01.py",
+    "S08": "final_snapshot/backend/app/services/decision/recoverable_numeric_session_v01.py",
+    "S09": "final_snapshot/backend/app/services/assessment/numeric_scoring_v02.py",
+    "S10": "final_snapshot/backend/app/services/assessment/transfer_review_lifecycle_v01.py",
+    "S11": "final_snapshot/backend/app/services/assessment/transfer_review_application_v01.py",
+    "S06": "history/review_decision_persistence_8c83c51ae6/backend/app/services/assessment/transfer_review_decision_v01.py",
+    "P01": "diffs/transfer_action_eligibility_e2ef14dd3e.patch",
+    "P02": "diffs/transfer_design_review_1e6ca9802a.patch",
+    "P03": "diffs/transfer_delivery_gate_bbddaf38ed.patch",
+    "P04": "diffs/reviewer_authorization_d8aac30f08.patch",
+    "P05": "diffs/review_decision_persistence_8c83c51ae6.patch",
+    "P06": "diffs/review_lifecycle_bc79363d17.patch",
+    "P07": "diffs/review_application_4e165f2b35.patch",
+    "D12": "history/transfer_action_eligibility_e2ef14dd3e/docs/12_assessment_action_eligibility_v0.1.md",
+    "D13": "history/transfer_design_review_1e6ca9802a/docs/13_transfer_design_review_contract_v0.1.md",
+    "D14": "history/transfer_delivery_gate_bbddaf38ed/docs/14_transfer_delivery_fail_closed_v0.1.md",
+    "D15": "history/reviewer_authorization_d8aac30f08/docs/15_transfer_reviewer_authorization_v0.1.md",
+    "D16": "history/review_decision_persistence_8c83c51ae6/docs/16_transfer_review_decision_persistence_v0.1.md",
+    "D17": "history/review_lifecycle_bc79363d17/docs/17_transfer_review_lifecycle_v0.1.md",
+    "D18": "history/review_application_4e165f2b35/docs/18_transfer_review_application_v0.1.md",
+    "T01": "history/transfer_action_eligibility_e2ef14dd3e/backend/tests/test_assessment_action_eligibility_v01.py",
+    "T02": "history/transfer_design_review_1e6ca9802a/backend/tests/test_transfer_design_review_v01.py",
+    "T03": "history/transfer_delivery_gate_bbddaf38ed/backend/tests/test_transfer_delivery_gate_v01.py",
+    "T04": "history/reviewer_authorization_d8aac30f08/backend/tests/test_transfer_reviewer_authorization_v01.py",
+    "T05": "history/review_decision_persistence_8c83c51ae6/backend/tests/test_transfer_review_decisions_v01.py",
+    "T06": "history/review_lifecycle_bc79363d17/backend/tests/test_transfer_review_lifecycle_v01.py",
+    "T07": "history/review_application_4e165f2b35/backend/tests/test_transfer_review_application_v01.py"
+  },
+  "source_entries": [
+    {
+      "category": "historical_source",
+      "commit": "e2ef14dd3eaed2939fe49391bc8d31b3c5e775e1",
+      "original_path": "backend/app/services/decision/assessment_action_eligibility_v01.py",
+      "archive_path": "history/transfer_action_eligibility_e2ef14dd3e/backend/app/services/decision/assessment_action_eligibility_v01.py",
+      "size": 2029,
+      "sha256": "edf5ec6d1d1a7d649e8518e0884d5a44c81d6c9f606746de3ac85c3431889236"
+    },
+    {
+      "category": "historical_source",
+      "commit": "e2ef14dd3eaed2939fe49391bc8d31b3c5e775e1",
+      "original_path": "backend/app/services/decision/recoverable_numeric_session_v01.py",
+      "archive_path": "history/transfer_action_eligibility_e2ef14dd3e/backend/app/services/decision/recoverable_numeric_session_v01.py",
+      "size": 13263,
+      "sha256": "88a97749d0f0ef0d843218b7f87a1aa7da56cd399b4759c0ae7bcb1de7999859"
+    },
+    {
+      "category": "historical_source",
+      "commit": "e2ef14dd3eaed2939fe49391bc8d31b3c5e775e1",
+      "original_path": "backend/tests/test_assessment_action_eligibility_v01.py",
+      "archive_path": "history/transfer_action_eligibility_e2ef14dd3e/backend/tests/test_assessment_action_eligibility_v01.py",
+      "size": 3315,
+      "sha256": "d76152537b8a5585f4060dd345b3c7fa08fa7128dca959d8e42b413e956a963d"
+    },
+    {
+      "category": "historical_source",
+      "commit": "e2ef14dd3eaed2939fe49391bc8d31b3c5e775e1",
+      "original_path": "backend/tests/test_personalized_numeric_session_sqlite_v01.py",
+      "archive_path": "history/transfer_action_eligibility_e2ef14dd3e/backend/tests/test_personalized_numeric_session_sqlite_v01.py",
+      "size": 14586,
+      "sha256": "a462419ebcb06748ee010357f0bb900153b11934c6dc297e9136c4a0bb6f43c7"
+    },
+    {
+      "category": "historical_source",
+      "commit": "e2ef14dd3eaed2939fe49391bc8d31b3c5e775e1",
+      "original_path": "docs/12_assessment_action_eligibility_v0.1.md",
+      "archive_path": "history/transfer_action_eligibility_e2ef14dd3e/docs/12_assessment_action_eligibility_v0.1.md",
+      "size": 2551,
+      "sha256": "b0b7542fb733f4afeb8472fd13eecb514604894cf230f848e3a86f586f7e664b"
+    },
+    {
+      "category": "historical_patch",
+      "commit": "e2ef14dd3eaed2939fe49391bc8d31b3c5e775e1",
+      "original_path": "<historical_git_diff>",
+      "archive_path": "diffs/transfer_action_eligibility_e2ef14dd3e.patch",
+      "size": 12069,
+      "sha256": "ae1e9ce4e6981bfecc1eb33d95cf18bce30f9ab2ee240a45185487cac6c37528"
+    },
+    {
+      "category": "historical_source",
+      "commit": "1e6ca9802a13edb648a2ab8551279feebf09ba95",
+      "original_path": "backend/app/services/assessment/transfer_design_review_v01.py",
+      "archive_path": "history/transfer_design_review_1e6ca9802a/backend/app/services/assessment/transfer_design_review_v01.py",
+      "size": 6742,
+      "sha256": "0a4078e45dc479fe05e70360a3406659ab34854eaf397bb75e1678c67db6317c"
+    },
+    {
+      "category": "historical_source",
+      "commit": "1e6ca9802a13edb648a2ab8551279feebf09ba95",
+      "original_path": "backend/tests/test_transfer_design_review_v01.py",
+      "archive_path": "history/transfer_design_review_1e6ca9802a/backend/tests/test_transfer_design_review_v01.py",
+      "size": 7885,
+      "sha256": "fa04e0672777b52ad074c7ca9eee3fde7157bcdd0c9968e69d591f1eafa7f44b"
+    },
+    {
+      "category": "historical_source",
+      "commit": "1e6ca9802a13edb648a2ab8551279feebf09ba95",
+      "original_path": "docs/13_transfer_design_review_contract_v0.1.md",
+      "archive_path": "history/transfer_design_review_1e6ca9802a/docs/13_transfer_design_review_contract_v0.1.md",
+      "size": 3124,
+      "sha256": "6b85c6fc019cc2a97b2e069801f11e3e95aad9230cd3f1e2642e84acd06e01e7"
+    },
+    {
+      "category": "historical_patch",
+      "commit": "1e6ca9802a13edb648a2ab8551279feebf09ba95",
+      "original_path": "<historical_git_diff>",
+      "archive_path": "diffs/transfer_design_review_1e6ca9802a.patch",
+      "size": 19507,
+      "sha256": "5115e819bdb739c3d73cfce9f2f4072bc418bb213441109a4e613911022b1eed"
+    },
+    {
+      "category": "historical_source",
+      "commit": "bbddaf38eda326ba403e0b0274ef93a29207904d",
+      "original_path": "backend/app/services/decision/recoverable_numeric_session_v01.py",
+      "archive_path": "history/transfer_delivery_gate_bbddaf38ed/backend/app/services/decision/recoverable_numeric_session_v01.py",
+      "size": 13655,
+      "sha256": "9e43bb3ec0b5d0d1e6f5eba0f0b72553ce5b8671f342cd4fd89b29af4f86e47f"
+    },
+    {
+      "category": "historical_source",
+      "commit": "bbddaf38eda326ba403e0b0274ef93a29207904d",
+      "original_path": "backend/app/services/decision/transfer_delivery_gate_v01.py",
+      "archive_path": "history/transfer_delivery_gate_bbddaf38ed/backend/app/services/decision/transfer_delivery_gate_v01.py",
+      "size": 1216,
+      "sha256": "7e7228f29809c727be88e0096c728e4b0de418dc60de78ae6d8734d4c8405869"
+    },
+    {
+      "category": "historical_source",
+      "commit": "bbddaf38eda326ba403e0b0274ef93a29207904d",
+      "original_path": "backend/tests/test_personalized_numeric_session_sqlite_v01.py",
+      "archive_path": "history/transfer_delivery_gate_bbddaf38ed/backend/tests/test_personalized_numeric_session_sqlite_v01.py",
+      "size": 15913,
+      "sha256": "0f2d6d0751306204202fa7a1e537bf373962a1f82ef31a4060bc4e2c7c008f7a"
+    },
+    {
+      "category": "historical_source",
+      "commit": "bbddaf38eda326ba403e0b0274ef93a29207904d",
+      "original_path": "backend/tests/test_transfer_delivery_gate_v01.py",
+      "archive_path": "history/transfer_delivery_gate_bbddaf38ed/backend/tests/test_transfer_delivery_gate_v01.py",
+      "size": 1440,
+      "sha256": "3560153db30e0b66f70f4892855794e4b229c38fe948933c8bed770409040c12"
+    },
+    {
+      "category": "historical_source",
+      "commit": "bbddaf38eda326ba403e0b0274ef93a29207904d",
+      "original_path": "backend/tests/test_transfer_design_review_v01.py",
+      "archive_path": "history/transfer_delivery_gate_bbddaf38ed/backend/tests/test_transfer_design_review_v01.py",
+      "size": 7931,
+      "sha256": "d911940b7d5f7341aa98b80d1c0129a4d1cc29caeda426b23d4001637be61b38"
+    },
+    {
+      "category": "historical_source",
+      "commit": "bbddaf38eda326ba403e0b0274ef93a29207904d",
+      "original_path": "docs/14_transfer_delivery_fail_closed_v0.1.md",
+      "archive_path": "history/transfer_delivery_gate_bbddaf38ed/docs/14_transfer_delivery_fail_closed_v0.1.md",
+      "size": 2618,
+      "sha256": "8c011ce2525c9222c1bf839dc6479989f945a6eff005d29d6b940d87c8493784"
+    },
+    {
+      "category": "historical_patch",
+      "commit": "bbddaf38eda326ba403e0b0274ef93a29207904d",
+      "original_path": "<historical_git_diff>",
+      "archive_path": "diffs/transfer_delivery_gate_bbddaf38ed.patch",
+      "size": 10535,
+      "sha256": "043047cc59fad0a72ed7a5691f728d96972b4013ceef6cc2d4292cf9a2661c60"
+    },
+    {
+      "category": "historical_source",
+      "commit": "d8aac30f0856a7faef3f65036b6351e99deb1bc9",
+      "original_path": "backend/app/services/assessment/transfer_reviewer_authorization_v01.py",
+      "archive_path": "history/reviewer_authorization_d8aac30f08/backend/app/services/assessment/transfer_reviewer_authorization_v01.py",
+      "size": 7692,
+      "sha256": "3701864e2fdf8e7b2e671e1c47dfd476b96352e1fa83aedb7c18b77f64fb1716"
+    },
+    {
+      "category": "historical_source",
+      "commit": "d8aac30f0856a7faef3f65036b6351e99deb1bc9",
+      "original_path": "backend/tests/test_transfer_reviewer_authorization_v01.py",
+      "archive_path": "history/reviewer_authorization_d8aac30f08/backend/tests/test_transfer_reviewer_authorization_v01.py",
+      "size": 10432,
+      "sha256": "d1d462b3587868f1b215b3a12245739eb1255a22d8ecd5ed897c9e35ed36b767"
+    },
+    {
+      "category": "historical_source",
+      "commit": "d8aac30f0856a7faef3f65036b6351e99deb1bc9",
+      "original_path": "docs/15_transfer_reviewer_authorization_v0.1.md",
+      "archive_path": "history/reviewer_authorization_d8aac30f08/docs/15_transfer_reviewer_authorization_v0.1.md",
+      "size": 3270,
+      "sha256": "95ad8f7ae885f0f1cc29c8f7982f20b5cae75d1ee82ec8ab048b9c1ceee1d0b1"
+    },
+    {
+      "category": "historical_patch",
+      "commit": "d8aac30f0856a7faef3f65036b6351e99deb1bc9",
+      "original_path": "<historical_git_diff>",
+      "archive_path": "diffs/reviewer_authorization_d8aac30f08.patch",
+      "size": 23318,
+      "sha256": "b902651415607bceb8324f51f6b17feb3be0c3e8370d96f678bbced3332d258a"
+    },
+    {
+      "category": "historical_source",
+      "commit": "8c83c51ae6b4821349a4b54732e349a5708872fa",
+      "original_path": "backend/app/repositories/transfer_review_decisions_v01.py",
+      "archive_path": "history/review_decision_persistence_8c83c51ae6/backend/app/repositories/transfer_review_decisions_v01.py",
+      "size": 6983,
+      "sha256": "526398516317c50b231a217f5bfe701958f832290883af03eb34b99c11869360"
+    },
+    {
+      "category": "historical_source",
+      "commit": "8c83c51ae6b4821349a4b54732e349a5708872fa",
+      "original_path": "backend/app/services/assessment/transfer_review_decision_v01.py",
+      "archive_path": "history/review_decision_persistence_8c83c51ae6/backend/app/services/assessment/transfer_review_decision_v01.py",
+      "size": 4166,
+      "sha256": "ea7c4fe4eed8b2411af74e30af8699a0eacd4f3d62c3f55cdcd17b7946667cf4"
+    },
+    {
+      "category": "historical_source",
+      "commit": "8c83c51ae6b4821349a4b54732e349a5708872fa",
+      "original_path": "backend/tests/test_transfer_review_decisions_v01.py",
+      "archive_path": "history/review_decision_persistence_8c83c51ae6/backend/tests/test_transfer_review_decisions_v01.py",
+      "size": 10583,
+      "sha256": "5caeef85f817d6ed7b86f86dc0569352d2fb0f6ad8f1ec66ba8b46369af674c6"
+    },
+    {
+      "category": "historical_source",
+      "commit": "8c83c51ae6b4821349a4b54732e349a5708872fa",
+      "original_path": "backend/tests/test_transfer_reviewer_authorization_v01.py",
+      "archive_path": "history/review_decision_persistence_8c83c51ae6/backend/tests/test_transfer_reviewer_authorization_v01.py",
+      "size": 10432,
+      "sha256": "8570790bdd1ed29b8cea45128f015723865e552d1932393380c04d567f795175"
+    },
+    {
+      "category": "historical_source",
+      "commit": "8c83c51ae6b4821349a4b54732e349a5708872fa",
+      "original_path": "docs/16_transfer_review_decision_persistence_v0.1.md",
+      "archive_path": "history/review_decision_persistence_8c83c51ae6/docs/16_transfer_review_decision_persistence_v0.1.md",
+      "size": 3495,
+      "sha256": "b47ad25d6199cee60f3a840000926ad87bcbba6a66f197d0ae6e84a5aae64d21"
+    },
+    {
+      "category": "historical_patch",
+      "commit": "8c83c51ae6b4821349a4b54732e349a5708872fa",
+      "original_path": "<historical_git_diff>",
+      "archive_path": "diffs/review_decision_persistence_8c83c51ae6.patch",
+      "size": 33418,
+      "sha256": "35c957eb8b378a6344ef02adbd034a209cb461ebb501f39e2b1e302620edbe38"
+    },
+    {
+      "category": "historical_source",
+      "commit": "bc79363d179b5a0b318b418c651d917e8c9bf976",
+      "original_path": "backend/app/services/assessment/transfer_review_decision_v01.py",
+      "archive_path": "history/review_lifecycle_bc79363d17/backend/app/services/assessment/transfer_review_decision_v01.py",
+      "size": 4188,
+      "sha256": "57a027da74b9a34092c95e18146257e4272b0584e22d357dadb6866b5d1f92c3"
+    },
+    {
+      "category": "historical_source",
+      "commit": "bc79363d179b5a0b318b418c651d917e8c9bf976",
+      "original_path": "backend/app/services/assessment/transfer_review_lifecycle_v01.py",
+      "archive_path": "history/review_lifecycle_bc79363d17/backend/app/services/assessment/transfer_review_lifecycle_v01.py",
+      "size": 7744,
+      "sha256": "7e5408c5c4be3f26cd0162d4559ddc7203d2f42fc3032c4d46a1cd2faad249f4"
+    },
+    {
+      "category": "historical_source",
+      "commit": "bc79363d179b5a0b318b418c651d917e8c9bf976",
+      "original_path": "backend/tests/test_transfer_review_lifecycle_v01.py",
+      "archive_path": "history/review_lifecycle_bc79363d17/backend/tests/test_transfer_review_lifecycle_v01.py",
+      "size": 12910,
+      "sha256": "30d5f3fd8e10b87e298f754ada8615db80bdc55dd099c6a27d5ac6429d6dd433"
+    },
+    {
+      "category": "historical_source",
+      "commit": "bc79363d179b5a0b318b418c651d917e8c9bf976",
+      "original_path": "docs/17_transfer_review_lifecycle_v0.1.md",
+      "archive_path": "history/review_lifecycle_bc79363d17/docs/17_transfer_review_lifecycle_v0.1.md",
+      "size": 3799,
+      "sha256": "9dff4cedb850f6182850b03626d2f75e019a5bb162d86e2804fa21c5e03c990f"
+    },
+    {
+      "category": "historical_patch",
+      "commit": "bc79363d179b5a0b318b418c651d917e8c9bf976",
+      "original_path": "<historical_git_diff>",
+      "archive_path": "diffs/review_lifecycle_bc79363d17.patch",
+      "size": 27057,
+      "sha256": "fcb6044a0ec219ca17fb1349352a318253ded8ed7e0e56800483d24c91c2b8e1"
+    },
+    {
+      "category": "historical_source",
+      "commit": "4e165f2b356e0af361c0e31ec107c7065a0ed20c",
+      "original_path": "backend/app/services/assessment/transfer_review_application_v01.py",
+      "archive_path": "history/review_application_4e165f2b35/backend/app/services/assessment/transfer_review_application_v01.py",
+      "size": 6784,
+      "sha256": "a810fbf9094be09f43c99ed7d056ff2d054946f874380403af146a31bb0eacf6"
+    },
+    {
+      "category": "historical_source",
+      "commit": "4e165f2b356e0af361c0e31ec107c7065a0ed20c",
+      "original_path": "backend/tests/test_transfer_review_application_v01.py",
+      "archive_path": "history/review_application_4e165f2b35/backend/tests/test_transfer_review_application_v01.py",
+      "size": 17244,
+      "sha256": "55c181ff7a63f101f7eb7c6301749ae2712a7fb5e32029cfda1a0ef0ad15e80e"
+    },
+    {
+      "category": "historical_source",
+      "commit": "4e165f2b356e0af361c0e31ec107c7065a0ed20c",
+      "original_path": "docs/18_transfer_review_application_v0.1.md",
+      "archive_path": "history/review_application_4e165f2b35/docs/18_transfer_review_application_v0.1.md",
+      "size": 3355,
+      "sha256": "c35d0d31744b09f3a1b430bdaa593d1704d9bab6d229a03e2bc0b9c896728afa"
+    },
+    {
+      "category": "historical_patch",
+      "commit": "4e165f2b356e0af361c0e31ec107c7065a0ed20c",
+      "original_path": "<historical_git_diff>",
+      "archive_path": "diffs/review_application_4e165f2b35.patch",
+      "size": 29546,
+      "sha256": "52dda2fa2ce112ef1ef9b1c2716a272b922c74541ce3aba04ddcd4691550c4d4"
+    },
+    {
+      "category": "final_snapshot",
+      "commit": "4e165f2b356e0af361c0e31ec107c7065a0ed20c",
+      "original_path": "backend/app/repositories/transfer_review_decisions_v01.py",
+      "archive_path": "final_snapshot/backend/app/repositories/transfer_review_decisions_v01.py",
+      "size": 6983,
+      "sha256": "526398516317c50b231a217f5bfe701958f832290883af03eb34b99c11869360"
+    },
+    {
+      "category": "final_snapshot",
+      "commit": "4e165f2b356e0af361c0e31ec107c7065a0ed20c",
+      "original_path": "backend/app/services/assessment/numeric_scoring_v02.py",
+      "archive_path": "final_snapshot/backend/app/services/assessment/numeric_scoring_v02.py",
+      "size": 3951,
+      "sha256": "edf90761a7baab6b3d9144b752a70d9ac206e040317136072d2e8400f9289097"
+    },
+    {
+      "category": "final_snapshot",
+      "commit": "4e165f2b356e0af361c0e31ec107c7065a0ed20c",
+      "original_path": "backend/app/services/assessment/review_approval_v02.py",
+      "archive_path": "final_snapshot/backend/app/services/assessment/review_approval_v02.py",
+      "size": 7630,
+      "sha256": "1d728d3280270cc1d0e9e19888837ef3695012049c91447e1f90d5cc8d5c6446"
+    },
+    {
+      "category": "final_snapshot",
+      "commit": "4e165f2b356e0af361c0e31ec107c7065a0ed20c",
+      "original_path": "backend/app/services/assessment/transfer_design_review_v01.py",
+      "archive_path": "final_snapshot/backend/app/services/assessment/transfer_design_review_v01.py",
+      "size": 6742,
+      "sha256": "0a4078e45dc479fe05e70360a3406659ab34854eaf397bb75e1678c67db6317c"
+    },
+    {
+      "category": "final_snapshot",
+      "commit": "4e165f2b356e0af361c0e31ec107c7065a0ed20c",
+      "original_path": "backend/app/services/assessment/transfer_review_application_v01.py",
+      "archive_path": "final_snapshot/backend/app/services/assessment/transfer_review_application_v01.py",
+      "size": 6784,
+      "sha256": "a810fbf9094be09f43c99ed7d056ff2d054946f874380403af146a31bb0eacf6"
+    },
+    {
+      "category": "final_snapshot",
+      "commit": "4e165f2b356e0af361c0e31ec107c7065a0ed20c",
+      "original_path": "backend/app/services/assessment/transfer_review_decision_v01.py",
+      "archive_path": "final_snapshot/backend/app/services/assessment/transfer_review_decision_v01.py",
+      "size": 4188,
+      "sha256": "57a027da74b9a34092c95e18146257e4272b0584e22d357dadb6866b5d1f92c3"
+    },
+    {
+      "category": "final_snapshot",
+      "commit": "4e165f2b356e0af361c0e31ec107c7065a0ed20c",
+      "original_path": "backend/app/services/assessment/transfer_review_lifecycle_v01.py",
+      "archive_path": "final_snapshot/backend/app/services/assessment/transfer_review_lifecycle_v01.py",
+      "size": 7744,
+      "sha256": "7e5408c5c4be3f26cd0162d4559ddc7203d2f42fc3032c4d46a1cd2faad249f4"
+    },
+    {
+      "category": "final_snapshot",
+      "commit": "4e165f2b356e0af361c0e31ec107c7065a0ed20c",
+      "original_path": "backend/app/services/assessment/transfer_reviewer_authorization_v01.py",
+      "archive_path": "final_snapshot/backend/app/services/assessment/transfer_reviewer_authorization_v01.py",
+      "size": 7692,
+      "sha256": "3701864e2fdf8e7b2e671e1c47dfd476b96352e1fa83aedb7c18b77f64fb1716"
+    },
+    {
+      "category": "final_snapshot",
+      "commit": "4e165f2b356e0af361c0e31ec107c7065a0ed20c",
+      "original_path": "backend/app/services/decision/assessment_action_eligibility_v01.py",
+      "archive_path": "final_snapshot/backend/app/services/decision/assessment_action_eligibility_v01.py",
+      "size": 2029,
+      "sha256": "edf5ec6d1d1a7d649e8518e0884d5a44c81d6c9f606746de3ac85c3431889236"
+    },
+    {
+      "category": "final_snapshot",
+      "commit": "4e165f2b356e0af361c0e31ec107c7065a0ed20c",
+      "original_path": "backend/app/services/decision/recoverable_numeric_session_v01.py",
+      "archive_path": "final_snapshot/backend/app/services/decision/recoverable_numeric_session_v01.py",
+      "size": 13655,
+      "sha256": "9e43bb3ec0b5d0d1e6f5eba0f0b72553ce5b8671f342cd4fd89b29af4f86e47f"
+    },
+    {
+      "category": "final_snapshot",
+      "commit": "4e165f2b356e0af361c0e31ec107c7065a0ed20c",
+      "original_path": "backend/app/services/decision/transfer_delivery_gate_v01.py",
+      "archive_path": "final_snapshot/backend/app/services/decision/transfer_delivery_gate_v01.py",
+      "size": 1216,
+      "sha256": "7e7228f29809c727be88e0096c728e4b0de418dc60de78ae6d8734d4c8405869"
+    },
+    {
+      "category": "final_snapshot",
+      "commit": "4e165f2b356e0af361c0e31ec107c7065a0ed20c",
+      "original_path": "backend/tests/test_review_approval_v02.py",
+      "archive_path": "final_snapshot/backend/tests/test_review_approval_v02.py",
+      "size": 8846,
+      "sha256": "057ff9542ad4aa8320051abf8b7f6379e02c1b3b6387604176dc72e0b070b830"
+    },
+    {
+      "category": "final_snapshot",
+      "commit": "4e165f2b356e0af361c0e31ec107c7065a0ed20c",
+      "original_path": "backend/tests/test_transfer_delivery_gate_v01.py",
+      "archive_path": "final_snapshot/backend/tests/test_transfer_delivery_gate_v01.py",
+      "size": 1440,
+      "sha256": "3560153db30e0b66f70f4892855794e4b229c38fe948933c8bed770409040c12"
+    },
+    {
+      "category": "final_snapshot",
+      "commit": "4e165f2b356e0af361c0e31ec107c7065a0ed20c",
+      "original_path": "backend/tests/test_transfer_design_review_v01.py",
+      "archive_path": "final_snapshot/backend/tests/test_transfer_design_review_v01.py",
+      "size": 7931,
+      "sha256": "d911940b7d5f7341aa98b80d1c0129a4d1cc29caeda426b23d4001637be61b38"
+    },
+    {
+      "category": "final_snapshot",
+      "commit": "4e165f2b356e0af361c0e31ec107c7065a0ed20c",
+      "original_path": "backend/tests/test_transfer_review_application_v01.py",
+      "archive_path": "final_snapshot/backend/tests/test_transfer_review_application_v01.py",
+      "size": 17244,
+      "sha256": "55c181ff7a63f101f7eb7c6301749ae2712a7fb5e32029cfda1a0ef0ad15e80e"
+    },
+    {
+      "category": "final_snapshot",
+      "commit": "4e165f2b356e0af361c0e31ec107c7065a0ed20c",
+      "original_path": "backend/tests/test_transfer_review_decisions_v01.py",
+      "archive_path": "final_snapshot/backend/tests/test_transfer_review_decisions_v01.py",
+      "size": 10583,
+      "sha256": "5caeef85f817d6ed7b86f86dc0569352d2fb0f6ad8f1ec66ba8b46369af674c6"
+    },
+    {
+      "category": "final_snapshot",
+      "commit": "4e165f2b356e0af361c0e31ec107c7065a0ed20c",
+      "original_path": "backend/tests/test_transfer_review_lifecycle_v01.py",
+      "archive_path": "final_snapshot/backend/tests/test_transfer_review_lifecycle_v01.py",
+      "size": 12910,
+      "sha256": "30d5f3fd8e10b87e298f754ada8615db80bdc55dd099c6a27d5ac6429d6dd433"
+    },
+    {
+      "category": "final_snapshot",
+      "commit": "4e165f2b356e0af361c0e31ec107c7065a0ed20c",
+      "original_path": "backend/tests/test_transfer_reviewer_authorization_v01.py",
+      "archive_path": "final_snapshot/backend/tests/test_transfer_reviewer_authorization_v01.py",
+      "size": 10432,
+      "sha256": "8570790bdd1ed29b8cea45128f015723865e552d1932393380c04d567f795175"
+    },
+    {
+      "category": "final_snapshot",
+      "commit": "4e165f2b356e0af361c0e31ec107c7065a0ed20c",
+      "original_path": "docs/13_transfer_design_review_contract_v0.1.md",
+      "archive_path": "final_snapshot/docs/13_transfer_design_review_contract_v0.1.md",
+      "size": 3124,
+      "sha256": "6b85c6fc019cc2a97b2e069801f11e3e95aad9230cd3f1e2642e84acd06e01e7"
+    },
+    {
+      "category": "final_snapshot",
+      "commit": "4e165f2b356e0af361c0e31ec107c7065a0ed20c",
+      "original_path": "docs/14_transfer_delivery_fail_closed_v0.1.md",
+      "archive_path": "final_snapshot/docs/14_transfer_delivery_fail_closed_v0.1.md",
+      "size": 2618,
+      "sha256": "8c011ce2525c9222c1bf839dc6479989f945a6eff005d29d6b940d87c8493784"
+    },
+    {
+      "category": "final_snapshot",
+      "commit": "4e165f2b356e0af361c0e31ec107c7065a0ed20c",
+      "original_path": "docs/15_transfer_reviewer_authorization_v0.1.md",
+      "archive_path": "final_snapshot/docs/15_transfer_reviewer_authorization_v0.1.md",
+      "size": 3270,
+      "sha256": "95ad8f7ae885f0f1cc29c8f7982f20b5cae75d1ee82ec8ab048b9c1ceee1d0b1"
+    },
+    {
+      "category": "final_snapshot",
+      "commit": "4e165f2b356e0af361c0e31ec107c7065a0ed20c",
+      "original_path": "docs/16_transfer_review_decision_persistence_v0.1.md",
+      "archive_path": "final_snapshot/docs/16_transfer_review_decision_persistence_v0.1.md",
+      "size": 3495,
+      "sha256": "b47ad25d6199cee60f3a840000926ad87bcbba6a66f197d0ae6e84a5aae64d21"
+    },
+    {
+      "category": "final_snapshot",
+      "commit": "4e165f2b356e0af361c0e31ec107c7065a0ed20c",
+      "original_path": "docs/17_transfer_review_lifecycle_v0.1.md",
+      "archive_path": "final_snapshot/docs/17_transfer_review_lifecycle_v0.1.md",
+      "size": 3799,
+      "sha256": "9dff4cedb850f6182850b03626d2f75e019a5bb162d86e2804fa21c5e03c990f"
+    },
+    {
+      "category": "final_snapshot",
+      "commit": "4e165f2b356e0af361c0e31ec107c7065a0ed20c",
+      "original_path": "docs/18_transfer_review_application_v0.1.md",
+      "archive_path": "final_snapshot/docs/18_transfer_review_application_v0.1.md",
+      "size": 3355,
+      "sha256": "c35d0d31744b09f3a1b430bdaa593d1704d9bab6d229a03e2bc0b9c896728afa"
+    }
+  ],
+  "note": "All source paths are inside the uploaded user-generated ZIP; source data and HTML are not authorization or evidence of deployed production services."
+}

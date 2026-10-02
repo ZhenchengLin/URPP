@@ -1,0 +1,14 @@
+{
+  "archive_version": "reply5-v01",
+  "based_on": "decision_orchestration_history_source_pack.zip",
+  "source_zip_sha256": "ef1f6f2a3942fec3905674a94a74b9bd9f62723339a02e63e12e136482717940",
+  "source_entries": 24,
+  "history_verification": "source-file review; original failing test logs not included in this pack",
+  "chapters": [
+    {
+      "title": "Decision & Orchestration",
+      "file": "pages/decision-orchestration-v01.html",
+      "markdown": "chapters/decision-orchestration-v01.md"
+    }
+  ]
+}

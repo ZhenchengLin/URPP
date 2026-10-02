@@ -1,0 +1,621 @@
+{
+  "archive_chapter": "Reply 6 / 10 Persistence Recovery",
+  "basis": "user-supplied historical Git source pack",
+  "source_pack_sha256": "32960649f2abb5739d2762f4a136fec08404b2a46656457e5dd3a53dd73e45c8",
+  "historical_checkpoints": [
+    {
+      "checkpoint": {
+        "label": "assignment_persistence",
+        "commit": "b36c7b5fba67040c67de73151006991ec7f9925a"
+      },
+      "entries": [
+        {
+          "group": "assignment_persistence",
+          "commit": "b36c7b5fba67040c67de73151006991ec7f9925a",
+          "source_path": "backend/app/repositories/numeric_assignment_v01.py",
+          "archive_path": "history/assignment_persistence_b36c7b5fba/backend/app/repositories/numeric_assignment_v01.py",
+          "bytes": 16720,
+          "sha256": "080b7a662a61c524867b039ad065843b2b8c1e5a43dcc1f912870c8f5a2ac7cf"
+        },
+        {
+          "group": "assignment_persistence",
+          "commit": "b36c7b5fba67040c67de73151006991ec7f9925a",
+          "source_path": "backend/tests/test_numeric_assignment_v01.py",
+          "archive_path": "history/assignment_persistence_b36c7b5fba/backend/tests/test_numeric_assignment_v01.py",
+          "bytes": 9153,
+          "sha256": "14f0b918c5dd2dc97ece0280f54f2231f3131c440cd3addb561de2d22958fbfd"
+        }
+      ]
+    },
+    {
+      "checkpoint": {
+        "label": "completed_assignment_state",
+        "commit": "174f259e7a3ea40717d61f82b5811a42e5496d88"
+      },
+      "entries": [
+        {
+          "group": "completed_assignment_state",
+          "commit": "174f259e7a3ea40717d61f82b5811a42e5496d88",
+          "source_path": "backend/app/services/decision/completed_assignment_state_v01.py",
+          "archive_path": "history/completed_assignment_state_174f259e7a/backend/app/services/decision/completed_assignment_state_v01.py",
+          "bytes": 7019,
+          "sha256": "f17015b38a076b449ec3f690650d219244bd368cbbce6782c3e551b926226bcc"
+        },
+        {
+          "group": "completed_assignment_state",
+          "commit": "174f259e7a3ea40717d61f82b5811a42e5496d88",
+          "source_path": "backend/tests/test_completed_assignment_state_v01.py",
+          "archive_path": "history/completed_assignment_state_174f259e7a/backend/tests/test_completed_assignment_state_v01.py",
+          "bytes": 7928,
+          "sha256": "ba59ec8ae9aceba5d1ad624de8a015779e07374ee844e679a6e340155cd8979f"
+        }
+      ]
+    },
+    {
+      "checkpoint": {
+        "label": "persisted_numeric_loop",
+        "commit": "692b6943f4d10633a9c8ae9403f0ef881370c163"
+      },
+      "entries": [
+        {
+          "group": "persisted_numeric_loop",
+          "commit": "692b6943f4d10633a9c8ae9403f0ef881370c163",
+          "source_path": "backend/app/services/decision/persisted_numeric_session_loop_v01.py",
+          "archive_path": "history/persisted_numeric_loop_692b6943f4/backend/app/services/decision/persisted_numeric_session_loop_v01.py",
+          "bytes": 8935,
+          "sha256": "03b997ab7ce31cd7a49bf536ba2e4f3acf2ea97b030782db50f2bc370d98240d"
+        },
+        {
+          "group": "persisted_numeric_loop",
+          "commit": "692b6943f4d10633a9c8ae9403f0ef881370c163",
+          "source_path": "backend/tests/test_persisted_numeric_session_loop_v01.py",
+          "archive_path": "history/persisted_numeric_loop_692b6943f4/backend/tests/test_persisted_numeric_session_loop_v01.py",
+          "bytes": 9597,
+          "sha256": "256b7d722feab396e7cda2826d94a5897c952be64f57bafd3c7894438b6fc09c"
+        }
+      ]
+    },
+    {
+      "checkpoint": {
+        "label": "session_recovery",
+        "commit": "cf9ab746dbf613a79f52be1ae055d6eacf92a3b0"
+      },
+      "entries": [
+        {
+          "group": "session_recovery",
+          "commit": "cf9ab746dbf613a79f52be1ae055d6eacf92a3b0",
+          "source_path": "backend/app/repositories/numeric_session_records_v01.py",
+          "archive_path": "history/session_recovery_cf9ab746db/backend/app/repositories/numeric_session_records_v01.py",
+          "bytes": 7309,
+          "sha256": "dea349b557eb875783ce38b66887ee32c36e4e95ff8e23168e9799133f291bc9"
+        },
+        {
+          "group": "session_recovery",
+          "commit": "cf9ab746dbf613a79f52be1ae055d6eacf92a3b0",
+          "source_path": "backend/app/services/decision/recoverable_numeric_session_v01.py",
+          "archive_path": "history/session_recovery_cf9ab746db/backend/app/services/decision/recoverable_numeric_session_v01.py",
+          "bytes": 12890,
+          "sha256": "4954596e4f33d826e05fc84caaa1d57b4ef04b012010947b9e8d4fdea68a2278"
+        },
+        {
+          "group": "session_recovery",
+          "commit": "cf9ab746dbf613a79f52be1ae055d6eacf92a3b0",
+          "source_path": "backend/tests/test_recoverable_numeric_session_v01.py",
+          "archive_path": "history/session_recovery_cf9ab746db/backend/tests/test_recoverable_numeric_session_v01.py",
+          "bytes": 10759,
+          "sha256": "bce9535857872530410096942f9eaf111ab693a137425f16c641ad8cb7d40520"
+        }
+      ]
+    },
+    {
+      "checkpoint": {
+        "label": "assignment_invariants",
+        "commit": "a562e6711bbfe664a8dc233e2a28413ff784a3ba"
+      },
+      "entries": [
+        {
+          "group": "assignment_invariants",
+          "commit": "a562e6711bbfe664a8dc233e2a28413ff784a3ba",
+          "source_path": "backend/app/repositories/numeric_assignment_v01.py",
+          "archive_path": "history/assignment_invariants_a562e6711b/backend/app/repositories/numeric_assignment_v01.py",
+          "bytes": 17439,
+          "sha256": "f4e45a5fe371069ad49b3d605998a53413d3c4d510112679ab2791b3a2115682"
+        },
+        {
+          "group": "assignment_invariants",
+          "commit": "a562e6711bbfe664a8dc233e2a28413ff784a3ba",
+          "source_path": "backend/tests/test_numeric_assignment_invariants_v01.py",
+          "archive_path": "history/assignment_invariants_a562e6711b/backend/tests/test_numeric_assignment_invariants_v01.py",
+          "bytes": 11354,
+          "sha256": "35596b74b7b3bbc9222f3dbfc0d490fd8dc208005a035ecc5652b5809e6f4cf6"
+        }
+      ]
+    },
+    {
+      "checkpoint": {
+        "label": "assignment_migration",
+        "commit": "79e250c760c0ad49b298617656816583e3ed0b8c"
+      },
+      "entries": [
+        {
+          "group": "assignment_migration",
+          "commit": "79e250c760c0ad49b298617656816583e3ed0b8c",
+          "source_path": "backend/app/repositories/migrate_numeric_assignment_v01_sqlite.py",
+          "archive_path": "history/assignment_migration_79e250c760/backend/app/repositories/migrate_numeric_assignment_v01_sqlite.py",
+          "bytes": 17879,
+          "sha256": "017774bdd49bf5fed41160e1f0986e0f4d7547a7625c39b48a13933208f8d9b7"
+        },
+        {
+          "group": "assignment_migration",
+          "commit": "79e250c760c0ad49b298617656816583e3ed0b8c",
+          "source_path": "backend/tests/test_numeric_assignment_sqlite_migration_v01.py",
+          "archive_path": "history/assignment_migration_79e250c760/backend/tests/test_numeric_assignment_sqlite_migration_v01.py",
+          "bytes": 10121,
+          "sha256": "634aaeead080ec612a8b1f838d09385e1c3caaa3eec3c81fdcb1183be2e60d53"
+        }
+      ]
+    },
+    {
+      "checkpoint": {
+        "label": "database_readiness",
+        "commit": "1f50e8048354e5c567d7b909b0e4a6f9c48220fb"
+      },
+      "entries": [
+        {
+          "group": "database_readiness",
+          "commit": "1f50e8048354e5c567d7b909b0e4a6f9c48220fb",
+          "source_path": "backend/app/repositories/numeric_database_readiness_v01.py",
+          "archive_path": "history/database_readiness_1f50e80483/backend/app/repositories/numeric_database_readiness_v01.py",
+          "bytes": 8447,
+          "sha256": "07f27074eb4cca71471276a59c44a9ca157ade654f950bb0699103bbba5b88c2"
+        },
+        {
+          "group": "database_readiness",
+          "commit": "1f50e8048354e5c567d7b909b0e4a6f9c48220fb",
+          "source_path": "backend/tests/test_numeric_database_readiness_v01.py",
+          "archive_path": "history/database_readiness_1f50e80483/backend/tests/test_numeric_database_readiness_v01.py",
+          "bytes": 5946,
+          "sha256": "acebd4e409474c93be1eb04fc1f9c576d631a8c12af0ff8522c35b12bd9eb866"
+        }
+      ]
+    },
+    {
+      "checkpoint": {
+        "label": "session_registration",
+        "commit": "85bbb0e392da81841845e389839b79dc2aeb2ba5"
+      },
+      "entries": [
+        {
+          "group": "session_registration",
+          "commit": "85bbb0e392da81841845e389839b79dc2aeb2ba5",
+          "source_path": "backend/app/repositories/numeric_assignment_v01.py",
+          "archive_path": "history/session_registration_85bbb0e392/backend/app/repositories/numeric_assignment_v01.py",
+          "bytes": 19213,
+          "sha256": "568d640e0a1fdf78831df77af3cf87bcf0aa00bd76f271f67dbca775a2c0fab8"
+        },
+        {
+          "group": "session_registration",
+          "commit": "85bbb0e392da81841845e389839b79dc2aeb2ba5",
+          "source_path": "backend/app/services/decision/recoverable_numeric_session_v01.py",
+          "archive_path": "history/session_registration_85bbb0e392/backend/app/services/decision/recoverable_numeric_session_v01.py",
+          "bytes": 12935,
+          "sha256": "05bd7f5b8d1c21347840d0261676cb2d2fb02a20d20f866e10f0e5b4ca180fa3"
+        },
+        {
+          "group": "session_registration",
+          "commit": "85bbb0e392da81841845e389839b79dc2aeb2ba5",
+          "source_path": "backend/tests/test_registered_numeric_assignment_v01.py",
+          "archive_path": "history/session_registration_85bbb0e392/backend/tests/test_registered_numeric_assignment_v01.py",
+          "bytes": 5729,
+          "sha256": "de46fec44b03e1f693bf4e756673118cb72964cd332ef49e00a85198c4faa275"
+        }
+      ]
+    },
+    {
+      "checkpoint": {
+        "label": "strict_session_assignment",
+        "commit": "0f3223120107a813b79b92be6e10694b85d9a1f4"
+      },
+      "entries": [
+        {
+          "group": "strict_session_assignment",
+          "commit": "0f3223120107a813b79b92be6e10694b85d9a1f4",
+          "source_path": "backend/app/repositories/numeric_assignment_v01.py",
+          "archive_path": "history/strict_session_assignment_0f32231201/backend/app/repositories/numeric_assignment_v01.py",
+          "bytes": 20507,
+          "sha256": "395594d2fcf844d4242b88915826c32a408855f8258c51ffcd1e48d75b9df989"
+        },
+        {
+          "group": "strict_session_assignment",
+          "commit": "0f3223120107a813b79b92be6e10694b85d9a1f4",
+          "source_path": "backend/app/repositories/numeric_database_readiness_v01.py",
+          "archive_path": "history/strict_session_assignment_0f32231201/backend/app/repositories/numeric_database_readiness_v01.py",
+          "bytes": 9658,
+          "sha256": "62b0c6e309c5b3991b4382209295475e813f2d77098ef334b8f6affe0186af19"
+        },
+        {
+          "group": "strict_session_assignment",
+          "commit": "0f3223120107a813b79b92be6e10694b85d9a1f4",
+          "source_path": "backend/app/repositories/numeric_session_records_v01.py",
+          "archive_path": "history/strict_session_assignment_0f32231201/backend/app/repositories/numeric_session_records_v01.py",
+          "bytes": 7716,
+          "sha256": "4dc66e51928c983de61686f467b33b326af7a898ed2b9b07ed189c84853b4597"
+        },
+        {
+          "group": "strict_session_assignment",
+          "commit": "0f3223120107a813b79b92be6e10694b85d9a1f4",
+          "source_path": "backend/tests/test_numeric_assignment_session_fk_v01.py",
+          "archive_path": "history/strict_session_assignment_0f32231201/backend/tests/test_numeric_assignment_session_fk_v01.py",
+          "bytes": 6800,
+          "sha256": "6b8f01365e4ce2b9d562374fd9e8f4ec423458955db107341103e17e6327e933"
+        }
+      ]
+    },
+    {
+      "checkpoint": {
+        "label": "registered_session_default",
+        "commit": "e735c0fbdf46608f386998b619765f4a8affb5ce"
+      },
+      "entries": [
+        {
+          "group": "registered_session_default",
+          "commit": "e735c0fbdf46608f386998b619765f4a8affb5ce",
+          "source_path": "backend/app/repositories/numeric_assignment_v01.py",
+          "archive_path": "history/registered_session_default_e735c0fbdf/backend/app/repositories/numeric_assignment_v01.py",
+          "bytes": 20637,
+          "sha256": "d636e3835c1f350f28d287598b976b3072a986dfa491c517b19cac43c45cd24f"
+        },
+        {
+          "group": "registered_session_default",
+          "commit": "e735c0fbdf46608f386998b619765f4a8affb5ce",
+          "source_path": "backend/app/repositories/numeric_database_readiness_v01.py",
+          "archive_path": "history/registered_session_default_e735c0fbdf/backend/app/repositories/numeric_database_readiness_v01.py",
+          "bytes": 10224,
+          "sha256": "f234c6a27bbeb9af1f500dc8b62f9d8d4a64f91c9ac85b4bdda5287b45a5c506"
+        },
+        {
+          "group": "registered_session_default",
+          "commit": "e735c0fbdf46608f386998b619765f4a8affb5ce",
+          "source_path": "backend/app/services/decision/persisted_numeric_session_loop_v01.py",
+          "archive_path": "history/registered_session_default_e735c0fbdf/backend/app/services/decision/persisted_numeric_session_loop_v01.py",
+          "bytes": 8985,
+          "sha256": "61d10361cb4f20375777420d9ee92a47a31285ff817367737e20d27b77d30c57"
+        },
+        {
+          "group": "registered_session_default",
+          "commit": "e735c0fbdf46608f386998b619765f4a8affb5ce",
+          "source_path": "backend/tests/test_completed_assignment_state_v01.py",
+          "archive_path": "history/registered_session_default_e735c0fbdf/backend/tests/test_completed_assignment_state_v01.py",
+          "bytes": 7970,
+          "sha256": "f8a7aa8f79756e90d5153ffcd6942c3cf52f7be12e8efffd26a4ad119bd3812e"
+        },
+        {
+          "group": "registered_session_default",
+          "commit": "e735c0fbdf46608f386998b619765f4a8affb5ce",
+          "source_path": "backend/tests/test_numeric_assignment_invariants_v01.py",
+          "archive_path": "history/registered_session_default_e735c0fbdf/backend/tests/test_numeric_assignment_invariants_v01.py",
+          "bytes": 11396,
+          "sha256": "a6fcadb5a5dc67ea4799235d9ae5ad9fbd9c2732697b38ed16913150d7cf2080"
+        },
+        {
+          "group": "registered_session_default",
+          "commit": "e735c0fbdf46608f386998b619765f4a8affb5ce",
+          "source_path": "backend/tests/test_numeric_assignment_strict_default_v01.py",
+          "archive_path": "history/registered_session_default_e735c0fbdf/backend/tests/test_numeric_assignment_strict_default_v01.py",
+          "bytes": 3878,
+          "sha256": "44e1222451811e71a29261f6ee3646990afe3e783e436f86b5c9e05cbe82749e"
+        },
+        {
+          "group": "registered_session_default",
+          "commit": "e735c0fbdf46608f386998b619765f4a8affb5ce",
+          "source_path": "backend/tests/test_numeric_assignment_v01.py",
+          "archive_path": "history/registered_session_default_e735c0fbdf/backend/tests/test_numeric_assignment_v01.py",
+          "bytes": 9195,
+          "sha256": "09a779ab8b6e41e37d0945c3febc4e0724764e5bc3052344e236b2b17f619695"
+        },
+        {
+          "group": "registered_session_default",
+          "commit": "e735c0fbdf46608f386998b619765f4a8affb5ce",
+          "source_path": "backend/tests/test_numeric_database_readiness_v01.py",
+          "archive_path": "history/registered_session_default_e735c0fbdf/backend/tests/test_numeric_database_readiness_v01.py",
+          "bytes": 6560,
+          "sha256": "8aa5b8f939c06aba398006b42cbc5ca23385e5ab039af724950537c4f952898c"
+        }
+      ]
+    },
+    {
+      "checkpoint": {
+        "label": "foreign_key_readiness",
+        "commit": "cd5c7d4cdeb590aca3f7c94d2cb3550519c43a25"
+      },
+      "entries": [
+        {
+          "group": "foreign_key_readiness",
+          "commit": "cd5c7d4cdeb590aca3f7c94d2cb3550519c43a25",
+          "source_path": "backend/app/repositories/audit_numeric_session_fk_migration_v01.py",
+          "archive_path": "history/foreign_key_readiness_cd5c7d4cde/backend/app/repositories/audit_numeric_session_fk_migration_v01.py",
+          "bytes": 9483,
+          "sha256": "26c684fa08a549210a7398915c988f22bc05698cf5d3f6ac1d78fffcd39a55cc"
+        },
+        {
+          "group": "foreign_key_readiness",
+          "commit": "cd5c7d4cdeb590aca3f7c94d2cb3550519c43a25",
+          "source_path": "backend/tests/test_numeric_session_fk_migration_audit_v01.py",
+          "archive_path": "history/foreign_key_readiness_cd5c7d4cde/backend/tests/test_numeric_session_fk_migration_audit_v01.py",
+          "bytes": 9837,
+          "sha256": "8963b390bb3eb6ea223fe6a9a1ba0a24c88d6085005376f33f5e0e09fa79da7b"
+        }
+      ]
+    },
+    {
+      "checkpoint": {
+        "label": "foreign_key_migration",
+        "commit": "3cbeffabe492bb7b998b0dcb7302a823602cd027"
+      },
+      "entries": [
+        {
+          "group": "foreign_key_migration",
+          "commit": "3cbeffabe492bb7b998b0dcb7302a823602cd027",
+          "source_path": "backend/app/repositories/migrate_numeric_session_fk_v01_sqlite.py",
+          "archive_path": "history/foreign_key_migration_3cbeffabe4/backend/app/repositories/migrate_numeric_session_fk_v01_sqlite.py",
+          "bytes": 23494,
+          "sha256": "f1a57e1b6fdc6375ddbb53ef095992694614afa1d5b0e6cb29845b41d07037fb"
+        },
+        {
+          "group": "foreign_key_migration",
+          "commit": "3cbeffabe492bb7b998b0dcb7302a823602cd027",
+          "source_path": "backend/tests/test_numeric_session_fk_schema_migration_v01.py",
+          "archive_path": "history/foreign_key_migration_3cbeffabe4/backend/tests/test_numeric_session_fk_schema_migration_v01.py",
+          "bytes": 10228,
+          "sha256": "36d45983c5a740a01bca7a6832e94ce9306da11ce7fa65d5bced1fe1def2f2f5"
+        }
+      ]
+    },
+    {
+      "checkpoint": {
+        "label": "guarded_sqlite_engine",
+        "commit": "0bc3250fb727acea23fc21c0ecdb1e5178034f6f"
+      },
+      "entries": [
+        {
+          "group": "guarded_sqlite_engine",
+          "commit": "0bc3250fb727acea23fc21c0ecdb1e5178034f6f",
+          "source_path": "backend/app/repositories/numeric_sqlite_engine_v01.py",
+          "archive_path": "history/guarded_sqlite_engine_0bc3250fb7/backend/app/repositories/numeric_sqlite_engine_v01.py",
+          "bytes": 5324,
+          "sha256": "a3c93cba62e540e90a3781af62fcc9cdd764660b5a71bd0eb94ef010c8c291ba"
+        },
+        {
+          "group": "guarded_sqlite_engine",
+          "commit": "0bc3250fb727acea23fc21c0ecdb1e5178034f6f",
+          "source_path": "backend/tests/test_numeric_sqlite_engine_v01.py",
+          "archive_path": "history/guarded_sqlite_engine_0bc3250fb7/backend/tests/test_numeric_sqlite_engine_v01.py",
+          "bytes": 3583,
+          "sha256": "c2357d982064ffe3b51157ad7460d2209b22da61df017ef6e9cae5c9bafd6cef"
+        }
+      ]
+    },
+    {
+      "checkpoint": {
+        "label": "sqlite_startup",
+        "commit": "fc91a60a7db70dcf150e8974343883c965c9f24b"
+      },
+      "entries": [
+        {
+          "group": "sqlite_startup",
+          "commit": "fc91a60a7db70dcf150e8974343883c965c9f24b",
+          "source_path": "backend/app/main.py",
+          "archive_path": "history/sqlite_startup_fc91a60a7d/backend/app/main.py",
+          "bytes": 1534,
+          "sha256": "3a31ef570cadb530706b92cbe795e389f7a00b5b0f7dffcaffe03ca8789fed98"
+        },
+        {
+          "group": "sqlite_startup",
+          "commit": "fc91a60a7db70dcf150e8974343883c965c9f24b",
+          "source_path": "backend/tests/test_numeric_sqlite_startup_v01.py",
+          "archive_path": "history/sqlite_startup_fc91a60a7d/backend/tests/test_numeric_sqlite_startup_v01.py",
+          "bytes": 3991,
+          "sha256": "821d5e6bd14481eca2e65d437a7503fd04017eea42638891a378a527a2c290d8"
+        }
+      ]
+    },
+    {
+      "checkpoint": {
+        "label": "repository_injection",
+        "commit": "f22dbf930db33009a40baa1ccdd54c583763856b"
+      },
+      "entries": [
+        {
+          "group": "repository_injection",
+          "commit": "f22dbf930db33009a40baa1ccdd54c583763856b",
+          "source_path": "backend/app/main.py",
+          "archive_path": "history/repository_injection_f22dbf930d/backend/app/main.py",
+          "bytes": 1991,
+          "sha256": "77e100212a98c564634167636b91fcaa528834e9e646cf8f926035b13eceb9fc"
+        },
+        {
+          "group": "repository_injection",
+          "commit": "f22dbf930db33009a40baa1ccdd54c583763856b",
+          "source_path": "backend/app/repositories/numeric_repository_bundle_v01.py",
+          "archive_path": "history/repository_injection_f22dbf930d/backend/app/repositories/numeric_repository_bundle_v01.py",
+          "bytes": 3154,
+          "sha256": "b882dac89a512780953d83326e68d8f911642a1318eaf65632425c0c4d2402ce"
+        },
+        {
+          "group": "repository_injection",
+          "commit": "f22dbf930db33009a40baa1ccdd54c583763856b",
+          "source_path": "backend/tests/test_numeric_repository_bundle_v01.py",
+          "archive_path": "history/repository_injection_f22dbf930d/backend/tests/test_numeric_repository_bundle_v01.py",
+          "bytes": 7366,
+          "sha256": "5c2566ef4802215e018c8710b11bc6a3864a33714b76a35dc47367910f4067a7"
+        }
+      ]
+    },
+    {
+      "checkpoint": {
+        "label": "recoverable_session_factory",
+        "commit": "c24d1dc84d99cc78ee977d218c745758bc56190d"
+      },
+      "entries": [
+        {
+          "group": "recoverable_session_factory",
+          "commit": "c24d1dc84d99cc78ee977d218c745758bc56190d",
+          "source_path": "backend/app/services/decision/numeric_recoverable_session_factory_v01.py",
+          "archive_path": "history/recoverable_session_factory_c24d1dc84d/backend/app/services/decision/numeric_recoverable_session_factory_v01.py",
+          "bytes": 2672,
+          "sha256": "b9ef1aa2ac2fc2951a96970ab200083b4f61bf010db9ef9b312309c14ae4c950"
+        },
+        {
+          "group": "recoverable_session_factory",
+          "commit": "c24d1dc84d99cc78ee977d218c745758bc56190d",
+          "source_path": "backend/tests/test_numeric_recoverable_session_factory_v01.py",
+          "archive_path": "history/recoverable_session_factory_c24d1dc84d/backend/tests/test_numeric_recoverable_session_factory_v01.py",
+          "bytes": 9178,
+          "sha256": "79911d851564ce0330858238ea36387da4324cc826b8985848a51c39b4b5eaa8"
+        }
+      ]
+    },
+    {
+      "checkpoint": {
+        "label": "legacy_session_registration",
+        "commit": "f05f7e1328bc303aaf91b5920716d8b77ea30092"
+      },
+      "entries": [
+        {
+          "group": "legacy_session_registration",
+          "commit": "f05f7e1328bc303aaf91b5920716d8b77ea30092",
+          "source_path": "backend/app/services/decision/persisted_numeric_session_loop_v01.py",
+          "archive_path": "history/legacy_session_registration_f05f7e1328/backend/app/services/decision/persisted_numeric_session_loop_v01.py",
+          "bytes": 9623,
+          "sha256": "85ea50546d7aa3096ffbc23da18558a058219cd5bd782c1f6faf241f2e9f6251"
+        },
+        {
+          "group": "legacy_session_registration",
+          "commit": "f05f7e1328bc303aaf91b5920716d8b77ea30092",
+          "source_path": "backend/tests/test_persisted_numeric_session_loop_v01.py",
+          "archive_path": "history/legacy_session_registration_f05f7e1328/backend/tests/test_persisted_numeric_session_loop_v01.py",
+          "bytes": 10415,
+          "sha256": "8708685c1081fa22ffe53ca8fcc8f7d1a4ce856114029a1cf354e35142f7f7a4"
+        }
+      ]
+    },
+    {
+      "checkpoint": {
+        "label": "remove_unregistered_issuance",
+        "commit": "f86f68d7b47fe21e5f6dd1431ee87037baaba56b"
+      },
+      "entries": [
+        {
+          "group": "remove_unregistered_issuance",
+          "commit": "f86f68d7b47fe21e5f6dd1431ee87037baaba56b",
+          "source_path": "backend/app/repositories/numeric_assignment_v01.py",
+          "archive_path": "history/remove_unregistered_issuance_f86f68d7b4/backend/app/repositories/numeric_assignment_v01.py",
+          "bytes": 20066,
+          "sha256": "675cd86c41d42269700669029019dec631e66c09200cffe35cf9b9a7729e2279"
+        },
+        {
+          "group": "remove_unregistered_issuance",
+          "commit": "f86f68d7b47fe21e5f6dd1431ee87037baaba56b",
+          "source_path": "backend/app/services/decision/persisted_numeric_session_loop_v01.py",
+          "archive_path": "history/remove_unregistered_issuance_f86f68d7b4/backend/app/services/decision/persisted_numeric_session_loop_v01.py",
+          "bytes": 9574,
+          "sha256": "f09c721e251e378c2edc784f3ad9b5467a795e286612deaedbe660e77ba4e5bc"
+        },
+        {
+          "group": "remove_unregistered_issuance",
+          "commit": "f86f68d7b47fe21e5f6dd1431ee87037baaba56b",
+          "source_path": "backend/app/services/decision/recoverable_numeric_session_v01.py",
+          "archive_path": "history/remove_unregistered_issuance_f86f68d7b4/backend/app/services/decision/recoverable_numeric_session_v01.py",
+          "bytes": 12890,
+          "sha256": "4954596e4f33d826e05fc84caaa1d57b4ef04b012010947b9e8d4fdea68a2278"
+        },
+        {
+          "group": "remove_unregistered_issuance",
+          "commit": "f86f68d7b47fe21e5f6dd1431ee87037baaba56b",
+          "source_path": "backend/tests/test_completed_assignment_state_v01.py",
+          "archive_path": "history/remove_unregistered_issuance_f86f68d7b4/backend/tests/test_completed_assignment_state_v01.py",
+          "bytes": 8265,
+          "sha256": "ea1a0916d5e3d79e8247740f2e9db016b1d25e321109f8022f70363a6c28ba43"
+        },
+        {
+          "group": "remove_unregistered_issuance",
+          "commit": "f86f68d7b47fe21e5f6dd1431ee87037baaba56b",
+          "source_path": "backend/tests/test_numeric_assignment_invariants_v01.py",
+          "archive_path": "history/remove_unregistered_issuance_f86f68d7b4/backend/tests/test_numeric_assignment_invariants_v01.py",
+          "bytes": 11889,
+          "sha256": "7a0fac25b1f94bd485c1cfc9558d403bbf7383e91633337daddd7c03561ece70"
+        },
+        {
+          "group": "remove_unregistered_issuance",
+          "commit": "f86f68d7b47fe21e5f6dd1431ee87037baaba56b",
+          "source_path": "backend/tests/test_numeric_assignment_session_fk_v01.py",
+          "archive_path": "history/remove_unregistered_issuance_f86f68d7b4/backend/tests/test_numeric_assignment_session_fk_v01.py",
+          "bytes": 7748,
+          "sha256": "cfadbf24179a29d2c7e27f511f5bd51b51ef05ca90e843663ea3092edd1cabaf"
+        },
+        {
+          "group": "remove_unregistered_issuance",
+          "commit": "f86f68d7b47fe21e5f6dd1431ee87037baaba56b",
+          "source_path": "backend/tests/test_numeric_assignment_v01.py",
+          "archive_path": "history/remove_unregistered_issuance_f86f68d7b4/backend/tests/test_numeric_assignment_v01.py",
+          "bytes": 9520,
+          "sha256": "ef77c52e58b799da79d8702c9c87908bc092fcdf91101367dd50ed5909e4f36d"
+        },
+        {
+          "group": "remove_unregistered_issuance",
+          "commit": "f86f68d7b47fe21e5f6dd1431ee87037baaba56b",
+          "source_path": "backend/tests/test_numeric_database_readiness_v01.py",
+          "archive_path": "history/remove_unregistered_issuance_f86f68d7b4/backend/tests/test_numeric_database_readiness_v01.py",
+          "bytes": 7471,
+          "sha256": "10c0525c51493bead3df728ebf6914006fb55e9dc123c6221e3e645180898b05"
+        },
+        {
+          "group": "remove_unregistered_issuance",
+          "commit": "f86f68d7b47fe21e5f6dd1431ee87037baaba56b",
+          "source_path": "backend/tests/test_registered_numeric_assignment_v01.py",
+          "archive_path": "history/remove_unregistered_issuance_f86f68d7b4/backend/tests/test_registered_numeric_assignment_v01.py",
+          "bytes": 6663,
+          "sha256": "043684f22522383754f9c39e41992efa0f01c27af772c3fec38ca2730834e8b8"
+        }
+      ]
+    },
+    {
+      "checkpoint": {
+        "label": "local_numeric_cli",
+        "commit": "b8abf719932430d0473d711990286ab628c8c3a1"
+      },
+      "entries": [
+        {
+          "group": "local_numeric_cli",
+          "commit": "b8abf719932430d0473d711990286ab628c8c3a1",
+          "source_path": "backend/tests/test_local_numeric_lesson_cli_v01.py",
+          "archive_path": "history/local_numeric_cli_b8abf71993/backend/tests/test_local_numeric_lesson_cli_v01.py",
+          "bytes": 6315,
+          "sha256": "629304bb91cbddfed0b4d6a58fca203e18e93c08b7e02f378cd3e40a88f2a80e"
+        },
+        {
+          "group": "local_numeric_cli",
+          "commit": "b8abf719932430d0473d711990286ab628c8c3a1",
+          "source_path": "docs/24_local_numeric_teaching_cli_v0.1.md",
+          "archive_path": "history/local_numeric_cli_b8abf71993/docs/24_local_numeric_teaching_cli_v0.1.md",
+          "bytes": 4533,
+          "sha256": "7f13733ca07bf5ebf9b78fc4375b1d777a7dea61f8965a2539bf13b1fa984288"
+        },
+        {
+          "group": "local_numeric_cli",
+          "commit": "b8abf719932430d0473d711990286ab628c8c3a1",
+          "source_path": "scripts/run_local_numeric_lesson_v01.py",
+          "archive_path": "history/local_numeric_cli_b8abf71993/scripts/run_local_numeric_lesson_v01.py",
+          "bytes": 16109,
+          "sha256": "b9bfcf3c620c926fcc607581a490cea707906383b6b74911efabd195486a8b5b"
+        }
+      ]
+    }
+  ],
+  "total_entries": 71,
+  "warnings": [
+    "Changed-file snapshots plus a selected final snapshot, not the whole repository at every checkpoint.",
+    "Source ZIP does not include original CLI failing traceback or 59/468 test-run transcripts; these counts originate from earlier user-provided chat logs.",
+    "Manifest SHA-256 is ordinary byte-change detection, not authenticated authorship."
+  ]
+}
