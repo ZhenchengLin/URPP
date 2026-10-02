@@ -21,6 +21,10 @@ from app.services.course_knowledge.course_pack_v01 import CoursePackV01
 from app.services.course_knowledge.local_professor_benchmark_adapter_v01 import (
     run_local_professor_benchmark_case_v01,
 )
+
+from app.services.course_knowledge.verified_equation_registry_v01 import (
+    VerifiedEquationRegistryV01,
+)
 from app.services.course_knowledge.math_fidelity_cases_14e_v01 import (
     BENCHMARK_VERSION_14E_V01,
     GOLD_REVIEW_STATUS_14E_V01,
@@ -128,6 +132,7 @@ def run_math_fidelity_14e_v01(
     cases: Sequence[SourceGroundedBenchmarkCaseV01] | None = None,
     expected_pack_sha256: str = PINNED_PACK_SHA256_14E_V01,
     objective_id: str = OBJECTIVE_ID_14E_V01,
+    verified_equation_registry: VerifiedEquationRegistryV01 | None = None,
 ) -> Path:
     if re.fullmatch(
         r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}",
@@ -242,6 +247,7 @@ def run_math_fidelity_14e_v01(
                 run_started_at=run_started_at,
                 model_id=model_id,
                 transport=transport,
+                verified_equation_registry=verified_equation_registry,
             )
 
             record_kind = "trace"

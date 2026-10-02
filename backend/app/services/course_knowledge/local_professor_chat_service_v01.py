@@ -20,7 +20,7 @@ A local_profile_id is a logical binding, NOT authentication.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from typing import Any
 
@@ -58,6 +58,13 @@ from app.services.course_knowledge.teaching_harness_v01 import (
     CourseGroundedTeachingResultV01,
 )
 
+from app.services.course_knowledge.verified_equation_professor_route_v01 import (
+    resolve_verified_equation_professor_route_v01,
+)
+from app.services.course_knowledge.verified_equation_registry_v01 import (
+    VerifiedEquationRegistryV01,
+)
+
 from app.services.decision.personalized_engine_v01 import (
     PersonalizedDecisionEngineV01,
 )
@@ -87,10 +94,24 @@ class LocalProfessorChatTurnV01:
 
     snapshot: LocalChatSnapshotV01
 
+    verified_equation_provenance: (
+        tuple[tuple[str, str, str], ...] | None
+    ) = None
+
     @property
     def professor_text(self) -> str:
         return self.teaching_result.completed_turn.content
 
+
+class _DeterministicProfessorV01:
+    """One-turn Professor that never invokes a model transport."""
+
+    def __init__(self, *, content: str, answer_status: str) -> None:
+        self._content = content
+        self.answer_status = answer_status
+
+    def produce(self, *, context, decision, course_knowledge) -> str:
+        return self._content
 
 class LocalProfessorChatServiceV01:
     """
@@ -109,6 +130,7 @@ class LocalProfessorChatServiceV01:
         gateway: Any,
         local_profile_id: str,
         synthetic_student_id: str,
+        verified_equation_registry: VerifiedEquationRegistryV01 | None = None,
     ) -> None:
 
         if not isinstance(chat_store, LocalChatStoreV01):
@@ -154,6 +176,13 @@ class LocalProfessorChatServiceV01:
 
         self._chat_store = chat_store
         self._gateway = gateway
+        self._verified_equation_registry = (
+            None
+            if verified_equation_registry is None
+            else VerifiedEquationRegistryV01.model_validate(
+                verified_equation_registry.model_dump(mode="json")
+            )
+        )
 
     @staticmethod
     def _identifier(value: str, name: str) -> str:
@@ -206,6 +235,8 @@ class LocalProfessorChatServiceV01:
             raise ValueError(
                 "Course source exceeds the local Professor limit."
             )
+
+        return fetched.knowledge
 
     def _binding(
         self,
@@ -325,19 +356,42 @@ class LocalProfessorChatServiceV01:
             current_student_message=student_text,
         )
 
-        scoped_gateway = ConversationScopedGatewayV01(
-            gateway=self._gateway,
-            chat_context=chat_context,
+        course_knowledge = self._fetch_knowledge(objective_id)
+        verified_route = resolve_verified_equation_professor_route_v01(
+            registry=self._verified_equation_registry,
+            objective=course_knowledge.objective,
+            sources=course_knowledge.sources,
+            question=chat_context.current_student_message,
+            history=chat_context.history,
         )
 
-        professor = StructuredProfessorAdapterV01(
-            gateway=scoped_gateway,
-            source_selector=lambda sources: select_course_source_ids_v01(
-                sources=sources,
-                current_question=chat_context.current_student_message,
-                history=chat_context.history,
-            ),
-        )
+        if verified_route.status == "complete":
+            professor = _DeterministicProfessorV01(
+                content=verified_route.rendered_markdown,
+                answer_status="course_grounded",
+            )
+        elif verified_route.status == "incomplete":
+            professor = _DeterministicProfessorV01(
+                content=(
+                    "I cannot provide that equation because an exact "
+                    "verified equation record is not available for the "
+                    "current authorized course source."
+                ),
+                answer_status="insufficient_evidence",
+            )
+        else:
+            scoped_gateway = ConversationScopedGatewayV01(
+                gateway=self._gateway,
+                chat_context=chat_context,
+            )
+            professor = StructuredProfessorAdapterV01(
+                gateway=scoped_gateway,
+                source_selector=lambda sources: select_course_source_ids_v01(
+                    sources=sources,
+                    current_question=chat_context.current_student_message,
+                    history=chat_context.history,
+                ),
+            )
 
         harness = CourseGroundedTeachingHarnessV01(
             decision_engine=PersonalizedDecisionEngineV01(),
@@ -380,6 +434,22 @@ class LocalProfessorChatServiceV01:
             ),
         )
 
+        if verified_route.status == "complete":
+            allowed = set(verified_route.source_ids)
+            teaching_result = replace(
+                teaching_result,
+                source_refs=tuple(
+                    ref
+                    for ref in teaching_result.source_refs
+                    if ref.source_id in allowed
+                ),
+            )
+        elif verified_route.status == "incomplete":
+            teaching_result = replace(
+                teaching_result,
+                source_refs=(),
+            )
+
         if (
             teaching_result.execution_status != "generated"
             or teaching_result.completed_turn.agent_kind
@@ -414,7 +484,22 @@ class LocalProfessorChatServiceV01:
             answer_status=professor.answer_status,
         )
 
+        provenance = (
+            tuple(
+                (
+                    "verified_equation_record",
+                    record_id,
+                    record_revision,
+                )
+                for record_id, record_revision
+                in verified_route.record_provenance
+            )
+            if verified_route.status == "complete"
+            else None
+        )
+
         return LocalProfessorChatTurnV01(
             teaching_result=teaching_result,
             snapshot=committed,
+            verified_equation_provenance=provenance,
         )

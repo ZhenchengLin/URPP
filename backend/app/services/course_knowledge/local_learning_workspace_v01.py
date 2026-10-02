@@ -42,6 +42,10 @@ from app.services.course_knowledge.local_professor_chat_service_v01 import (
     LocalProfessorChatTurnV01,
 )
 
+from app.services.course_knowledge.verified_equation_registry_store_v01 import (
+    load_verified_equation_registry_v01,
+)
+
 
 PACK_DIGEST = re.compile(r"[0-9a-f]{64}\Z")
 COURSE_ID = "local-upload-course"
@@ -141,6 +145,12 @@ class LocalLearningWorkspaceV01:
             gateway=self._gateway_factory(),
             local_profile_id=PROFILE_ID,
             synthetic_student_id=STUDENT_ID,
+            verified_equation_registry=(
+                load_verified_equation_registry_v01(
+                    data_root=self.root,
+                    pack_sha256=pack_sha256,
+                )
+            ),
         )
 
     def import_document(

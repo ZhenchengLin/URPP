@@ -66,6 +66,10 @@ from app.services.course_knowledge.local_professor_chat_service_v01 import (
     LocalProfessorChatServiceV01,
 )
 
+from app.services.course_knowledge.verified_equation_registry_v01 import (
+    VerifiedEquationRegistryV01,
+)
+
 from app.services.course_knowledge.models_v01 import (
     CourseSourceRefV01,
 )
@@ -223,6 +227,7 @@ def run_local_professor_benchmark_case_v01(
     run_started_at: datetime,
     model_id: str = "qwen3.5:4b",
     transport: Callable[[dict], dict] | None = None,
+    verified_equation_registry: VerifiedEquationRegistryV01 | None = None,
 ) -> BenchmarkExecutionTraceV01:
     """Run one frozen case through the current Local Professor.
 
@@ -446,6 +451,9 @@ def run_local_professor_benchmark_case_v01(
                 ),
                 synthetic_student_id=(
                     "benchmark-synthetic-student"
+                ),
+                verified_equation_registry=(
+                    verified_equation_registry
                 ),
             )
         )
