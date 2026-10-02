@@ -25,6 +25,10 @@ from app.services.course_knowledge.local_professor_benchmark_adapter_v01 import 
 from app.services.course_knowledge.verified_equation_registry_v01 import (
     VerifiedEquationRegistryV01,
 )
+from app.services.course_knowledge.verified_equation_registry_store_v01 import (
+    load_verified_equation_registry_v01,
+    verified_equation_registry_path_v01,
+)
 from app.services.course_knowledge.math_fidelity_cases_14e_v01 import (
     BENCHMARK_VERSION_14E_V01,
     GOLD_REVIEW_STATUS_14E_V01,
@@ -41,6 +45,38 @@ from app.services.course_knowledge.source_grounded_benchmark_v01 import (
 
 RUNNER_VERSION_14E_V01 = "14e-runner-v0.1"
 _REPO_ROOT = Path(__file__).resolve().parents[4]
+
+def load_verified_equation_registry_cli_v01(
+    *,
+    path: Path | None,
+    pack_sha256: str = PINNED_PACK_SHA256_14E_V01,
+) -> VerifiedEquationRegistryV01 | None:
+    """Load an explicitly requested canonical external registry snapshot."""
+
+    if path is None:
+        return None
+
+    supplied = Path(path).expanduser().absolute()
+    data_root = supplied.parent.parent
+    canonical = verified_equation_registry_path_v01(
+        data_root=data_root,
+        pack_sha256=pack_sha256,
+    )
+    if supplied != canonical:
+        raise ValueError(
+            "Verified-equation registry path must match the canonical "
+            "external-store path for the pinned Course Pack."
+        )
+
+    registry = load_verified_equation_registry_v01(
+        data_root=data_root,
+        pack_sha256=pack_sha256,
+    )
+    if registry is None:
+        raise ValueError(
+            "Verified-equation registry file does not exist."
+        )
+    return registry
 
 def _atomic_write_json(path: Path, payload: dict[str, object]) -> None:
     temporary = path.with_name(f".{path.name}.tmp")
@@ -360,6 +396,11 @@ def main() -> None:
         type=Path,
         default=None,
     )
+    parser.add_argument(
+        "--verified-equation-registry",
+        type=Path,
+        default=None,
+    )
 
     args = parser.parse_args()
 
@@ -379,6 +420,12 @@ def main() -> None:
         else DEFAULT_DATA_ROOT / "evaluations"
     )
 
+    verified_equation_registry = (
+        load_verified_equation_registry_cli_v01(
+            path=args.verified_equation_registry,
+        )
+    )
+
     run_dir = run_math_fidelity_14e_v01(
         pack_path=pack_path,
         output_root=output_root,
@@ -386,6 +433,7 @@ def main() -> None:
         run_started_at=datetime.now(timezone.utc),
         candidate_version=args.candidate_version,
         model_id=args.model_id,
+        verified_equation_registry=verified_equation_registry,
     )
 
     manifest = json.loads(
