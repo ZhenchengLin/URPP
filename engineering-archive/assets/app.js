@@ -137,9 +137,9 @@ function renderTimeline() {
         const card = createCard(
             "Local Git History Imported",
             "LOCAL SOURCE",
-            `${local.commits.length} 个 Commit 已收集。` +
-            "完整记录位于 evidence/commit_timeline.txt。" +
-            "尚未完成 Implementation 归属审核。",
+            `${local.commits.length} commits collected. ` +
+            "The full record is in evidence/commit_timeline.txt. " +
+            "Implementation assignment has not been reviewed yet.",
             `Repository HEAD: ${local.head}`,
         );
 

@@ -1,44 +1,44 @@
-# 第一篇完整技术章节：Foundation → Student State V0.2
+# First Full Technical Chapter: Foundation → Student State V0.2
 
-> **Archive status：SOURCE-BASED HISTORICAL RECONSTRUCTION。** 本章根据用户上传的 `early_architecture_source_pack.zip` 中 30 个历史版本文件撰写。原始代码可以证明“当时的设计与实现是什么”，但不能自动证明“开发者当时为什么改动、遇到了哪个报错、做了几次尝试”。没有原始失败日志的部分标明为 **事后对比分析**，不是历史 Bug。
+> **Archive status: SOURCE-BASED HISTORICAL RECONSTRUCTION.** This chapter is based on 30 historical file versions in the user-uploaded `early_architecture_source_pack.zip`. The original code can prove *what the design and implementation were at the time*, but cannot by itself prove *why the developer made a change, which error was hit, or how many attempts were made*. Parts without an original failure log are labeled **after-the-fact comparative analysis**, not historical bugs.
 >
-> **适用版本：** `93e3680` → `0dda011` → `f61cd4b` → `2de3b83` → `90b83fa`。这些是本章的 Git 历史节点，不等于已经确认 Implementation 0–13 的编号边界。**本章没有审查当前 HEAD `a82b2ad` 的同名文件**；不能把早期代码语义直接当作当前线上语义。以下所有代码路径均为相应 Commit 中的版本。
+> **Applicable versions:** `93e3680` → `0dda011` → `f61cd4b` → `2de3b83` → `90b83fa`. These are this chapter's Git history checkpoints; they do not confirm the Implementation 0–13 numbering boundaries. **This chapter did not review the same-named files at the current HEAD `a82b2ad`**; early code semantics must not be taken as current semantics. All code paths below are the versions in the corresponding commits.
 
-## 01｜最初产品不是聊天机器人
+## 01 | The original product was not a chatbot
 
-初始 `README.md` 与 `docs/00_product_spec.md` 把 URPP 定义为单学生、单门活跃大学 STEM 课程的 **persistent learning-control loop**：课程资料逐步到达，系统维护学习目标与可追溯的学习证据，依据当前状态选下一步教学动作，教学后再进行形成性评估。North Star 的原文是：“Given the course requirement and current student evidence, what is the next best teaching action?”
+The initial `README.md` and `docs/00_product_spec.md` define URPP as a **persistent learning-control loop** for one student in one active university STEM course: course materials arrive over time, the system maintains learning objectives and traceable learning evidence, chooses the next teaching action from the current state, and follows teaching with formative assessment. The North Star reads: "Given the course requirement and current student evidence, what is the next best teaching action?"
 
-最初的目标有十二项，不是十二个已经完成的功能：课程资料改变 Course Model；要求转为 Learning Objectives；状态陈述由证据支持且可追踪；状态可升、可降、可未知；动作来自受约束空间并有 reason code；教学后评估；评估产生 Evidence Events；新证据改变后续教学；暴露不确定性；对照更简单的 baselines。这些条目是 **V0 Must Demonstrate**，不是该次提交的测试结果。
+The original goals were twelve items, not twelve finished features: course materials change the Course Model; requirements become Learning Objectives; state claims are evidence-backed and traceable; state can rise, fall, or stay unknown; actions come from a constrained space with reason codes; teaching is followed by assessment; assessment produces Evidence Events; new evidence changes later teaching; uncertainty is exposed; and URPP is compared with simpler baselines. These are **V0 Must Demonstrate** items, not test results of that commit.
 
-初始 `docs/07_evaluation_plan.md` 设计了四类对照：Generic LLM、Course RAG、URPP Lite（课程上下文 + Student State）、Full URPP（Course Model + Objective + Student Evidence + Pedagogical Policy）。文档列出 course grounding、state-sensitive adaptivity、learning gain、transfer performance 等指标；**源资料没有显示这些对照在初始 Commit 就已经跑完**。
+The initial `docs/07_evaluation_plan.md` designed four comparison conditions: Generic LLM, Course RAG, URPP Lite (course context + Student State), and Full URPP (Course Model + Objective + Student Evidence + Pedagogical Policy). The document lists metrics such as course grounding, state-sensitive adaptivity, learning gain, and transfer performance; **the source material does not show these comparisons being run in the initial commit**.
 
-### 设计上为何不能直接“问 LLM 该教什么”
+### Why the design cannot simply "ask the LLM what to teach"
 
-本章可直接确认的项目设计原则是：**Evidence History 是 source of truth，Objective State 是 derived estimate；LLM 可以提出结构化观察，不直接改写 Student State。** 原始文件将 Course Model、Learning Objectives、Student State、Pedagogical Policy 和 Assessment 拆分为职责。它们当时大多处于设计/占位阶段，不能因为目录存在就认为完整教学闭环已经运行。
+The design principle this chapter can confirm directly is: **Evidence History is the source of truth, Objective State is a derived estimate; an LLM may propose structured observations but does not directly rewrite Student State.** The original files split Course Model, Learning Objectives, Student State, Pedagogical Policy, and Assessment into separate responsibilities. Most of them were at the design/placeholder stage then; the existence of a directory does not mean a complete teaching loop was running.
 
-`docs/04_course_model.md` 特意区分 RAG 回答“内容在哪里讨论”，Course Model 回答“概念在该课程中起什么作用”。`docs/08_privacy_safety.md` 规定不推断非必要的医学、心理、IQ、固定学习风格等属性，并计划允许学生查看和质疑系统推断。这些是原始产品边界，不是后来研究才加上的原则。
+`docs/04_course_model.md` deliberately distinguishes RAG, which answers "where is this content discussed", from the Course Model, which answers "what role does this concept play in this course". `docs/08_privacy_safety.md` says the system must not infer unnecessary medical, psychological, IQ, or fixed-learning-style attributes, and plans to let the student view and challenge the system's inferences. These are original product boundaries, not principles added after later research.
 
-**源码证据：** `93e3680:README.md`；`93e3680:docs/00_product_spec.md`；`93e3680:docs/01_architecture.md`；`93e3680:docs/04_course_model.md`；`93e3680:docs/07_evaluation_plan.md`；`93e3680:docs/08_privacy_safety.md`。
+**Source evidence:** `93e3680:README.md`; `93e3680:docs/00_product_spec.md`; `93e3680:docs/01_architecture.md`; `93e3680:docs/04_course_model.md`; `93e3680:docs/07_evaluation_plan.md`; `93e3680:docs/08_privacy_safety.md`.
 
-## 02｜最初真正写下了哪些代码？
+## 02 | What code was actually written at first?
 
-初始 `backend/app/main.py` 创建 FastAPI 实例并引入 health router；不能推断它当时已经接收学习答案、访问 SQLite 或驱动 Professor Agent。`backend/app/llm/client.py` 只有一个 `LLMClient(Protocol)` 边界，定义 `generate_json(prompt_name, payload)` 与 `embed(texts)`：**这是接口，不是已连接模型的证据**。
+The initial `backend/app/main.py` creates a FastAPI instance and includes the health router; we cannot infer that it already accepted learning answers, used SQLite, or drove a Professor Agent. `backend/app/llm/client.py` contains only an `LLMClient(Protocol)` boundary defining `generate_json(prompt_name, payload)` and `embed(texts)`: **this is an interface, not evidence of a connected model**.
 
-初始领域模型则比运行时能力更完整。`LearningObjective` 包括 `objective_id`、`course_id`、`concept_id`、Bloom 的 `cognitive_demand`、`knowledge_type`、先修目标、`source_refs`、`source_type`、`authority`、状态及创建/更新时间。`EvidenceEvent` 已经包含学生/课程/会话/目标 identity，`outcome`、范围 `[0,1]` 的 `correctness`、可为 `None` 的 `assistance_level`、`novelty`、`transfer_distance`、`evidence_strength`、`model_confidence` 和 `created_at`。`ObjectiveState` 则有 `state_score`、`confidence`、independent/transfer success 计数与 `status_reason`。
+The initial domain models were more complete than the runtime. `LearningObjective` includes `objective_id`, `course_id`, `concept_id`, Bloom's `cognitive_demand`, `knowledge_type`, prerequisite objectives, `source_refs`, `source_type`, `authority`, status, and created/updated times. `EvidenceEvent` already contains student/course/session/objective identity, `outcome`, `correctness` in `[0,1]`, a nullable `assistance_level`, `novelty`, `transfer_distance`, `evidence_strength`, `model_confidence`, and `created_at`. `ObjectiveState` has `state_score`, `confidence`, independent/transfer success counts, and `status_reason`.
 
-值得留意：**最初 `EvidenceEvent` 就允许 `assistance_level=None`**，它不是在 13E 才发明的字段。最初的 `docs/02_learning_objective_evidence_student_state.md` 已定义 0–6 的 Assistance Ladder，并明确“Student questions do not automatically mean weakness”“Self-report is weak evidence by default”“Unknown / insufficient evidence is valid”。但初始模型允许未知，并不等于当时已经实现了后来的 SQLite Provenance 或严格评估资格管线。
+Note: **the very first `EvidenceEvent` already allowed `assistance_level=None`**; this field was not invented in 13E. The original `docs/02_learning_objective_evidence_student_state.md` already defined a 0–6 Assistance Ladder and stated explicitly that "Student questions do not automatically mean weakness", "Self-report is weak evidence by default", and "Unknown / insufficient evidence is valid". But a model that allows unknowns is not the same as having implemented the later SQLite provenance or the strict assessment-eligibility pipeline.
 
-初始 CourseMaterial 只有识别、类型、week、course_date、来源与处理状态等字段；初始 `Misconception` 是带 `SUSPECTED/ACTIVE/IMPROVING/RESOLVED/RECURRING` 的模型。**模型类声明与持续维护误解状态的实际服务是不同的完成度。**
+The initial CourseMaterial has only identity, type, week, course_date, source, and processing-status fields; the initial `Misconception` is a model with `SUSPECTED/ACTIVE/IMPROVING/RESOLVED/RECURRING`. **A declared model class and a service that actually maintains misconception state are different levels of completion.**
 
-**源码证据：** `93e3680:backend/app/main.py`；`93e3680:backend/app/llm/client.py`；`93e3680:backend/app/domain/learning/models.py`；`93e3680:backend/app/domain/student/models.py`；`93e3680:backend/app/domain/course/models.py`；`93e3680:docs/02_learning_objective_evidence_student_state.md`。
+**Source evidence:** `93e3680:backend/app/main.py`; `93e3680:backend/app/llm/client.py`; `93e3680:backend/app/domain/learning/models.py`; `93e3680:backend/app/domain/student/models.py`; `93e3680:backend/app/domain/course/models.py`; `93e3680:docs/02_learning_objective_evidence_student_state.md`.
 
-## 03｜V0.1 的目标：从 Evidence Events 推导一个状态
+## 03 | The V0.1 goal: derive a state from Evidence Events
 
-初始 `docs/03_state_update_engine.md` 只有 791 字节，写明状态 **NEXT**，列出尚未解决的问题，例如一次独立成功应改变多少状态、怎样对辅助成功加权、冲突证据如何结合、什么时候维持 Unknown。下一次历史版本 `0dda011:docs/03_state_update_engine.md` 扩为 1,581 行 **V0.1 Design Candidate**；这属于设计文档，不是生产实现。
+The initial `docs/03_state_update_engine.md` was only 791 bytes. It marked the state engine as **NEXT** and listed open questions, such as how much one independent success should change the state, how to weight assisted successes, how to combine conflicting evidence, and when to stay Unknown. The next historical version, `0dda011:docs/03_state_update_engine.md`, expanded it to a 1,581-line **V0.1 Design Candidate**; this is a design document, not a production implementation.
 
-V0.1 设计的核心不变量是 deterministic、order independent、duplicate safe、evidence traceable、Unknown 可成立、状态可升降、缺乏新证据不是负面证据。设计将 Evidence 分为可参与表现推断的 Performance Evidence、只提供上下文的 student question/self-report/teacher observation、以及用于模型纠偏的 student dispute。特别注意：**保留一条事件 ≠ 允许它改变掌握判断**。
+The core V0.1 invariants were: deterministic, order independent, duplicate safe, evidence traceable, Unknown is allowed, state can rise and fall, and lack of new evidence is not negative evidence. The design separates Performance Evidence that can inform performance inference, context-only evidence (student questions, self-reports, teacher observations), and student disputes used to correct the model. Note especially: **keeping an event ≠ allowing it to change the mastery judgment**.
 
-V0.1 的候选计算方案围绕 `evidence_strength ∈ [-1,1]`：
+The V0.1 candidate calculation centers on `evidence_strength ∈ [-1,1]`:
 
 ```text
 effective_strength_i = evidence_strength_i
@@ -50,118 +50,118 @@ negative_mass = Σ max(-effective_strength_i, 0)
 state_score = positive_mass / (positive_mass + negative_mass)
 ```
 
-若总 mass 为 0，设计要求 `state_score=None`。候选 confidence 使用 quantity、session diversity、recency、consistency 的显式加权和；需要最少两条 eligible evidence、mass≥0.75 才离开 UNKNOWN；COMPETENT、STRONG 还有独立完成次数、跨会话、transfer/retrieval 等额外 gate。**这些数值是旧设计的启发式参数，不能当成经教育实验校准的掌握概率。**
+If the total mass is 0, the design requires `state_score=None`. The candidate confidence is an explicit weighted sum of quantity, session diversity, recency, and consistency; leaving UNKNOWN requires at least two eligible pieces of evidence and mass ≥ 0.75; COMPETENT and STRONG add gates for independent completions, multiple sessions, and transfer/retrieval. **These numbers are heuristic parameters of an old design, not mastery probabilities calibrated by educational experiments.**
 
-### 初始 V0.1 的一处重要架构问题（事后设计分析）
+### An important architectural issue in the initial V0.1 (after-the-fact design analysis)
 
-在旧方案中，有符号的 `evidence_strength`、对结果解释的 `model_confidence`、时间衰减、证据数量、学生是否独立完成，容易在同一个数值周围相互混合。即使评分很高，也需要额外 gate，说明**表现得分和证据是否充分是两个不同问题**。这不是我们找到了一份当时的异常日志，而是直接对比两个设计版本可见的建模方向变化。
+In the old scheme, signed `evidence_strength`, `model_confidence` about interpreting the result, time decay, evidence count, and whether the student worked independently could easily blend around a single number. Even a high score needed extra gates, which shows that **performance score and sufficiency of evidence are two different questions**. This is not based on a historical error log we found; it is a change of modeling direction visible by directly comparing the two design versions.
 
-**源码证据：** `93e3680:docs/03_state_update_engine.md`（NEXT）；`0dda011:docs/03_state_update_engine.md`（§3、§5–17、§38–40）。
+**Source evidence:** `93e3680:docs/03_state_update_engine.md` (NEXT); `0dda011:docs/03_state_update_engine.md` (§3, §5–17, §38–40).
 
-## 04｜f61cd4b 到底改了什么？不是“整个旧文档重写”
+## 04 | What did f61cd4b actually change? Not "a rewrite of the whole old document"
 
-本次资料包允许精确比较 `0dda011:docs/03_state_update_engine.md` 与 `f61cd4b:docs/03_state_update_engine.md`：后者**只在文件顶部增加四行提示**，说明此文件为历史 V0.1 Design Candidate、被 `03b_state_update_engine_v0.2.md` 取代，保留供比较；其余旧设计正文保持不变。真正的新设计在新增的 `docs/03b_state_update_engine_v0.2.md`（1,112 行）中。
+This source pack allows an exact comparison of `0dda011:docs/03_state_update_engine.md` and `f61cd4b:docs/03_state_update_engine.md`: the latter **only adds a four-line notice at the top of the file**, saying it is the historical V0.1 Design Candidate, superseded by `03b_state_update_engine_v0.2.md`, and kept for comparison; the rest of the old design text is unchanged. The real new design is in the newly added `docs/03b_state_update_engine_v0.2.md` (1,112 lines).
 
-这很重要：未来读者看到 `03_state_update_engine.md` 的高页数，不能误以为 f61cd4b 的大改都发生在这个旧文件；不能把旧文件中的 V0.1 数值当作 V0.2 的当前规范。
+This matters: a future reader who sees the large page count of `03_state_update_engine.md` must not assume f61cd4b's big changes happened in that old file, and must not treat the V0.1 numbers in the old file as the current V0.2 specification.
 
-| 主题 | V0.1 候选设计 | V0.2 候选设计 |
+| Topic | V0.1 candidate design | V0.2 candidate design |
 |---|---|---|
-| 聚合量 | Signed `evidence_strength` 的正负质量比例 `state_score` | `correctness` 的加权平均 `performance_estimate` |
-| 证据质量 | 聚合了 recency、类型及模型 confidence；另算 confidence | `diagnostic_weight = assistance × novelty × type × interpretation`；另算 `evidence_support_score` |
-| 时间 | 旧证据通过 recency 影响聚合权重 | **recency 不改变 performance_estimate**；另报告 freshness |
-| 最小证据 | ≥2 eligible events、mass≥0.75 | ≥2 distinct valid assessment items、mass≥0.75 |
-| COMPETENT | score/confidence + ≥1 independent success | performance≥0.75 + ≥2 independent successful **distinct items** + novelty gate |
-| STRONG | 旧 score/confidence + independence/session + transfer 或 retrieval | performance≥0.90 + ≥3 independent items + ≥2 sessions + objective-aligned transfer 或 delayed retrieval |
-| 可追溯性 | evidence ID、policy version 等原则 | 显式 included/excluded IDs、排除理由、scoring policy version、as_of |
+| Aggregate | `state_score` as the ratio of positive/negative mass of signed `evidence_strength` | `performance_estimate` as a weighted average of `correctness` |
+| Evidence quality | Aggregates recency, type, and model confidence; confidence computed separately | `diagnostic_weight = assistance × novelty × type × interpretation`; `evidence_support_score` computed separately |
+| Time | Old evidence affects aggregate weight through recency | **Recency does not change performance_estimate**; freshness reported separately |
+| Minimum evidence | ≥2 eligible events, mass ≥ 0.75 | ≥2 distinct valid assessment items, mass ≥ 0.75 |
+| COMPETENT | score/confidence + ≥1 independent success | performance ≥ 0.75 + ≥2 independent successes on **distinct items** + novelty gate |
+| STRONG | old score/confidence + independence/sessions + transfer or retrieval | performance ≥ 0.90 + ≥3 independent items + ≥2 sessions + objective-aligned transfer or delayed retrieval |
+| Traceability | Principles such as evidence IDs and policy version | Explicit included/excluded IDs, exclusion reasons, scoring policy version, as_of |
 
-**设计理由必须分层表达：** 文档明确写出 V0.2 要区分 Performance Estimate、Evidence Support、Performance Stability 和 Evidence Freshness，并规定自评不能直接变成表现证据；从工程角度，这减少了“分数高 = 证据强”“时间久 = 已遗忘”的混淆。**我们未找到 f61cd4b 提交前的原始讨论或失败日志，不能进一步编写开发者当时的心理活动或虚构决策会议。**
+**Design rationale must be stated in layers:** the document explicitly says V0.2 separates Performance Estimate, Evidence Support, Performance Stability, and Evidence Freshness, and that self-assessment cannot directly become performance evidence. From an engineering view, this reduces confusions such as "high score = strong evidence" and "a long time = forgotten". **We did not find the discussion or failure logs from before the f61cd4b commit, so we cannot describe the developer's thinking or invent a decision meeting.**
 
-**源码证据：** `0dda011:docs/03_state_update_engine.md`；`f61cd4b:docs/03_state_update_engine.md`；`f61cd4b:docs/03b_state_update_engine_v0.2.md`（§2、§8–18、§19–23、§26–29）。
+**Source evidence:** `0dda011:docs/03_state_update_engine.md`; `f61cd4b:docs/03_state_update_engine.md`; `f61cd4b:docs/03b_state_update_engine_v0.2.md` (§2, §8–18, §19–23, §26–29).
 
-## 05｜V0.2 的数据合同：为什么需要新建 `state_v02.py`
+## 05 | The V0.2 data contract: why a new `state_v02.py` was needed
 
-`2de3b83` 的 `EvidenceEventV02` 使用 Pydantic `BaseModel`，`ConfigDict(frozen=True, extra="forbid")`，用于阻止普通字段修改和意外注入未声明字段（**不是数据库不可篡改保证**）。它在旧模型身份信息之外增加 `assessment_item_id`、`response_group_id`、`objective_alignment`、`assessment_validity`、`prior_solution_exposure`、`scoring_policy_version`。
+`EvidenceEventV02` in `2de3b83` uses a Pydantic `BaseModel` with `ConfigDict(frozen=True, extra="forbid")` to block ordinary field mutation and accidental injection of undeclared fields (**this is not a guarantee that the database cannot be tampered with**). On top of the old identity fields, it adds `assessment_item_id`, `response_group_id`, `objective_alignment`, `assessment_validity`, `prior_solution_exposure`, and `scoring_policy_version`.
 
-`assessment_item_id` 让系统知道两条记录是否来自同一道题；`response_group_id` 用于标记不同题号下同一次相关回应；`objective_alignment` 防止把背定义的成绩当成解题应用目标的证据；`assessment_validity` 防止无效题进入聚合；`prior_solution_exposure` 防止“看过解答后没有再请求 Hint”被简单解释为独立完成。`assistance_level=None` 与 `prior_solution_exposure=None` 都保留未知条件，不得在解释中默认为 0/False。
+`assessment_item_id` lets the system know whether two records come from the same question; `response_group_id` marks the same related response across different question numbers; `objective_alignment` prevents a memorized-definition score from counting as evidence for a problem-solving objective; `assessment_validity` keeps invalid items out of the aggregate; `prior_solution_exposure` prevents "did not ask for another hint after seeing the solution" from being read simply as independent work. Both `assistance_level=None` and `prior_solution_exposure=None` keep the condition unknown and must not default to 0/False in interpretation.
 
-`ObjectiveStateV02` 不再暴露旧的 `state_score`/`confidence` 字段，而是明确区分 `performance_estimate`、`evidence_support_score`、`evidence_support`、`performance_stability`、`evidence_freshness`，并保留 `included_evidence_ids`、`excluded_evidence_ids`、`exclusion_reasons`、`policy_version`、`scoring_policy_version` 和 `as_of`。这个结构是**可解释的派生快照**，不是原始事实表。
+`ObjectiveStateV02` no longer exposes the old `state_score`/`confidence` fields. It explicitly separates `performance_estimate`, `evidence_support_score`, `evidence_support`, `performance_stability`, and `evidence_freshness`, and keeps `included_evidence_ids`, `excluded_evidence_ids`, `exclusion_reasons`, `policy_version`, `scoring_policy_version`, and `as_of`. This structure is an **explainable derived snapshot**, not the raw fact table.
 
-两个时间字段 `EvidenceEventV02.created_at` 和 `ObjectiveStateV02.as_of` 有 timezone-aware validator；估计器后续还将拒绝 `created_at > as_of` 的未来事件。**这说明时间语义在早期就被写入设计与代码，但不能把后来的 CLI 提交后时间戳 Bug 写成此时已发生。**
+The two time fields `EvidenceEventV02.created_at` and `ObjectiveStateV02.as_of` have timezone-aware validators; the estimator later also rejects future events with `created_at > as_of`. **This shows time semantics were written into the design and code early, but the later CLI post-commit timestamp bug must not be described as having happened at this point.**
 
-`90b83fa` 的 Schema 相比 `2de3b83` 又增加 `retrieval_delay_hours: float | None`，要求非负，`None` 表示延迟尚未确立。没有明确延迟就不能把一次普通 retrieval 自动当成 delayed retrieval。
+Compared with `2de3b83`, the schema in `90b83fa` adds `retrieval_delay_hours: float | None`, which must be non-negative; `None` means the delay has not been established. Without an explicit delay, an ordinary retrieval cannot automatically count as delayed retrieval.
 
-**源码证据：** `2de3b83:backend/app/domain/learning/state_v02.py`（`EvidenceEventV02`、`ObjectiveStateV02`）；`90b83fa:backend/app/domain/learning/state_v02.py`（`retrieval_delay_hours`）。
+**Source evidence:** `2de3b83:backend/app/domain/learning/state_v02.py` (`EvidenceEventV02`, `ObjectiveStateV02`); `90b83fa:backend/app/domain/learning/state_v02.py` (`retrieval_delay_hours`).
 
-## 06｜Eligibility 是事件级筛选，不是 Student State 本身
+## 06 | Eligibility is event-level filtering, not Student State itself
 
-`2de3b83:backend/app/services/student_model/eligibility_v02.py` 定义冻结的 `EvidenceDecision(eligible, reason, diagnostic_weight)`，以及 `evaluate_evidence(event, policy)`。判断顺序如下；**顺序会决定多个异常同时存在时首先返回的 `reason`**：
+`2de3b83:backend/app/services/student_model/eligibility_v02.py` defines a frozen `EvidenceDecision(eligible, reason, diagnostic_weight)` and `evaluate_evidence(event, policy)`. The order of checks is below; **the order decides which `reason` is returned first when several problems exist at once**:
 
 ```text
 EvidenceEventV02
-  → Evidence Type 必须是 performance 类型
+  → Evidence Type must be a performance type
   → objective_alignment == DIRECT
   → assessment_validity == VALID
-  → outcome != neutral 且 correctness 存在
+  → outcome != neutral and correctness present
   → assistance_level != None
-  → assessment_item_id 存在
+  → assessment_item_id present
   → model_confidence ≥ policy.min_model_confidence
-  → 计算 diagnostic_weight
+  → compute diagnostic_weight
   → weight > 0 ? ELIGIBLE : EXCLUDED
 ```
 
-候选权重为 `assistance_weight × novelty_weight × evidence_type_weight × model_confidence`，最后裁剪到 `[0,1]`。例如已知 `assistance_level=2`、`novelty=similar`、`problem_attempt`、`model_confidence=1.0`，单次候选 weight 为 `0.60×0.75×1.00×1.00=0.45`。这是 **算权重的示例，不是一次真实学生成绩**。
+The candidate weight is `assistance_weight × novelty_weight × evidence_type_weight × model_confidence`, clipped to `[0,1]`. For example, with known `assistance_level=2`, `novelty=similar`, `problem_attempt`, and `model_confidence=1.0`, a single candidate weight is `0.60×0.75×1.00×1.00=0.45`. This is **an example of computing a weight, not a real student score**.
 
-重要语义：`assistance_level=None` 会返回 `assistance_level_unknown`；而 `assistance_level=2` 并非“完全没有教学价值”，在其他条件合格时仍可进入**表现估计**，但是不算独立成功。`assistance_level=6` 的权重为 0，会返回 `zero_diagnostic_weight`。**早期代码没有验证外部帮助条件的能力：记录中的 `0` 是模型字段值，不应被向用户宣传为监考证明。**
+Important semantics: `assistance_level=None` returns `assistance_level_unknown`; `assistance_level=2` is not "of no teaching value": if other conditions are met it can still enter the **performance estimate**, but it does not count as an independent success. `assistance_level=6` has weight 0 and returns `zero_diagnostic_weight`. **The early code could not verify external help conditions: a recorded `0` is a model field value and must not be advertised to users as proof of supervision.**
 
-`prior_solution_exposure=True` 时，eligibility 将 novelty weight 限制至 repeated 的权重上限，并不是简单删除全部事件；在 State Estimator 中，独立成功条件又明确要求 `prior_solution_exposure is False`。这是两个不同规则：**允许谨慎保留表现信息，不把它提升为独立完成。**
+With `prior_solution_exposure=True`, eligibility caps the novelty weight at the "repeated" level rather than simply discarding the event; in the State Estimator, the independent-success condition explicitly requires `prior_solution_exposure is False`. These are two different rules: **performance information may be cautiously kept, without promoting it to independent completion.**
 
-### 实现修订：拒绝自相矛盾的 Outcome 与 Correctness
+### Implementation revision: rejecting contradictory Outcome and Correctness
 
-精确比较 `2de3b83` 与 `90b83fa` 的 `eligibility_v02.py`：后者新增 `inconsistent_outcome_correctness` 检查，例如 `outcome="failure"` 但 `correctness=1.0`、`success` 但 `correctness!=1.0`、`neutral` 却有数值成绩。否则同一条记录可能在标签上失败、数值上成功，并被当作正面证据。**这里有可确认的代码修订和新增回归测试；当前 ZIP 不包含当时失败的 Terminal 日志，因此只能称为「已证实的防护修订」，不能虚构为“线上 Bug 曾造成了错误掌握结论”。**
+Comparing `eligibility_v02.py` in `2de3b83` and `90b83fa` exactly: the latter adds an `inconsistent_outcome_correctness` check, e.g. `outcome="failure"` with `correctness=1.0`, `success` with `correctness!=1.0`, or `neutral` with a numeric score. Otherwise the same record could be a failure by label and a success by number, and be counted as positive evidence. **There is a confirmable code revision and new regression test here; the current ZIP does not contain a terminal log of a failure at the time, so it can only be called a "confirmed protective revision", not invented as "a production bug that caused a wrong mastery conclusion".**
 
-**源码证据：** `2de3b83:backend/app/services/student_model/eligibility_v02.py`；`90b83fa:backend/app/services/student_model/eligibility_v02.py`；同两个 Commit 的 `backend/tests/test_evidence_policy_v02.py`。
+**Source evidence:** `2de3b83:backend/app/services/student_model/eligibility_v02.py`; `90b83fa:backend/app/services/student_model/eligibility_v02.py`; `backend/tests/test_evidence_policy_v02.py` in the same two commits.
 
-## 07｜Policy 不是教育科学事实，而是版本化工程参数
+## 07 | Policy is a versioned engineering parameter, not an educational-science fact
 
-`StatePolicyV02` 使用冻结 dataclass，默认包含 `min_model_confidence=0.65`、`minimum_evidence_mass=0.75`、`minimum_distinct_items=2`、`competent_threshold=0.75`、`strong_threshold=0.90`、`competent_independent_successes=2`、`strong_independent_successes=3`、`strong_minimum_sessions=2`、`max_session_evidence_mass=1.5`、`stale_after_days=21`。
+`StatePolicyV02` is a frozen dataclass whose defaults include `min_model_confidence=0.65`, `minimum_evidence_mass=0.75`, `minimum_distinct_items=2`, `competent_threshold=0.75`, `strong_threshold=0.90`, `competent_independent_successes=2`, `strong_independent_successes=3`, `strong_minimum_sessions=2`, `max_session_evidence_mass=1.5`, and `stale_after_days=21`.
 
-`90b83fa` 又新增 `min_retrieval_delay_hours=24.0`。将这项参数明确写入 Policy 的好处是延迟检索的资格不是由函数中不可见的临时常量决定。**0.65、1.5、21 天、24 小时都属于原始文档声明的暂定工程策略，不能在网站里叙述为经过实验验证的通用学习阈值。**
+`90b83fa` adds `min_retrieval_delay_hours=24.0`. Writing this parameter into the Policy means eligibility for delayed retrieval is not decided by an invisible ad-hoc constant inside a function. **0.65, 1.5, 21 days, and 24 hours are all provisional engineering policies declared in the original documents; the website must not describe them as experimentally validated universal learning thresholds.**
 
-有一个后续审计关注点：`StatePolicyV02` 是冻结 dataclass，但在这份历史实现的 `estimate_objective_state` 入口中，显式验证了 `as_of` 与 `max_session_evidence_mass>0`，并没有展示对所有阈值之间逻辑关系的统一初始化验证。这是 **事后代码审阅问题**，不是已知的历史失败。
+One follow-up audit point: `StatePolicyV02` is a frozen dataclass, but in this historical implementation the `estimate_objective_state` entry point explicitly validates `as_of` and `max_session_evidence_mass>0` and does not show a unified initialization check of the logical relationships among all thresholds. This is an **after-the-fact code-review issue**, not a known historical failure.
 
-**源码证据：** `2de3b83:backend/app/services/student_model/policy_v02.py`；`90b83fa:backend/app/services/student_model/policy_v02.py`。
+**Source evidence:** `2de3b83:backend/app/services/student_model/policy_v02.py`; `90b83fa:backend/app/services/student_model/policy_v02.py`.
 
-## 08｜逐步走过 `estimate_objective_state()` 的实际执行过程
+## 08 | Walking through what `estimate_objective_state()` actually does
 
-这是 `90b83fa:backend/app/services/student_model/state_update_v02.py` 中的真实早期实现。它不调用 LLM，也不直接访问数据库；接收已经构造的 `EvidenceEventV02[]`，对指定学生、课程、目标、`as_of` 生成 `ObjectiveStateV02`。以下顺序严格对应历史源文件的 13 个 `STEP`。
+This is the real early implementation in `90b83fa:backend/app/services/student_model/state_update_v02.py`. It does not call an LLM or access the database directly; it receives already-built `EvidenceEventV02[]` and produces an `ObjectiveStateV02` for a given student, course, objective, and `as_of`. The order below matches the 13 `STEP`s in the historical source file exactly.
 
-**STEP 0｜校验时间与 Policy。** `as_of` 必须有时区，`max_session_evidence_mass` 必须为正数。时区不是显示偏好，而是为了保证时间排序与未来事件判断有一致含义。
+**STEP 0 | Validate time and Policy.** `as_of` must have a timezone and `max_session_evidence_mass` must be positive. The timezone is not a display preference; it makes time ordering and future-event checks consistent.
 
-**STEP 1｜验证 Scope，按 evidence_id 去重。** 每条事件的 student/course/objective 必须与请求一致，`created_at` 不得晚于 `as_of`。相同 `evidence_id` 且整条事件相同可以重复出现，但不能增加证据；相同 ID、不同内容抛出 `ValueError`，不能悄悄挑选一个版本。
+**STEP 1 | Validate scope and deduplicate by evidence_id.** Each event's student/course/objective must match the request, and `created_at` must not be later than `as_of`. An identical event with the same `evidence_id` may repeat but adds no evidence; the same ID with different content raises `ValueError` rather than silently picking one version.
 
-**STEP 2｜Eligibility。** 按 `created_at UTC + evidence_id` 的确定性顺序逐条调用 `evaluate_evidence`。不合格事件保留 `exclusion_reasons`；合格事件按 `(session_id, assessment_item_id)` 分组。**排除是从状态计算中排除，不是删除原始 Evidence History。**
+**STEP 2 | Eligibility.** `evaluate_evidence` is called on each event in the deterministic order `created_at UTC + evidence_id`. Ineligible events keep their `exclusion_reasons`; eligible events are grouped by `(session_id, assessment_item_id)`. **Exclusion means excluded from the state calculation, not deleted from the raw Evidence History.**
 
-**STEP 3｜控制相关证据。** 对同一 session+item 选最早的 eligible attempt；后续同题事件标记 `correlated_repeat_in_session`。接着对同 session 的相同 `response_group_id` 再去重，标记 `correlated_response_group_in_session`；不同 session 的相同 response group 不会被这个规则跨会话合并。该策略控制同一会话多次重复的权重，并不证明不同 session 的两条记录一定在真实世界中相互独立。
+**STEP 3 | Control correlated evidence.** For the same session+item, the earliest eligible attempt is chosen; later events on the same item are marked `correlated_repeat_in_session`. Then events with the same `response_group_id` in the same session are deduplicated and marked `correlated_response_group_in_session`; the same response group in different sessions is not merged across sessions by this rule. This policy limits the weight of repetition within one session; it does not prove that two records from different sessions are truly independent in the real world.
 
-**STEP 4｜Session Cap。** 汇总每次会话的 candidate weights，如果某会话超过 `max_session_evidence_mass=1.5`，对其所有被选中的事件同比例缩放。这样同一会话大量低差异题目不能无限积累 aggregate mass。缩放后的 weight 才参与下一步。
+**STEP 4 | Session cap.** Candidate weights are summed per session; if a session exceeds `max_session_evidence_mass=1.5`, all its selected events are scaled down proportionally. This keeps many low-difference items in one session from accumulating unlimited aggregate mass. Only the scaled weights go into the next step.
 
-**STEP 5｜Performance Estimate。** 实际计算是 `sum(weight_i × correctness_i) / sum(weight_i)`，使用 `math.fsum`；总质量为零时为 `None`。**correctness 表示该题评分，不是 mastered 的概率；performance_estimate 也是原始策略下的表现估计，而非科学校准的学生能力概率。**
+**STEP 5 | Performance estimate.** The actual calculation is `sum(weight_i × correctness_i) / sum(weight_i)` using `math.fsum`; with zero total mass it is `None`. **correctness is the score on an item, not a probability of mastery; performance_estimate is a performance estimate under the original policy, not a scientifically calibrated probability of student ability.**
 
-**STEP 6｜Diversity 与 Independent Success。** 统计 distinct item、session；独立成功辅助函数的必要条件为 success、correctness≈1、assistance_level==0、`prior_solution_exposure is False`。注意这里的 *independent* 是代码元数据定义；是否真的没有外部帮助，历史函数无法证实。
+**STEP 6 | Diversity and independent success.** Distinct items and sessions are counted; the independent-success helper requires success, correctness ≈ 1, assistance_level == 0, and `prior_solution_exposure is False`. Note that *independent* here is a code-metadata definition; the historical function cannot verify that there really was no outside help.
 
-**STEP 7｜Transfer / Retrieval。** 成功 Transfer 要求 `EvidenceType.TRANSFER_ATTEMPT`、通过独立成功条件、`novelty="novel"`。Delayed Retrieval 除通过独立成功条件，还要求 `retrieval_delay_hours >= policy.min_retrieval_delay_hours`。没有延迟字段或延迟不足的普通 retrieval，不满足该 Strong gate。
+**STEP 7 | Transfer / retrieval.** A successful transfer requires `EvidenceType.TRANSFER_ATTEMPT`, the independent-success condition, and `novelty="novel"`. A delayed retrieval requires the independent-success condition plus `retrieval_delay_hours >= policy.min_retrieval_delay_hours`. An ordinary retrieval without a delay field or with too short a delay does not satisfy the Strong gate.
 
-**STEP 8｜State Gates。** 若 mass 为零、distinct items<2 或 mass<0.75，状态为 UNKNOWN。否则 estimate<0.40 对应 EMERGING；estimate<0.75 对应 DEVELOPING；更高表现仍需独立 item / novelty 才能进入 COMPETENT，STRONG 还需三道 distinct independent items、跨两次 session，并有相应 Transfer 或 Delayed Retrieval。独立成功条件不满足的高成绩可停在 DEVELOPING。
+**STEP 8 | State gates.** If the mass is zero, distinct items < 2, or mass < 0.75, the state is UNKNOWN. Otherwise estimate < 0.40 means EMERGING and estimate < 0.75 means DEVELOPING; higher performance still needs independent items/novelty to reach COMPETENT, and STRONG also needs three distinct independent items across two sessions plus a matching transfer or delayed retrieval. A high score that fails the independent-success conditions can stay at DEVELOPING.
 
-**STEP 9｜Evidence Support。** `support_score = min(mass/3,1) × min(distinct_items/3,1)`；UNKNOWN 时 support 为 INSUFFICIENT；其余根据工程阈值分为 LIMITED、MODERATE、SUBSTANTIAL。它不是另一个意义不明的“学生能力分数”。
+**STEP 9 | Evidence support.** `support_score = min(mass/3,1) × min(distinct_items/3,1)`; when UNKNOWN, support is INSUFFICIENT; otherwise engineering thresholds classify it as LIMITED, MODERATE, or SUBSTANTIAL. It is not another vaguely defined "student ability score".
 
-**STEP 10｜Performance Stability。** 小于两条合格评分 → INSUFFICIENT_DATA；最高与最低 correctness 差距≥0.50 → MIXED；否则 CONSISTENT。这里“稳定”是基于有限证据的离散判别，不等于跨时间的学习保持已经被证实。
+**STEP 10 | Performance stability.** Fewer than two eligible scores → INSUFFICIENT_DATA; a gap of ≥ 0.50 between the highest and lowest correctness → MIXED; otherwise CONSISTENT. "Stable" here is a discrete judgment from limited evidence, not proof of retention over time.
 
-**STEP 11｜Freshness。** 根据最近满足 assistance 0 且 prior exposure False 的合格 assessment 日期判断是否超过 21 天；时间流逝只改变 freshness，不直接改变 performance_estimate 或 state。这里统计的最后一次“independent assessment”并不要求成功，且仍依赖存入事件的元数据，不能直接等同于经外部认证的独立作答。
+**STEP 11 | Freshness.** Based on the date of the most recent eligible assessment with assistance 0 and prior exposure False, the function checks whether it is more than 21 days old; the passage of time changes only freshness, not performance_estimate or state directly. The last "independent assessment" counted here need not be a success and still depends on stored event metadata; it cannot be equated with an externally certified independent attempt.
 
-**STEP 12｜Scoring Version 检查。** 如果参与聚合的事件出现多个 `scoring_policy_version`，抛出 `ValueError`，要求显式迁移。不同评分规则不能被悄悄揉成一个可比较成绩。
+**STEP 12 | Scoring version check.** If the aggregated events contain more than one `scoring_policy_version`, a `ValueError` is raised and an explicit migration is required. Different scoring rules cannot be silently blended into one comparable score.
 
-**STEP 13｜构建可追溯状态。** 输出当前 state、performance、support、stability、freshness、质量与计数、纳入/排除的 evidence IDs、reason codes、policy/scoring version 和 as_of。没有新的数据采集、用户授权或 LLM 判断发生在这个纯估计函数里。
+**STEP 13 | Build a traceable state.** The output contains the current state, performance, support, stability, freshness, mass and counts, included/excluded evidence IDs, reason codes, policy/scoring version, and as_of. No new data collection, user authorization, or LLM judgment happens in this pure estimation function.
 
 ```text
 EvidenceEvent[]
@@ -177,61 +177,61 @@ EvidenceEvent[]
   → ObjectiveStateV02 + provenance
 ```
 
-**源码证据：** `90b83fa:backend/app/services/student_model/state_update_v02.py`（`estimate_objective_state`、`_independent_success`、`_time_key`）。
+**Source evidence:** `90b83fa:backend/app/services/student_model/state_update_v02.py` (`estimate_objective_state`, `_independent_success`, `_time_key`).
 
-## 09｜三组具体数值例子：为什么“答对”不等于“COMPETENT”
+## 09 | Three numeric examples: why "answered correctly" does not mean "COMPETENT"
 
-以下为**根据历史规则人工构造的解释用例，并非运行记录**，不是原始学生数据；假设题目直接对齐目标、valid、model_confidence=1、题目 ID 相异、没有 prior exposure，除特别注明外 novelty=novel，且没有其他约束。
+These are **explanatory cases constructed by hand from the historical rules, not run records**, and not real student data. Assume items are directly aligned with the objective, valid, model_confidence=1, distinct item IDs, no prior exposure, novelty=novel unless noted, and no other constraints.
 
-**A：只有一道独立新题答对。** 事件的 weight=1，weighted correctness=1，因此 performance_estimate=1；但 distinct items=1，小于 2，最终 `UNKNOWN`。这不是认定学生“不会”，而是证据数量不足。
+**A: Only one independent new item answered correctly.** The event's weight=1 and weighted correctness=1, so performance_estimate=1; but distinct items=1 < 2, so the result is `UNKNOWN`. This does not say the student "doesn't know it"; it says there is not enough evidence.
 
-**B：两道独立新题答对。** 在同一 session 下，原始 weight=1+1=2，session cap 1.5 将每条缩到 0.75；mass=1.5，performance_estimate=1，两个不同 item、两个独立成功、novelty gate 通过，因此 `COMPETENT`。由于 Strong 至少要求三道独立 item 和两个 session，这里不是 STRONG。
+**B: Two independent new items answered correctly.** In the same session, the raw weight is 1+1=2; the session cap of 1.5 scales each to 0.75; mass=1.5, performance_estimate=1, two distinct items, two independent successes, novelty gate passed, so the result is `COMPETENT`. Since Strong requires at least three independent items and two sessions, it is not STRONG.
 
-**C：五次 Hint Level 2 后在五个不同 session 对不同新题答对。** 每条 weight=0.60，mass=3、performance_estimate=1、distinct items=5，但独立成功数为 0，最终 `DEVELOPING`。**这里说明早期 V0.2 的已知辅助成功在条件齐备时可参与表现估计，但不能代替独立成功；它与后期 `assistance_level=None` 被完全排除是不同情况。**
+**C: Five correct answers on different new items in five different sessions, each after a Level 2 hint.** Each weight=0.60, mass=3, performance_estimate=1, distinct items=5, but the number of independent successes is 0, so the result is `DEVELOPING`. **This shows that in early V0.2, known assisted successes can inform the performance estimate when other conditions hold, but cannot replace independent successes; this differs from the later case where `assistance_level=None` is excluded entirely.**
 
-## 10｜现有历史测试究竟证明了什么？
+## 10 | What do the existing historical tests actually prove?
 
-`2de3b83:backend/tests/test_evidence_policy_v02.py` 包含九个定义明确的 `test_` 函数，覆盖独立新题、辅助降低权重、完整 Walkthrough 权重 0、self-report、未对齐、低解释置信、缺失 Assessment ID、Solution Exposure、无效 Assessment。
+`2de3b83:backend/tests/test_evidence_policy_v02.py` contains nine well-defined `test_` functions covering an independent new item, assistance lowering the weight, a full walkthrough with weight 0, self-report, misalignment, low interpretation confidence, missing assessment ID, solution exposure, and an invalid assessment.
 
-在 `90b83fa` 的同名测试中新增三项：矛盾的 outcome/correctness 被排除；有效 failure 仍可保留为负面表现；合法 partial result 仍可计入。历史的 `test_state_update_v02.py` 另有 20 个 `test_` 函数，覆盖无证据、自评、单次成功、COMPETENT/STRONG、延迟检索、辅助成功、同题重复、重复 ID 冲突、输入顺序、时间流逝、真实失败导致状态下降、跨学生数据、未来数据、Solution Exposure、Response Group 与矛盾证据等。
+The same-named test file in `90b83fa` adds three more: contradictory outcome/correctness is excluded; a valid failure is still kept as negative performance; a legitimate partial result still counts. The historical `test_state_update_v02.py` has another 20 `test_` functions covering no evidence, self-report, a single success, COMPETENT/STRONG, delayed retrieval, assisted success, repeats on the same item, conflicting duplicate IDs, input order, passage of time, a real failure lowering the state, cross-student data, future data, solution exposure, response groups, and contradictory evidence.
 
-**这 9+3+20 是本资料包中可静态数出的测试函数数量，不是我们在当前沙箱或你的最新仓库实际执行 pytest 的结果。** 此处不声明某一历史 Commit 的完整测试总数，除非找到当时原始 Terminal 输出。`test_...` 的存在证明有预期行为的代码化断言，是否每个历史版当时通过，还应以相关 Checkpoint 的实际测试输出确认。
+**These 9+3+20 are test-function counts that can be read statically from this source pack, not results of running pytest in the current sandbox or your latest repository.** No full test total is claimed for any historical commit unless the original terminal output is found. The existence of `test_...` proves expected behavior was written as code assertions; whether each historical version passed at the time must be confirmed from that checkpoint's actual test output.
 
-### 有原始代码修改证据，但暂时没有失败日志的“修复”
+### "Fixes" with code-change evidence but no failure log yet
 
-| 观察 | 确认依据 | 可以写成什么 | 不可以写成什么 |
+| Observation | Basis for confirmation | What it can be written as | What it must not be written as |
 |---|---|---|---|
-| 新增 Outcome/Correctness 一致性校验 | 两次历史版 eligibility 文件差异 + 对应新增测试 | “实现阶段增加了防自相矛盾记录的资格校验” | “曾发生某次线上错判并导致学生状态污染” |
-| 新增 retrieval_delay_hours 和 ≥24h 规则 | Schema、Policy、Estimator 与延迟检索测试 | “实现中将普通检索与有明确延迟的检索分离” | “开发期间发生某个已复现的延迟计时故障” |
-| 从 signed strength 转为 weighted correctness | 旧设计与新设计文档 | “确认发生的架构/模型规范变化” | “此前线上模型失效，迫使团队重构” |
+| Added Outcome/Correctness consistency check | Diff between the two historical eligibility files + matching new tests | "The implementation added an eligibility check against self-contradictory records" | "A production misjudgment once happened and polluted student state" |
+| Added retrieval_delay_hours and the ≥24h rule | Schema, Policy, Estimator, and delayed-retrieval tests | "The implementation separated ordinary retrieval from retrieval with an explicit delay" | "A reproduced delay-timing failure occurred during development" |
+| Moved from signed strength to weighted correctness | Old and new design documents | "A confirmed change in architecture/model specification" | "The previous production model failed, forcing the team to rebuild" |
 
-## 11｜事后代码审阅：下一轮应继续核查，而不是倒写成历史 Bug
+## 11 | After-the-fact code review: verify further next round, do not rewrite as historical bugs
 
-以下为当前上传 **早期历史代码** 的边界与可讨论点，不能未经最新 HEAD 和原始 Bug 日志核对就认定为当前系统缺陷：
+The following are boundaries and discussion points of the uploaded **early historical code**; they must not be declared current system defects without checking against the latest HEAD and original bug logs:
 
-1. `_independent_success` 根据事件元数据 `assistance_level==0` 与 `prior_solution_exposure is False` 判定；其字段来源及用户外部帮助并不在这个纯估计函数的验证范围内。
-2. 同题重复按 `(session_id, assessment_item_id)` 合并；跨 session 的同题作答并不会被这一规则完全视为相同历史暴露，后续应核查不同下游是否有额外限制。
-3. response group 的相关性判断同样限定在 session 内；不同 session 共用 group ID 的数据不会在这个步骤中去重，测试亦明确覆盖该设计。
-4. `Pydantic frozen=True` 约束模型赋值，不保证持久层不可更改；具体数据库写入保护属于更晚的工程阶段。
-5. `EvidenceSupportScore`、`model_confidence` 与 `PerformanceEstimate` 具有不同含义；不应向用户将任何一项呈现为经校准的“掌握概率”。
+1. `_independent_success` decides from event metadata `assistance_level==0` and `prior_solution_exposure is False`; where those fields came from, and whether the user had outside help, are outside what this pure estimation function verifies.
+2. Repeats on the same item are merged by `(session_id, assessment_item_id)`; attempts on the same item in different sessions are not fully treated as the same prior exposure by this rule, so later work should check whether downstream components add further limits.
+3. Response-group correlation is likewise limited to a session; data in different sessions sharing a group ID is not deduplicated at this step, and the tests explicitly cover this design.
+4. `Pydantic frozen=True` constrains model assignment; it does not make the persistence layer immutable. Database write protection belongs to a later engineering phase.
+5. `EvidenceSupportScore`, `model_confidence`, and `PerformanceEstimate` mean different things; none of them should be presented to users as a calibrated "probability of mastery".
 
-这些检查项应在本网站后续的 **Architecture Evolution / Current-State Audit** 中与 HEAD 代码对照，而不是混入早期历史 Debugging Case。
+These checks should be compared against HEAD code in this website's later **Architecture Evolution / Current-State Audit**, rather than mixed into early historical debugging cases.
 
-## 12｜能够确认的历史节点与剩余证据缺口
+## 12 | Confirmable historical checkpoints and remaining evidence gaps
 
-| Git 节点 | 本资料包直接提供的内容 | 仍未提供的内容 |
+| Git checkpoint | What this source pack provides directly | What is still missing |
 |---|---|---|
-| `93e3680` | 产品/架构/课程/教学/隐私文档；最初 Domain Model、FastAPI 入口与 LLM Protocol | 完整初始执行日志、实际课程导入或教学演示记录 |
-| `0dda011` | 1,581 行的 V0.1 State Update 设计候选 | 提交前各次讨论、曾经失败的实现尝试 |
-| `f61cd4b` | 旧文档仅加四行 superseded 提示；新增 1,112 行 V0.2 设计 | 当时变更决策的逐次讨论与实验输出 |
-| `2de3b83` | Schema、Eligibility、Policy、九个测试函数 | 对应 Commit 的原始 pytest 输出、此前未提交的错误尝试 |
-| `90b83fa` | State Estimator、Schema/Policy/Eligibility 修订、测试函数 | 原始失败日志、提交前修改次数、当时总测试结果 |
+| `93e3680` | Product/architecture/course/pedagogy/privacy docs; initial Domain Model, FastAPI entry point, and LLM Protocol | Complete initial run logs, actual course import or teaching demo records |
+| `0dda011` | 1,581-line V0.1 State Update design candidate | Discussions before the commit, failed implementation attempts |
+| `f61cd4b` | Old document gets only a four-line superseded notice; new 1,112-line V0.2 design | Step-by-step discussion and experiment output behind the change decision |
+| `2de3b83` | Schema, Eligibility, Policy, nine test functions | Original pytest output for that commit, uncommitted failed attempts before it |
+| `90b83fa` | State Estimator, Schema/Policy/Eligibility revisions, test functions | Original failure logs, number of changes before commit, total test results at the time |
 
-**后续网站编排：** 本章应作为「Foundation / Early Student State」的完整技术内容，与 `Implementation 0–13` 编号索引分开，直到取得能够直接确定每个 Implementation 边界的原始 Roadmap。下一轮可沿真实 Commit 顺序继续 Assessment / Evidence Scoring，而不是依据文件名猜测实施编号。
+**Website arrangement going forward:** this chapter should be the full technical content for "Foundation / Early Student State", kept separate from the `Implementation 0–13` numbering index until the original roadmap that fixes each implementation boundary is obtained. The next round can continue with Assessment / Evidence Scoring in true commit order, rather than guessing implementation numbers from file names.
 
-## 附｜如何复核本章中的每条历史陈述
+## Appendix | How to verify each historical statement in this chapter
 
-在 URPP 仓库根目录，使用只读 Git 命令查看具体版本，例如：
+From the URPP repository root, use read-only Git commands to view specific versions, for example:
 
 ```bash
 git show 93e3680:docs/00_product_spec.md
@@ -242,4 +242,4 @@ git show 90b83fa:backend/app/services/student_model/state_update_v02.py
 git diff 2de3b83 90b83fa -- backend/app/services/student_model/eligibility_v02.py
 ```
 
-原始资料包中的历史文件也可直接从 `early_architecture_source_pack.zip` 复核。**本章不包含真实学生数据，不运行 URPP 程序，不修改证据规则，不推断尚未验证的开发事故。**
+The historical files in the original source pack can also be checked directly from `early_architecture_source_pack.zip`. **This chapter contains no real student data, does not run URPP, does not change evidence rules, and does not infer unverified development incidents.**

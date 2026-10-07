@@ -1,81 +1,81 @@
-<!doctype html>
-<html lang="zh-CN"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>URPP Archive · Reply 6 · Persistence & Recovery</title><link rel="stylesheet" href="../assets/styles.css"/>
-<style>
-:root {color-scheme:dark}
-.archive-page{max-width:1100px;margin:0 auto; padding:44px 48px 96px}
-.archive-layout{display:grid;grid-template-columns:minmax(0,1fr) 255px;gap:46px;align-items:start}
-.archive-article{min-width:0}
-.archive-article h1 {font-size:clamp(32px,4vw,47px);margin:4px 0 24px;line-height:1.25}
-.archive-article h2{padding-top:22px;margin-top:48px;border-top:1px solid var(--border);scroll-margin-top:90px}
-.archive-article h3{margin-top:30px;scroll-margin-top:90px}
-.archive-article p, .archive-article li{line-height:1.85}
-.archive-article table{border-collapse:collapse;width:100%;font-size:12px;display:block;overflow-x:auto;margin:20px 0 28px}
-.archive-article td,.archive-article th{padding:10px 12px;text-align:left;vertical-align:top;min-width:125px;border-bottom:1px solid var(--border)}
-.archive-article th{background:var(--surface-2);color:#d9e6f9;white-space:nowrap}
-.archive-article td{color:#d0dcec}
-.archive-article code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.88em;color:#b7d5ff}
-.archive-article :not(pre)>code{background:rgba(142,188,255,.08);border:1px solid #293950;padding:1px 4px;border-radius:4px;overflow-wrap:anywhere}
-.archive-article pre{font-size:12px;line-height:1.8;margin:23px 0}
-.archive-article pre code{color:inherit;font-size:inherit}
-.archive-article blockquote{border-left:3px solid var(--accent);padding:16px 21px;margin:24px 0;background:var(--surface);color:#c4d5e8}
-.archive-article blockquote p:last-child{margin-bottom:0}
-.archive-article strong{color:#f0f5ff}
-.archive-article hr{border:0;border-top:1px solid var(--border);margin:40px 0}
-.archive-side{position:sticky;top:86px;max-height:calc(100vh - 112px);overflow-y:auto;border:1px solid var(--border);padding:19px;border-radius:12px;background:var(--surface)}
-.archive-side a{display:block;font-size:11px;padding:4px 5px;color:#a6bbd2;border-radius:5px}
-.archive-side a:hover,.archive-side a.active{background:var(--accent-soft);color:var(--accent);text-decoration:none}
-.archive-search{width:100%;margin:13px 0 8px;padding:10px 11px;color:var(--text);background:var(--background);border:1px solid var(--border);border-radius:7px;font-size:12px}
-.archive-toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:20px;color:var(--muted);font-size:12px}
-.archive-button{cursor:pointer;padding:7px 10px;border:1px solid var(--border);border-radius:7px;background:var(--surface-2);color:var(--text)}
-.archive-match{outline:2px solid var(--accent);outline-offset:3px}
-.archive-note{font-size:11px;color:var(--muted)}
-@media(max-width:990px){.archive-layout{grid-template-columns:minmax(0,1fr)}.archive-side{position:static;max-height:none;order:-1}.archive-page{padding:28px 20px 65px}.archive-article table{font-size:11px}}
-</style></head>
-<body><header class="topbar"><div class="brand"><span class="brand-symbol">U</span><div><strong>URPP Engineering Archive</strong><small>Reply 6 / 10 · Evidence-backed technical chapter</small></div></div><a href="../index.html">↗ 返回网站主页</a></header>
-<main class="archive-page"><div class="archive-toolbar"><span>TECHNICAL HANDBOOK · REPLY 6 · 19 CHECKPOINTS · 71 SOURCE ENTRIES</span><span>离线可读 · 本章搜索 · 源码索引</span></div>
-<div class="archive-layout"><article class="archive-article" id="chapter"><h1 id="urpp-engineering-archive-reply-6-10">URPP Engineering Archive — Reply 6 / 10</h1>
-<h2 id="persistence-numeric-assignment-session-recovery-sqlite-migration">Persistence · Numeric Assignment · Session Recovery · SQLite Migration</h2>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>URPP Archive — Persistence &amp; Recovery</title><link rel="stylesheet" href="../assets/styles.css"><style>.chapter-layout{display:grid;grid-template-columns:240px minmax(0,1fr);gap:30px;max-width:1480px;margin:auto;padding:0 24px}.chapter-toc{position:sticky;top:80px;align-self:start;max-height:calc(100vh - 100px);overflow:auto;background:#111821;border:1px solid var(--border);border-radius:10px;padding:16px}.chapter-toc a{display:block;font-size:12px;padding:6px 4px;color:var(--muted)}.chapter-toc a.sub{padding-left:16px}.chapter-toc a:hover{color:var(--accent)}.chapter-toc input{width:100%;box-sizing:border-box;margin:8px 0 4px;padding:7px 9px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:inherit;font:inherit;font-size:12px}.chapter-toc .hint{font-size:11px;color:var(--muted);margin:0 0 10px}.chapter-article{min-width:0;max-width:950px;padding:24px 10px 80px}.chapter-article h2{margin-top:52px;padding-top:25px;border-top:1px solid var(--border);font-size:25px}.chapter-article h3{margin-top:28px}.chapter-article blockquote{margin:25px 0;padding:17px 20px;border-left:3px solid var(--accent);background:var(--surface);border-radius:5px}.chapter-article blockquote p:last-child{margin-bottom:0}.chapter-article table{width:100%;border-collapse:collapse;display:block;overflow-x:auto;margin:22px 0;font-size:13px}.chapter-article th,.chapter-article td{border:1px solid var(--border);padding:9px 12px;vertical-align:top;min-width:145px}.chapter-article th{background:var(--surface-2)}.chapter-article code:not(pre code){font-size:0.91em;color:#b7d6ff;overflow-wrap:anywhere}.chapter-article pre{white-space:pre;max-width:100%;overflow:auto}.chapter-article p{max-width:86ch}.chapter-article li{margin-bottom:8px}.chapter-article a{overflow-wrap:anywhere}.chapter-intro{font-size:13px;color:var(--muted);margin:0 0 12px}.topbar .chapter-back{font-size:13px}mark.search-hit{background:#ffd76a;color:#111}@media(max-width:1020px){.chapter-layout{display:block}.chapter-toc{position:static;max-height:220px;margin-top:18px}.chapter-article{padding:18px 0 60px}}</style></head><body><header class="topbar"><div class="brand"><span class="brand-symbol">U</span><div><strong>URPP Engineering Archive</strong><small>Reply 6 / 10 · Persistence &amp; Recovery</small></div></div><a class="chapter-back" href="../index.html">← Archive Home</a></header><div class="chapter-layout"><aside class="chapter-toc"><div class="sidebar-heading">CHAPTER INDEX</div><input id="chapter-search" type="search" placeholder="Search this chapter" autocomplete="off"><p id="search-count" class="hint">Search this chapter</p><a class="" href="#section-01">Persistence · Numeric Assignment · Session Recovery · SQLite Migration</a>
+<a class="" href="#section-02">01. From &quot;saving answers&quot; to &quot;recovering an unfinished lesson&quot;</a>
+<a class="" href="#section-03">02. Rebuilding the design evolution by real Git checkpoints</a>
+<a class="" href="#section-04">03. The persistence model: why does each field exist?</a>
+<a class="sub" href="#section-05">3.1 Assignment identity and historical versions</a>
+<a class="sub" href="#section-06">3.2 Why is the Session identity stored separately?</a>
+<a class="sub" href="#section-07">3.3 SQLite design of the Pending slot</a>
+<a class="sub" href="#section-08">3.4 Registered Session: a four-column constraint, not just the Session ID</a>
+<a class="" href="#section-09">04. Issuing an Assignment: what is actually written?</a>
+<a class="" href="#section-10">05. Submitting: why must it be in one transaction?</a>
+<a class="sub" href="#section-11">Why isn&#x27;t querying status == pending in Python enough?</a>
+<a class="sub" href="#section-12">Post-commit exceptions and the boundary of the atomic transaction</a>
+<a class="" href="#section-13">06. Three recovery paths that must not be described as one</a>
+<a class="sub" href="#section-14">6.1 Repository rebuild: historical data is still readable</a>
+<a class="sub" href="#section-15">6.2 Legacy Persisted Loop: writes are persisted, but in-memory state remains</a>
+<a class="sub" href="#section-16">6.3 Recoverable Numeric Session: database facts decide current progress</a>
+<a class="" href="#section-17">07. Rebuilding Student State from Completed Assignments: callers cannot specify evidence directly</a>
+<a class="" href="#section-18">08. Why constraints gradually moved down into SQLite</a>
+<a class="" href="#section-19">09. The first historical SQLite migration: Pending slot and Decision uniqueness</a>
+<a class="sub" href="#section-20">9.1 Two run modes</a>
+<a class="sub" href="#section-21">9.2 Upgrade only after confirming the old database</a>
+<a class="" href="#section-22">10. The second SQLite migration: turning Session scope into a real FK</a>
+<a class="sub" href="#section-23">10.1 Why isn&#x27;t the second one a simple ALTER TABLE?</a>
+<a class="sub" href="#section-24">10.2 Transactional rebuild</a>
+<a class="" href="#section-25">11. Readiness and the connection layer: a correct schema does not mean the runtime path is correct</a>
+<a class="" href="#section-26">12. Application startup and Repository injection: actually putting the guarded Engine to use</a>
+<a class="sub" href="#section-27">12.1 The FastAPI lifespan keeps the health check available by default</a>
+<a class="sub" href="#section-28">12.2 Why do three Repositories share one sessionmaker?</a>
+<a class="sub" href="#section-29">12.3 The Recoverable Session Factory only does dependency injection</a>
+<a class="" href="#section-30">13. Real failures: the two timestamp bugs in the 13E-3C CLI</a>
+<a class="sub" href="#section-31">BUG-13E-3C-TIME-01: the database had already committed, but the State&#x27;s as_of was earlier</a>
+<a class="sub" href="#section-32">BUG-13E-3C-TIME-02: the first fix created a future State snapshot</a>
+<a class="" href="#section-33">14. Guard Casebook: potential failures covered by tests, not posing as real incidents</a>
+<a class="" href="#section-34">15. Code walkthrough: one complete local teaching demo (without overstating its capabilities)</a>
+<a class="" href="#section-35">16. Architectural mistakes that are easy to reintroduce: maintenance checklist</a>
+<a class="" href="#section-36">17. Historical sources and evidence levels</a>
+<a class="sub" href="#section-37">File-level location index (look up these paths when reading the original archive)</a><hr style="border:0;border-top:1px solid var(--border)"><a href="../chapters/persistence-recovery-v01.md">Markdown source</a><a href="../evidence/persistence_recovery_history_source_pack.zip">Original source pack</a><a href="../evidence/reply6_source_index.json">Source index (JSON)</a></aside><main class="chapter-article"><p class="chapter-intro">b36c7b5 → f86f68d · Historical source analysis (English edition)</p><h1 id="chapter-title">URPP Engineering Archive — Reply 6 / 10</h1>
+<h2 id="section-01">Persistence · Numeric Assignment · Session Recovery · SQLite Migration</h2>
 <blockquote>
-<p><strong>文档版本</strong>：Archive Chapter V0.1。<strong>历史源范围</strong>：用户提交的 <code>persistence_recovery_history_source_pack.zip</code>，内含 19 个已解析的历史 Git Checkpoint、71 个历史源码/测试条目及 <code>SOURCE_MANIFEST.json</code>。<strong>本章的确认状态</strong>：以各指定 Commit 的代码、文档与测试为准；未在这份 ZIP 中观察到的历史 pytest 失败不虚构为事故。<strong>时间戳实际故障</strong>取自此前用户提供的 13E-3C CLI 运行与修复记录，在本资料包中仅有其最终代码和成功路径测试，因此独立标注来源与证据缺口。</p>
+<p><strong>Document version</strong>: Archive Chapter V0.1. <strong>Historical source scope</strong>: the user-submitted <code>persistence_recovery_history_source_pack.zip</code>, containing 19 resolved historical Git checkpoints, 71 historical source/test entries, and <code>SOURCE_MANIFEST.json</code>. <strong>Confirmation status of this chapter</strong>: based on the code, documents, and tests of each specified commit; historical pytest failures not observed in this ZIP are not invented as incidents. <strong>The real timestamp failures</strong> come from the 13E-3C CLI run and fix records the user provided earlier; this source pack has only their final code and success-path tests, so the source and evidence gaps are labeled separately.</p>
 </blockquote>
-<p><strong>本章目录</strong>：① 问题与职责边界 → ② 19 个 Git 历史节点 → ③ 数据契约和约束 → ④ 发题流程 → ⑤ 原子提交 → ⑥ 三种恢复路径 → ⑦ 重建 Student State → ⑧ 规则为何从 Python 下沉 SQLite → ⑨ 两代 Migration → ⑩ Readiness 与 Engine → ⑪ 启动和依赖注入 → ⑫ CLI 的两次真实时间戳故障 → ⑬ Guard Casebook → ⑭ 后续维护中的未覆盖边界 → ⑮ 源码与测试定位。</p>
+<p><strong>Chapter contents</strong>: ① problem and responsibility boundaries → ② 19 Git history checkpoints → ③ data contracts and constraints → ④ delivery flow → ⑤ atomic submission → ⑥ three recovery paths → ⑦ rebuilding Student State → ⑧ why rules moved down from Python into SQLite → ⑨ two generations of migration → ⑩ readiness and Engine → ⑪ startup and dependency injection → ⑫ the CLI's two real timestamp failures → ⑬ Guard Casebook → ⑭ uncovered boundaries for future maintenance → ⑮ source and test locations.</p>
 <hr />
-<h2 id="01">01. 从“保存答案”到“恢复一次尚未结束的教学”</h2>
-<p>最初的教学流程可以在内存中保留一个 <code>pending_assignment</code>，但用户关闭程序之后，内存并不能回答：上一次题目是否已经发放？学生应该回答哪道题的哪个 Revision？某次提交是否已经成功保存？重启后该先恢复 Pending Assignment，还是新建另一道题？</p>
-<p>这里存在三个不能合并的实体：</p>
+<h2 id="section-02">01. From "saving answers" to "recovering an unfinished lesson"</h2>
+<p>The original teaching flow could keep a <code>pending_assignment</code> in memory, but once the user closed the program, memory could not answer: was the last question already delivered? Which question, and which Revision of it, should the student answer? Was a given submission saved successfully? After a restart, should the Pending Assignment be recovered first, or a new question created?</p>
+<p>There are three entities here that cannot be merged:</p>
 <table>
 <thead>
 <tr>
-<th>实体</th>
-<th>创建时间</th>
-<th>生命周期与职责</th>
-<th>不能替代什么</th>
+<th>Entity</th>
+<th>When created</th>
+<th>Lifecycle and responsibility</th>
+<th>What it cannot replace</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>AssessmentItemV02</code> + Revision</td>
-<td>题目存储阶段</td>
-<td>定义题目文本、Objective 和 Rubric 的特定历史版本</td>
-<td>它不是“已经向学生发题”的证据</td>
+<td>When the item is stored</td>
+<td>Defines a specific historical version of the question text, Objective, and Rubric</td>
+<td>It is not evidence that "the question was delivered to the student"</td>
 </tr>
 <tr>
 <td><code>NumericAssignmentRow</code></td>
-<td>选定 Assessment Action 且发题入库时</td>
-<td>固定 Session、Decision、Item Revision、发题时间、Pending/Completed 状态</td>
-<td>它不是学生答案，也不能仅凭 Pending 证明屏幕实际被学生看到</td>
+<td>When an Assessment Action is selected and delivery is stored</td>
+<td>Fixes the Session, Decision, Item Revision, delivery time, Pending/Completed status</td>
+<td>It is not the student's answer, and Pending alone cannot prove the student actually saw the screen</td>
 </tr>
 <tr>
 <td><code>StudentAttemptRow</code></td>
-<td>学生提交回答时</td>
-<td>记录服务器端生成的 Attempt ID、关联 Item Revision、响应文本和提交时间</td>
-<td>它不能独自说明此前是否已发放合法 Assignment</td>
+<td>When the student submits an answer</td>
+<td>Records a server-generated Attempt ID, the linked Item Revision, the response text, and submit time</td>
+<td>It cannot by itself show that a legitimate Assignment was delivered earlier</td>
 </tr>
 </tbody>
 </table>
-<p>第三种持久化实体是 <code>NumericTeachingSessionRowV01</code>：保存 <code>session_id + student_id + course_id + objective_id + started_at</code>。它记录“这个会话是谁的、何时开始”，而<strong>不复制维护一份需要随每道题更新的会话进度表</strong>。进度由 Assignment 与 Attempt 重建。这是 <code>numeric_session_records_v01.py</code> 的类文档和 <code>list_assignment_ids()</code> 的实际实现，而非我们事后补充的新需求。</p>
-<p>完整关系：</p>
+<p>The third kind of persisted entity is <code>NumericTeachingSessionRowV01</code>: it stores <code>session_id + student_id + course_id + objective_id + started_at</code>. It records "whose session this is and when it started", and <strong>does not maintain a separate session-progress table that must be updated with every question</strong>. Progress is rebuilt from Assignments and Attempts. This is what the class docs of <code>numeric_session_records_v01.py</code> and the actual implementation of <code>list_assignment_ids()</code> say, not a new requirement we added after the fact.</p>
+<p>The full relationship:</p>
 <pre><code class="language-text">Stored Item (item_id, revision, prompt, rubric)
               │
               │ immutable revision reference
@@ -101,212 +101,212 @@ Registered Teaching Session ───► Assignment (pending)
                                      ▼
                            Next Teaching Decision
 </code></pre>
-<p><strong>注意“原子性”的精确边界</strong>：Assignment 与 Attempt 在 <code>submit_numeric_response()</code> 中共享一个事务；Session Registration 与后续 Assignment Issuance 是两个操作，不构成贯穿整个教学会话的单一事务；评分、教学动作选择、终端显示、Assistance Log 也不包含在同一事务内。把一次课程笼统写成“端到端原子”是不准确的。</p>
-<p><strong>源锚点</strong>：<code>b36c7b5</code> 的 <code>numeric_assignment_v01.py</code>；<code>cf9ab746</code> 的 <code>numeric_session_records_v01.py</code> 和 <code>recoverable_numeric_session_v01.py</code>；<code>f86f68d7</code> 的 Assignment / Recoverable Session 最终历史快照。</p>
+<p><strong>Note the exact boundary of "atomicity"</strong>: the Assignment and Attempt share one transaction in <code>submit_numeric_response()</code>; Session Registration and later Assignment Issuance are two operations and do not form a single transaction spanning the whole teaching session; scoring, teaching-action selection, terminal display, and the Assistance Log are not in the same transaction either. Describing a whole lesson loosely as "end-to-end atomic" is inaccurate.</p>
+<p><strong>Source anchors</strong>: <code>numeric_assignment_v01.py</code> in <code>b36c7b5</code>; <code>numeric_session_records_v01.py</code> and <code>recoverable_numeric_session_v01.py</code> in <code>cf9ab746</code>; the final historical snapshots of Assignment / Recoverable Session in <code>f86f68d7</code>.</p>
 <hr />
-<h2 id="02-git-checkpoint">02. 按真实 Git Checkpoint 重建设计演进</h2>
-<p>以下按资料包 Manifest 顺序列出 19 个节点。名称采用资料包中的阶段标签及对应变更，不把这些标签擅自等同于完整的 Implementation 0–13 原始 Roadmap。源码包包含的，是每个节点<strong>当时新增或修改的相关文件</strong>，并不是整个仓库的完整源码快照；<code>final_snapshot_f86f68d7b4/</code> 另补充了主要服务在该时点的整份代码。</p>
+<h2 id="section-03">02. Rebuilding the design evolution by real Git checkpoints</h2>
+<p>The 19 checkpoints are listed below in the order of the source pack's manifest. Names use the stage labels in the source pack and the matching changes; these labels are not taken as equivalent to the full original Implementation 0–13 roadmap. What the source pack contains for each checkpoint is <strong>the relevant files added or changed at the time</strong>, not a full source snapshot of the whole repository; <code>final_snapshot_f86f68d7b4/</code> additionally provides the full code of the main services at that point.</p>
 <table>
 <thead>
 <tr>
-<th style="text-align:right">顺序</th>
+<th style="text-align: right;">Order</th>
 <th>Commit</th>
-<th>历史节点</th>
-<th>确认的结构变化 / 核查位置</th>
+<th>Historical checkpoint</th>
+<th>Confirmed structural change / where to check</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align:right">01</td>
+<td style="text-align: right;">01</td>
 <td><code>b36c7b5fba</code></td>
 <td><code>assignment_persistence</code></td>
-<td>引入 <code>NumericAssignmentRow</code>、<code>issue_assignment()</code>、<code>submit_numeric_response()</code> 与对应 Repository 测试；首次建立 Pending→Completed 的数据库路径。</td>
+<td>Introduces <code>NumericAssignmentRow</code>, <code>issue_assignment()</code>, <code>submit_numeric_response()</code>, and matching Repository tests; first database path for Pending→Completed.</td>
 </tr>
 <tr>
-<td style="text-align:right">02</td>
+<td style="text-align: right;">02</td>
 <td><code>174f259e7a</code></td>
 <td><code>completed_assignment_state</code></td>
-<td>新增 <code>CompletedAssignmentStateServiceV01</code>；不允许仅凭用户输入 Attempt ID 跳过 Assignment 与 Attempt 的关联校验。</td>
+<td>Adds <code>CompletedAssignmentStateServiceV01</code>; a user-supplied Attempt ID alone cannot skip the check of the Assignment–Attempt link.</td>
 </tr>
 <tr>
-<td style="text-align:right">03</td>
+<td style="text-align: right;">03</td>
 <td><code>692b6943f4</code></td>
 <td><code>persisted_numeric_loop</code></td>
-<td>新增 <code>PersistedNumericTeachingLoopV01</code>，把内存教学会话与数据库 Assignment 连接；存在 <code>_requires_recovery</code> 防止后提交异常后继续操作陈旧内存。</td>
+<td>Adds <code>PersistedNumericTeachingLoopV01</code>, connecting the in-memory teaching session with database Assignments; <code>_requires_recovery</code> prevents continuing with stale memory after a post-commit exception.</td>
 </tr>
 <tr>
-<td style="text-align:right">04</td>
+<td style="text-align: right;">04</td>
 <td><code>cf9ab746db</code></td>
 <td><code>session_recovery</code></td>
-<td>增加持久化 Session Identity 及 <code>RecoverableNumericSessionServiceV01</code>，可在新 Service 实例中读出 Pending/Completed 和 State。</td>
+<td>Adds persisted Session Identity and <code>RecoverableNumericSessionServiceV01</code>, able to read Pending/Completed and State in a new Service instance.</td>
 </tr>
 <tr>
-<td style="text-align:right">05</td>
+<td style="text-align: right;">05</td>
 <td><code>a562e6711b</code></td>
 <td><code>assignment_invariants</code></td>
-<td>引入 <code>pending_session_key</code> 唯一约束、<code>(session_id,decision_id)</code> 唯一约束及状态一致性检查；测试并发发题/提交与失败回滚。</td>
+<td>Introduces a <code>pending_session_key</code> unique constraint, a <code>(session_id,decision_id)</code> unique constraint, and state-consistency checks; tests concurrent delivery/submission and rollback on failure.</td>
 </tr>
 <tr>
-<td style="text-align:right">06</td>
+<td style="text-align: right;">06</td>
 <td><code>79e250c760</code></td>
 <td><code>assignment_migration</code></td>
-<td>为旧 Assignment 表提供明确审核、显式应用、备份、事务性变更与状态一致性 Trigger 的迁移工具。</td>
+<td>Migration tool for old Assignment tables with explicit audit, explicit apply, backup, transactional change, and state-consistency triggers.</td>
 </tr>
 <tr>
-<td style="text-align:right">07</td>
+<td style="text-align: right;">07</td>
 <td><code>1f50e80483</code></td>
 <td><code>database_readiness</code></td>
-<td>新增只读 Readiness Check，验证表、Schema、Foreign Key 与 Session/Assignment 数据关系。</td>
+<td>Adds a read-only readiness check validating tables, schema, foreign keys, and Session/Assignment data relationships.</td>
 </tr>
 <tr>
-<td style="text-align:right">08</td>
+<td style="text-align: right;">08</td>
 <td><code>85bbb0e392</code></td>
 <td><code>session_registration</code></td>
-<td>发题路径增加注册会话匹配检查的可选阶段。</td>
+<td>Adds an optional stage to the delivery path that checks for a matching registered session.</td>
 </tr>
 <tr>
-<td style="text-align:right">09</td>
+<td style="text-align: right;">09</td>
 <td><code>0f32231201</code></td>
 <td><code>strict_session_assignment</code></td>
-<td>添加 <code>registered_session_id</code> 及四列 Composite FK（包含 Session 和 Student/Course/Objective），并保留有明确历史语义的 NULL。</td>
+<td>Adds <code>registered_session_id</code> and a four-column composite FK (covering Session and Student/Course/Objective), keeping NULL with explicit historical meaning.</td>
 </tr>
 <tr>
-<td style="text-align:right">10</td>
+<td style="text-align: right;">10</td>
 <td><code>e735c0fbdf</code></td>
 <td><code>registered_session_default</code></td>
-<td>新发题默认要求已注册且 Scope 相符的 Session；测试明确覆盖缺失 Session 的拒绝路径。</td>
+<td>New deliveries require a registered Session with matching scope by default; tests explicitly cover rejection when the Session is missing.</td>
 </tr>
 <tr>
-<td style="text-align:right">11</td>
+<td style="text-align: right;">11</td>
 <td><code>cd5c7d4cde</code></td>
 <td><code>foreign_key_readiness</code></td>
-<td>引入迁移前的只读 FK 审核：区分 pre-09 / post-09-pre-12B / post-12B 以及无法匹配的历史数据。</td>
+<td>Introduces a read-only pre-migration FK audit distinguishing pre-09 / post-09-pre-12B / post-12B and historical data that cannot be matched.</td>
 </tr>
 <tr>
-<td style="text-align:right">12</td>
+<td style="text-align: right;">12</td>
 <td><code>3cbeffabe4</code></td>
 <td><code>foreign_key_migration</code></td>
-<td>对旧 Assignment 表进行有备份和校验的整表重建，迁移到带 Registered Session Composite FK 的 Schema。</td>
+<td>Rebuilds the old Assignment table in full with backup and verification, migrating to the schema with the Registered Session composite FK.</td>
 </tr>
 <tr>
-<td style="text-align:right">13</td>
+<td style="text-align: right;">13</td>
 <td><code>0bc3250fb7</code></td>
 <td><code>guarded_sqlite_engine</code></td>
-<td>用 <code>mode=rw</code> 打开已有 SQLite DB；为 SQLAlchemy 新连接启用、连接池 checkout 时复核 FK。</td>
+<td>Opens an existing SQLite DB with <code>mode=rw</code>; enables FKs for new SQLAlchemy connections and re-checks them on pool checkout.</td>
 </tr>
 <tr>
-<td style="text-align:right">14</td>
+<td style="text-align: right;">14</td>
 <td><code>fc91a60a7d</code></td>
 <td><code>sqlite_startup</code></td>
-<td>FastAPI lifespan 对数据库连接做显式 opt-in，不破坏原本 health-only 启动。</td>
+<td>The FastAPI lifespan makes the database connection an explicit opt-in, without breaking the original health-only startup.</td>
 </tr>
 <tr>
-<td style="text-align:right">15</td>
+<td style="text-align: right;">15</td>
 <td><code>f22dbf930d</code></td>
 <td><code>repository_injection</code></td>
-<td>新增 <code>NumericRepositoryBundleV01</code>，三个 Repository 绑定同一个受保护 Engine/Session factory。</td>
+<td>Adds <code>NumericRepositoryBundleV01</code>, binding three Repositories to the same guarded Engine/session factory.</td>
 </tr>
 <tr>
-<td style="text-align:right">16</td>
+<td style="text-align: right;">16</td>
 <td><code>c24d1dc84d</code></td>
 <td><code>recoverable_session_factory</code></td>
-<td>Session Factory 从 Startup Bundle 注入依赖，不私自创建另一套 Engine 或 Repository。</td>
+<td>The Session Factory gets its dependencies injected from the Startup Bundle and does not privately create another Engine or Repository.</td>
 </tr>
 <tr>
-<td style="text-align:right">17</td>
+<td style="text-align: right;">17</td>
 <td><code>f05f7e1328</code></td>
 <td><code>legacy_session_registration</code></td>
-<td>早期 Legacy Loop 补上持久化 Session Registration，仍明确注明内存进度的限制。</td>
+<td>The early Legacy Loop gains persisted Session Registration, still noting the limits of in-memory progress explicitly.</td>
 </tr>
 <tr>
-<td style="text-align:right">18</td>
+<td style="text-align: right;">18</td>
 <td><code>f86f68d7b4</code></td>
 <td><code>remove_unregistered_issuance</code></td>
-<td>正常发题实现移除无注册 Session 的发行路径；新 Assignment 设置 <code>registered_session_id=session_id</code>。</td>
+<td>The normal delivery implementation removes the issuance path without a registered Session; new Assignments set <code>registered_session_id=session_id</code>.</td>
 </tr>
 <tr>
-<td style="text-align:right">19</td>
+<td style="text-align: right;">19</td>
 <td><code>b8abf71993</code></td>
 <td><code>local_numeric_cli</code></td>
-<td>Synthetic Arithmetic CLI：创建专用新 DB，真实持久化与重新估计，静态教学内容，展示 Assistance Presentation 和恢复链路。</td>
+<td>Synthetic arithmetic CLI: creates a dedicated new DB, real persistence and re-estimation, static teaching content, and shows Assistance Presentation and the recovery chain.</td>
 </tr>
 </tbody>
 </table>
-<p><strong>重要的先后关系</strong>：01 的数据库发题与提交<strong>先于</strong>04 的跨 Service 恢复能力；05 的数据库级约束<strong>先于</strong>06 的旧库升级工具；07 的只读检查<strong>先于</strong>09/10/12 更严格的 FK Schema；13 的受保护 Engine<strong>先于</strong>14/15/16 的应用级实际注入。不能把最终快照中的所有保护自动写回最初的 <code>b36c7b5</code>。</p>
+<p><strong>Important ordering</strong>: database delivery and submission in 01 came <strong>before</strong> cross-Service recovery in 04; the database-level constraints in 05 came <strong>before</strong> the old-database upgrade tool in 06; the read-only checks in 07 came <strong>before</strong> the stricter FK schema in 09/10/12; the guarded Engine in 13 came <strong>before</strong> its actual application-level injection in 14/15/16. All protections in the final snapshot must not be written back onto the original <code>b36c7b5</code>.</p>
 <hr />
-<h2 id="03">03. 持久化模型：每个字段为什么存在？</h2>
-<h3 id="3-1-assignment">3.1 Assignment 的身份和历史版本</h3>
-<p><code>NumericAssignmentRow</code> 保存：<code>assignment_id</code> 主键、<code>decision_id</code>、<code>student_id</code>、<code>course_id</code>、<code>objective_id</code>、<code>session_id</code>、<code>assessment_item_id</code>、<code>item_revision</code>、<code>assigned_at_utc</code>、<code>status</code>、<code>pending_session_key</code>、<code>registered_session_id</code> 和 <code>completed_attempt_id</code>。</p>
-<p><code>assessment_item_id</code> 与 <code>item_revision</code> 共同构成指向历史题目的 Composite Foreign Key。<strong>重新评分应使用发题时绑定的 Revision</strong>，而不是 Item 的最新版本；否则 Rubric 或题面改变后，早期学生作答的含义也会被偷偷改写。<code>decision_id</code> 允许从某条已记录的教学决定追踪其实际发题，但仅有 Decision ID 并不能证明客户端真的显示了题目。</p>
-<p><code>assigned_at_utc</code> 是数据库保存的发题时间；<code>completed_attempt_id</code> 在 Pending 时必须为空，在 Completed 时必须指向已有 Attempt。<code>status</code> 和其余字段之间不能只靠 Python <code>if</code> 维护一致性，因为其他操作可能绕开同一个 Python Service。</p>
-<h3 id="3-2-session">3.2 Session 身份为什么单独存？</h3>
-<p>Session 表存 <code>session_id</code>、Student/Course/Objective Scope 与 <code>started_at_utc</code>。同一 Session ID 重复 <code>register()</code>，如果 Scope 一样，返回已有记录，不清除进度；若 Scope 不一致，拒绝。<code>list_assignment_ids()</code> 根据该 Scope 查出 Assignment，先按 <code>assigned_at_utc</code>、再按 <code>assignment_id</code> 排序，使新进程可得到确定性的输入顺序。</p>
-<p>此处的注册 API 只校验<strong>由调用者提供的</strong> Student/Course/Objective；没有真实用户身份认证。记录属于某个 Student ID 是数据库内的关联事实，并非证明提交者本人是谁。</p>
-<h3 id="3-3-pending-slot-sqlite">3.3 Pending Slot 的 SQLite 设计</h3>
-<p>核心字段：</p>
+<h2 id="section-04">03. The persistence model: why does each field exist?</h2>
+<h3 id="section-05">3.1 Assignment identity and historical versions</h3>
+<p><code>NumericAssignmentRow</code> stores: the <code>assignment_id</code> primary key, <code>decision_id</code>, <code>student_id</code>, <code>course_id</code>, <code>objective_id</code>, <code>session_id</code>, <code>assessment_item_id</code>, <code>item_revision</code>, <code>assigned_at_utc</code>, <code>status</code>, <code>pending_session_key</code>, <code>registered_session_id</code>, and <code>completed_attempt_id</code>.</p>
+<p><code>assessment_item_id</code> and <code>item_revision</code> together form a composite foreign key to the historical item. <strong>Re-scoring should use the Revision bound at delivery time</strong>, not the item's latest version; otherwise, after the Rubric or question text changes, the meaning of earlier student answers would be quietly rewritten. <code>decision_id</code> lets a recorded teaching decision be traced to its actual delivery, but a Decision ID alone cannot prove the client really displayed the question.</p>
+<p><code>assigned_at_utc</code> is the delivery time stored in the database; <code>completed_attempt_id</code> must be empty while Pending and must point to an existing Attempt when Completed. Consistency between <code>status</code> and the other fields cannot be maintained by Python <code>if</code>s alone, because other operations may bypass the same Python Service.</p>
+<h3 id="section-06">3.2 Why is the Session identity stored separately?</h3>
+<p>The Session table stores <code>session_id</code>, the Student/Course/Objective scope, and <code>started_at_utc</code>. Calling <code>register()</code> again with the same Session ID returns the existing record without clearing progress if the scope is the same, and is rejected if the scope differs. <code>list_assignment_ids()</code> finds Assignments by that scope and sorts them first by <code>assigned_at_utc</code> and then by <code>assignment_id</code>, so a new process gets a deterministic input order.</p>
+<p>The registration API here only checks the Student/Course/Objective <strong>supplied by the caller</strong>; there is no real user identity authentication. A record belonging to some Student ID is a link fact inside the database, not proof of who the submitter is.</p>
+<h3 id="section-07">3.3 SQLite design of the Pending slot</h3>
+<p>Core field:</p>
 <pre><code class="language-python"># Excerpt: final_snapshot_f86f68d7b4 / numeric_assignment_v01.py
 pending_session_key: Mapped[str | None] = mapped_column(
     String(128), unique=True, nullable=True
 )
 </code></pre>
-<p>Pending 记录填 <code>session_id</code>，Completed 记录置 <code>NULL</code>。在这里的 SQLite UNIQUE 语义下，多条记录可有 <code>NULL</code>，但<strong>同一个非空 Session ID 最多出现一次</strong>。因此，可以保留历史 Completed Assignment，同时保证每个 Session 至多一条 Pending Assignment。</p>
+<p>Pending records fill in <code>session_id</code>; Completed records set it to <code>NULL</code>. Under SQLite's UNIQUE semantics here, multiple records may be <code>NULL</code>, but <strong>the same non-null Session ID can appear at most once</strong>. So historical Completed Assignments can be kept while guaranteeing at most one Pending Assignment per Session.</p>
 <table>
 <thead>
 <tr>
-<th>Assignment 状态</th>
+<th>Assignment status</th>
 <th><code>completed_attempt_id</code></th>
 <th><code>pending_session_key</code></th>
-<th>语义</th>
+<th>Meaning</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>Pending</td>
 <td>NULL</td>
-<td>等于 <code>session_id</code></td>
-<td>占用这个会话的待答题槽位</td>
+<td>equals <code>session_id</code></td>
+<td>Occupies this session's pending-question slot</td>
 </tr>
 <tr>
 <td>Completed</td>
-<td>指向唯一 Attempt</td>
+<td>points to a unique Attempt</td>
 <td>NULL</td>
-<td>释放槽位，允许后续新题</td>
+<td>Releases the slot, allowing a new question</td>
 </tr>
 <tr>
-<td>Pending + 已有 Attempt</td>
-<td>非 NULL</td>
-<td>任意</td>
-<td>状态矛盾，应拒绝</td>
+<td>Pending + an existing Attempt</td>
+<td>non-NULL</td>
+<td>any</td>
+<td>Contradictory status; should be rejected</td>
 </tr>
 <tr>
-<td>Completed + 仍占 Pending 槽</td>
-<td>非 NULL</td>
-<td>非 NULL</td>
-<td>槽位不释放，应拒绝</td>
+<td>Completed + still holding the Pending slot</td>
+<td>non-NULL</td>
+<td>non-NULL</td>
+<td>Slot not released; should be rejected</td>
 </tr>
 </tbody>
 </table>
-<p>最新 ORM 使用 <code>CheckConstraint</code> 保证 Pending/Completed 与 Key 的一致性，<code>UniqueConstraint(session_id, decision_id)</code> 限定每个会话不可重复消费相同 Decision ID。<strong>先前创建的旧数据库不能仅修改 SQLAlchemy Model 就自动获得这些约束</strong>；这是历史迁移工具存在的原因。</p>
-<h3 id="3-4-registered-session-session-id">3.4 Registered Session：四列约束而非只有 Session ID</h3>
-<p>最终 ORM 声明的 Registered Session Composite FK 同时核对：</p>
+<p>The latest ORM uses a <code>CheckConstraint</code> to keep Pending/Completed consistent with the key, and <code>UniqueConstraint(session_id, decision_id)</code> stops a session from consuming the same Decision ID twice. <strong>Older databases created earlier do not get these constraints automatically just because the SQLAlchemy Model changed</strong>; that is why the historical migration tools exist.</p>
+<h3 id="section-08">3.4 Registered Session: a four-column constraint, not just the Session ID</h3>
+<p>The Registered Session composite FK declared in the final ORM checks all of:</p>
 <pre><code class="language-text">Assignment.registered_session_id → Session.session_id
 Assignment.student_id           → Session.student_id
 Assignment.course_id            → Session.course_id
 Assignment.objective_id         → Session.objective_id
 </code></pre>
-<p>并通过 CHECK 要求非空时 <code>registered_session_id=session_id</code>。父 Session 表必须声明相应四列的 UNIQUE 键作为 FK 目标。仅有 <code>Assignment.session_id</code> 指向已存在的 Session 还不够：可能引用到其他学生、其他课程或 Objective 的 Session。四列绑定可以在数据库层阻止这类交叉关联。</p>
-<p><strong>历史 NULL 并没有被模型直接禁止</strong>：<code>registered_session_id</code> 定义为 Nullable，以表示旧版本可能存在未绑定数据。最终新发题路径会填充它，而 Startup Readiness 会拒绝带有未绑定 Assignment 的已有数据库。因此“ORM 允许历史 NULL”和“当前应用允许有 NULL 的数据库上线”是两个不同的判断，不能混淆。</p>
-<p><strong>源锚点</strong>：<code>a562e67</code>、<code>0f32231</code>、<code>e735c0f</code>、<code>f86f68d</code> 的 <code>numeric_assignment_v01.py</code>；<code>numeric_session_records_v01.py</code>。</p>
+<p>and a CHECK requires <code>registered_session_id=session_id</code> when non-null. The parent Session table must declare a matching four-column UNIQUE key as the FK target. Having <code>Assignment.session_id</code> point to an existing Session is not enough: it could reference a Session of another student, course, or Objective. The four-column binding blocks such cross-links at the database layer.</p>
+<p><strong>Historical NULLs are not forbidden directly by the model</strong>: <code>registered_session_id</code> is defined as nullable to represent unbound data that older versions may contain. The final new-delivery path fills it in, and Startup Readiness rejects existing databases with unbound Assignments. So "the ORM allows historical NULL" and "the current application allows a database with NULLs to go live" are two different judgments that must not be confused.</p>
+<p><strong>Source anchors</strong>: <code>numeric_assignment_v01.py</code> in <code>a562e67</code>, <code>0f32231</code>, <code>e735c0f</code>, <code>f86f68d</code>; <code>numeric_session_records_v01.py</code>.</p>
 <hr />
-<h2 id="04-issue-assignment">04. 发题（Issue Assignment）：真正写入了什么？</h2>
-<p>最终 <code>NumericAssignmentRepositoryV01.issue_assignment(delivery, *, student_id, course_id, objective_id, session_id)</code> 的执行顺序如下：</p>
+<h2 id="section-09">04. Issuing an Assignment: what is actually written?</h2>
+<p>The final <code>NumericAssignmentRepositoryV01.issue_assignment(delivery, *, student_id, course_id, objective_id, session_id)</code> runs in this order:</p>
 <ol>
-<li>确认 <code>delivery</code> 类型为 <code>AssessmentDeliveryV01</code>，调用方提供的标识非空；<code>selected_action</code> 必须属于 Assessment Actions；发题时间必须是 timezone-aware。</li>
-<li>使用与 Assessment Repository 共享的 SQLAlchemy <code>sessionmaker</code>，进入 <code>with session.begin()</code>；读取 <code>NumericTeachingSessionRowV01</code>，要求 Session 已注册，且 Student/Course/Objective 完全一致。</li>
-<li>从 Session <code>started_at_utc</code> 解析时间，要求 <code>delivery.assigned_at &gt;= session.started_at</code>。</li>
-<li>使用 <code>(assessment_item_id, item_revision)</code> 加载<strong>原历史版本</strong>；只接受 Numeric Item，且 Item 自身 Scope 与 Assignment Scope 一致；确认 <code>alignment_verified</code>，并要求 Delivery Prompt 与 Stored Item Prompt 完全相同。</li>
-<li>拒绝已经存在的 <code>assignment_id</code>；插入新的 Pending Assignment，设置 <code>pending_session_key=session_id</code> 和 <code>registered_session_id=session_id</code>；<code>session.flush()</code> 促使数据库约束在提交前执行。</li>
-<li>在事务成功提交后，将 <code>StoredNumericAssignmentV01</code> 返回给上游 Service。</li>
+<li>Confirm <code>delivery</code> is an <code>AssessmentDeliveryV01</code> and the caller-supplied identifiers are non-empty; <code>selected_action</code> must be an Assessment Action; the delivery time must be timezone-aware.</li>
+<li>Using the SQLAlchemy <code>sessionmaker</code> shared with the Assessment Repository, enter <code>with session.begin()</code>; read <code>NumericTeachingSessionRowV01</code>, requiring the Session to be registered with exactly matching Student/Course/Objective.</li>
+<li>Parse the time from the Session's <code>started_at_utc</code> and require <code>delivery.assigned_at &gt;= session.started_at</code>.</li>
+<li>Load the <strong>original historical version</strong> by <code>(assessment_item_id, item_revision)</code>; accept only Numeric Items whose own scope matches the Assignment scope; confirm <code>alignment_verified</code>; and require the Delivery Prompt to be exactly the Stored Item Prompt.</li>
+<li>Reject an <code>assignment_id</code> that already exists; insert a new Pending Assignment with <code>pending_session_key=session_id</code> and <code>registered_session_id=session_id</code>; <code>session.flush()</code> makes the database constraints run before commit.</li>
+<li>After the transaction commits successfully, return <code>StoredNumericAssignmentV01</code> to the upstream Service.</li>
 </ol>
 <pre><code class="language-text">Decision selects assessment
     → Structured Delivery (item ID + immutable revision + prompt)
@@ -317,18 +317,18 @@ Assignment.objective_id         → Session.objective_id
     → commit
     → return stored assignment
 </code></pre>
-<p><strong>发题与“显示在屏幕上”不是一个事实</strong>：Repository 确认的是记录已落库，并核验 Delivery 与 Stored Item 的一致性。它没有直接观察学生是否看见、理解或记住题目。<code>PendingNumericDeliveryViewV01</code> 的注释也明确声明，重建展示并不证明浏览器曾经显示过它。</p>
-<p><strong>源锚点</strong>：最终历史快照 <code>numeric_assignment_v01.py::issue_assignment</code>；<code>recoverable_numeric_session_v01.py::deliver_numeric_assessment</code>。</p>
+<p><strong>Issuing and "displayed on screen" are not the same fact</strong>: the Repository confirms the record is stored and checks that the Delivery matches the Stored Item. It does not directly observe whether the student saw, understood, or remembered the question. The comment on <code>PendingNumericDeliveryViewV01</code> also states explicitly that rebuilding the display does not prove the browser ever showed it.</p>
+<p><strong>Source anchors</strong>: final historical snapshot <code>numeric_assignment_v01.py::issue_assignment</code>; <code>recoverable_numeric_session_v01.py::deliver_numeric_assessment</code>.</p>
 <hr />
-<h2 id="05-submit">05. 提交（Submit）：为什么必须在同一事务内？</h2>
-<p><code>submit_numeric_response(assignment_id, student_id, session_id, response_text)</code> 接收的业务输入是 Assignment ID、内部 Scope 与回答文本。Course/Objective/Item Revision、Attempt ID、Source Message ID、Response Group 和提交时间都由已存记录或服务器端生成。它<strong>不会接受调用方直接覆盖这些历史关联</strong>。</p>
-<p>首先加载 Pending Assignment，核对 Student/Session Scope，拒绝已经 Completed 的 Assignment；通过 Repository Clock 创建 aware <code>submitted_at</code> 并校验不早于 Assignment Time。然后生成 <code>StudentAttemptV02</code>，明确填入：</p>
+<h2 id="section-10">05. Submitting: why must it be in one transaction?</h2>
+<p>The business input of <code>submit_numeric_response(assignment_id, student_id, session_id, response_text)</code> is the Assignment ID, the internal scope, and the answer text. Course/Objective/Item Revision, Attempt ID, Source Message ID, Response Group, and submit time all come from stored records or are generated server-side. It <strong>does not let the caller overwrite these historical links directly</strong>.</p>
+<p>It first loads the Pending Assignment, checks Student/Session scope, rejects an already Completed Assignment, creates an aware <code>submitted_at</code> from the Repository Clock, and checks it is not earlier than the Assignment time. Then it builds a <code>StudentAttemptV02</code>, explicitly setting:</p>
 <pre><code class="language-python">assistance_level=None
 prior_solution_exposure=None
 novelty=&quot;unknown&quot;
 </code></pre>
-<p>这不是“学生没有帮助”；它是“提交 Repository 不能验证作答条件”。即便 Numeric Scoring 计算出 <code>correctness=1.0</code>，也不会因为答案正确而自动改变这三个字段。</p>
-<p>后续关键事务：</p>
+<p>This does not mean "the student had no help"; it means "the submission Repository cannot verify the answering conditions". Even if Numeric Scoring computes <code>correctness=1.0</code>, these three fields are not changed automatically because the answer is right.</p>
+<p>The key transaction that follows:</p>
 <pre><code class="language-python"># Conceptually faithful excerpt of final repository flow
 with self._session_factory() as session:
     with session.begin():
@@ -352,23 +352,23 @@ with self._session_factory() as session:
             raise ValueError(&quot;Assignment was completed by another submission.&quot;)
 # only here: transaction may commit both writes
 </code></pre>
-<p><strong><code>flush()</code> 和 <code>commit()</code> 不同</strong>。<code>flush()</code> 将待执行的 INSERT 发送给 DB，并允许本事务随后用新的 Attempt ID 作为 FK 目标；在事务结束前，仍可整体 Rollback。条件 UPDATE 是对“仍 Pending”的 Assignment 争取完成权：只有 <code>rowcount == 1</code>，本次 Attempt 才会与完成记录一同成功提交。</p>
-<h3 id="python-status-pending">为什么只在 Python 中查询 <code>status == pending</code> 不够？</h3>
-<p>两个并发调用可以先后读到同一个 Pending 状态；单靠先读后写，可能各自认为自己可以提交。数据库条件 UPDATE、唯一约束和事务收敛到可验证的最终状态。在本历史测试中的 SQLite 环境，冲突可能表现为已完成错误、<code>IntegrityError</code> 或 <code>database is locked</code>，测试允许这些失败形式，<strong>但只允许一份 Attempt 成功落库</strong>。这不是对 PostgreSQL、多进程部署或任意高并发工作负载的全面保证。</p>
-<h3 id="section">后提交异常与原子事务的边界</h3>
-<p>Scenario A：Attempt INSERT 成功 flush，但 Assignment UPDATE 失败。<strong>同一事务被撤回</strong>，不应出现孤立 Attempt。<code>test_failed_assignment_update_rolls_back_attempt</code> 通过人为注入 SQL 执行异常覆盖这个场景。</p>
-<p>Scenario B：Attempt INSERT 与 Assignment UPDATE 均提交成功，之后 State Estimation 失败。<strong>数据库不能自动撤销已提交的业务事实</strong>；正确做法是恢复并重新读取，而不是再次提交同一答案。<code>test_recovery_after_database_commit_and_state_failure</code> 人为让完成后的 State Service 抛异常，然后创建新 Service 并恢复成功。这是受控故障注入测试，不应写成“用户一定在实际使用中遭遇过这次故障”。</p>
-<p><strong>源锚点</strong>：最终 <code>numeric_assignment_v01.py::submit_numeric_response</code>；<code>a562e67</code> 的 <code>test_numeric_assignment_invariants_v01.py</code>；<code>cf9ab746</code> 的 <code>test_recoverable_numeric_session_v01.py</code>。</p>
+<p><strong><code>flush()</code> is not <code>commit()</code></strong>. <code>flush()</code> sends the pending INSERT to the DB and lets this transaction then use the new Attempt ID as an FK target; until the transaction ends, everything can still be rolled back. The conditional UPDATE competes for the right to complete an Assignment that is "still Pending": only if <code>rowcount == 1</code> does this Attempt commit successfully together with the completion record.</p>
+<h3 id="section-11">Why isn't querying <code>status == pending</code> in Python enough?</h3>
+<p>Two concurrent calls can both read the same Pending status; with only read-then-write, each may believe it can submit. The database's conditional UPDATE, unique constraints, and transactions converge on a verifiable final state. In the SQLite environment of these historical tests, a conflict may show up as an already-completed error, an <code>IntegrityError</code>, or <code>database is locked</code>; the tests allow these failure forms, <strong>but allow only one Attempt to be stored successfully</strong>. This is not a comprehensive guarantee for PostgreSQL, multi-process deployment, or arbitrary high-concurrency workloads.</p>
+<h3 id="section-12">Post-commit exceptions and the boundary of the atomic transaction</h3>
+<p>Scenario A: the Attempt INSERT flushes successfully but the Assignment UPDATE fails. <strong>The same transaction is rolled back</strong>, and no orphan Attempt should appear. <code>test_failed_assignment_update_rolls_back_attempt</code> covers this scenario by artificially injecting an SQL execution error.</p>
+<p>Scenario B: both the Attempt INSERT and the Assignment UPDATE commit successfully, and then State Estimation fails. <strong>The database cannot automatically undo committed business facts</strong>; the right move is to recover and re-read, not to submit the same answer again. <code>test_recovery_after_database_commit_and_state_failure</code> makes the State Service throw after completion, then creates a new Service and recovers successfully. This is a controlled fault-injection test and should not be written as "the user certainly hit this failure in real use".</p>
+<p><strong>Source anchors</strong>: final <code>numeric_assignment_v01.py::submit_numeric_response</code>; <code>test_numeric_assignment_invariants_v01.py</code> in <code>a562e67</code>; <code>test_recoverable_numeric_session_v01.py</code> in <code>cf9ab746</code>.</p>
 <hr />
-<h2 id="06">06. 三条恢复路径，不能写成一种</h2>
-<h3 id="6-1-repository">6.1 Repository 重建：历史数据仍可读取</h3>
-<p><code>test_submission_is_visible_after_repository_restart</code> 在新的 Repository 实例中读取此前已完成的 Assignment，验证数据库保存了结果。这一层证明：<strong>记录不依赖旧 Python 对象而存在</strong>，但没有证明整个教学会话已恢复正确 Decision Context。</p>
-<h3 id="6-2-legacy-persisted-loop">6.2 Legacy Persisted Loop：写入持久化，但仍有内存状态</h3>
-<p><code>PersistedNumericTeachingLoopV01</code> 同时维护 <code>_pending_assignment_id</code>、<code>_completed_assignment_ids</code> 和内存中的 <code>NumericTeachingSessionV01</code>。它先让 in-memory Coordinator 创建结构化题目，再调用 Repository 写库；保存成功才设置 <code>_pending_assignment_id</code>。提交时先调用 Repository 完成数据库提交，再读取 <code>CompletedAssignmentStateServiceV01</code> 和原来的内存 State Engine，比较两边完整的 <code>model_dump(mode=&quot;json&quot;)</code>。</p>
-<p>为什么还要比较两个 State？因为在这个 Legacy Loop 中，同时存在持久化数据推导的 State 和内存协调器维护的 State。如果两者不一致，不应该让后续 Decision 随便使用其中一个。该类使用 <code>_requires_recovery</code>：如果已创建 Pending Turn 却写库失败，或数据库提交后 State 更新失败，就停止继续使用该内存会话。<strong>这是一种 fail-closed 处理，但并不等于 Legacy Loop 本身已经具备可随时跨进程重启的完整恢复能力。</strong></p>
-<p>后续 <code>f05f7e1</code> 又补上持久化 Session Registration，保证 Legacy Loop 发行的 Assignment 也关联已注册 Session；这没有把内存协调器自动改造成数据库权威的恢复服务。</p>
-<h3 id="6-3-recoverable-numeric-session">6.3 Recoverable Numeric Session：数据库事实决定当前进度</h3>
-<p><code>RecoverableNumericSessionServiceV01</code> 不从旧实例的 <code>pending_assignment_id</code> 推断恢复状态，而是：</p>
+<h2 id="section-13">06. Three recovery paths that must not be described as one</h2>
+<h3 id="section-14">6.1 Repository rebuild: historical data is still readable</h3>
+<p><code>test_submission_is_visible_after_repository_restart</code> reads a previously completed Assignment in a new Repository instance, verifying the database stored the result. This layer proves <strong>records exist independently of old Python objects</strong>, but does not prove the whole teaching session recovered the correct Decision Context.</p>
+<h3 id="section-15">6.2 Legacy Persisted Loop: writes are persisted, but in-memory state remains</h3>
+<p><code>PersistedNumericTeachingLoopV01</code> maintains <code>_pending_assignment_id</code>, <code>_completed_assignment_ids</code>, and an in-memory <code>NumericTeachingSessionV01</code>. It first lets the in-memory coordinator create a structured question, then calls the Repository to write it to the database; only after a successful save does it set <code>_pending_assignment_id</code>. On submission it first has the Repository complete the database commit, then reads <code>CompletedAssignmentStateServiceV01</code> and the original in-memory State Engine, and compares the full <code>model_dump(mode="json")</code> of both.</p>
+<p>Why compare two States? Because in this Legacy Loop there are both a State derived from persisted data and a State maintained by the in-memory coordinator. If they disagree, the next Decision should not just use either one. The class uses <code>_requires_recovery</code>: if a Pending Turn was created but the database write failed, or the State update failed after the database commit, it stops using that in-memory session. <strong>This is fail-closed handling, but it does not mean the Legacy Loop itself can restart across processes at any time with full recovery.</strong></p>
+<p>Later, <code>f05f7e1</code> added persisted Session Registration so Assignments issued by the Legacy Loop are also linked to a registered Session; this did not automatically turn the in-memory coordinator into a database-authoritative recovery service.</p>
+<h3 id="section-16">6.3 Recoverable Numeric Session: database facts decide current progress</h3>
+<p><code>RecoverableNumericSessionServiceV01</code> does not infer recovery state from an old instance's <code>pending_assignment_id</code>; instead:</p>
 <pre><code class="language-text">resume(as_of)
     → validate aware as_of
     → load registered session, check scope and start time
@@ -381,19 +381,19 @@ with self._session_factory() as session:
     → pending? load original stored item revision and reconstruct prompt
     → return RecoveredNumericSessionV01(state, pending, completed_ids)
 </code></pre>
-<p><code>start(started_at)</code> 会先 <code>register()</code> Session，再 <code>resume(as_of=started_at)</code>；同 ID、同 Scope 再次开始不会清空以前的 Assignment。<code>deliver_numeric_assessment()</code> 先恢复，拒绝仍有 Pending，核对 Session 内重复 Decision ID、历史 Item Scope 与 Alignment，并要求 Orchestrator 实际选中了 Assessment Action，之后才形成 <code>AssessmentDeliveryV01</code> 并调用 Repository 发题。<code>submit_numeric_answer()</code> 先恢复并核对当前 Pending ID，写入答案，最后再次 <code>resume()</code>。</p>
-<p><strong>一个不可省略的限制</strong>：<code>resume()</code> 会按顺序读取 Session、Assignment、Attempt 等数据；它不是一个自动生成跨所有 Repository 查询的“单个原子快照”。源代码也声明其没有应用层 Auth、HTTP Endpoint、跨进程并发完整保证，Session Registration 与发题为独立数据库事务。后续若加入高并发或分布式应用，应重新审查这些边界。</p>
-<p><strong>源锚点</strong>：<code>692b694</code> 的 <code>persisted_numeric_session_loop_v01.py</code>；<code>cf9ab746</code> 的 <code>recoverable_numeric_session_v01.py</code> 及恢复测试；<code>f05f7e1</code> 对 Legacy Loop 的修改。</p>
+<p><code>start(started_at)</code> first calls <code>register()</code> for the Session and then <code>resume(as_of=started_at)</code>; starting again with the same ID and scope does not clear earlier Assignments. <code>deliver_numeric_assessment()</code> first recovers, refuses if there is still a Pending, checks for duplicate Decision IDs in the Session, historical Item scope, and Alignment, and requires the Orchestrator to have actually selected an Assessment Action; only then does it form an <code>AssessmentDeliveryV01</code> and call the Repository to issue it. <code>submit_numeric_answer()</code> first recovers and checks the current Pending ID, writes the answer, and finally calls <code>resume()</code> again.</p>
+<p><strong>A limitation that cannot be omitted</strong>: <code>resume()</code> reads Session, Assignment, Attempt, and other data in sequence; it is not a "single atomic snapshot" automatically spanning all Repository queries. The source also states that it has no application-layer auth, no HTTP endpoint, and no complete cross-process concurrency guarantee, and that Session Registration and delivery are separate database transactions. These boundaries should be reviewed again if high concurrency or distributed use is added later.</p>
+<p><strong>Source anchors</strong>: <code>persisted_numeric_session_loop_v01.py</code> in <code>692b694</code>; <code>recoverable_numeric_session_v01.py</code> and recovery tests in <code>cf9ab746</code>; the Legacy Loop changes in <code>f05f7e1</code>.</p>
 <hr />
-<h2 id="07-completed-assignment-student-state">07. 从 Completed Assignment 重建 Student State：不让调用方直接指定证据</h2>
-<p><code>CompletedAssignmentStateServiceV01.estimate_from_completed_assignments(assignment_ids, *, student_id, session_id, course_id, objective_id, as_of)</code> 为每个 Assignment 做以下审查：</p>
+<h2 id="section-17">07. Rebuilding Student State from Completed Assignments: callers cannot specify evidence directly</h2>
+<p><code>CompletedAssignmentStateServiceV01.estimate_from_completed_assignments(assignment_ids, *, student_id, session_id, course_id, objective_id, as_of)</code> checks each Assignment as follows:</p>
 <ol>
-<li>不接受字符串冒充 Assignment ID 序列；拒绝空集合、重复 Assignment ID 或无效 Scope/时间。</li>
-<li>从 Assignment Repository 取实际记录；检查 Student/Session/Course/Objective 全部匹配，并且状态确实为 Completed、<code>completed_attempt_id</code> 不为空。</li>
-<li>从 Assessment Repository 加载<strong>该 Assignment 真正引用的 Attempt</strong>以及其历史 <code>item_revision</code>；不接受同一 Attempt 为多个 Assignment 充数。</li>
-<li>验证 Attempt 的 Scope、<code>assessment_item_id</code>、绑定 Revision、<code>response_group_id == 'assignment-' + assignment_id</code>、提交时间不早于发题时间。</li>
-<li>验证 <code>assignment.assigned_at &lt;= as_of</code> 且 <code>attempt.submitted_at &lt;= as_of</code>。如果估计时刻还没到实际事件发生时刻，不能把未来事实塞进过去的 State。</li>
-<li>用真实的 Attempt ID 调用 <code>PersistedNumericAssessmentServiceV02</code>；后者加载每份 Attempt 对应的原始 Item Revision，并委托 <code>AssessmentPipelineV02</code> 的评分、Eligibility 和状态推导。</li>
+<li>It does not accept a string posing as a sequence of Assignment IDs; it rejects an empty set, duplicate Assignment IDs, and invalid scope/time.</li>
+<li>It fetches the actual record from the Assignment Repository; checks Student/Session/Course/Objective all match, that the status really is Completed, and that <code>completed_attempt_id</code> is not empty.</li>
+<li>It loads from the Assessment Repository <strong>the Attempt this Assignment actually references</strong> and its historical <code>item_revision</code>; the same Attempt cannot be counted for several Assignments.</li>
+<li>It checks the Attempt's scope, <code>assessment_item_id</code>, bound Revision, <code>response_group_id == 'assignment-' + assignment_id</code>, and a submit time not earlier than the delivery time.</li>
+<li>It checks <code>assignment.assigned_at &lt;= as_of</code> and <code>attempt.submitted_at &lt;= as_of</code>. If the estimate time has not yet reached the moment an event actually happened, future facts cannot be put into a past State.</li>
+<li>It calls <code>PersistedNumericAssessmentServiceV02</code> with the real Attempt IDs; that service loads the original Item Revision for each Attempt and delegates scoring, Eligibility, and state derivation to <code>AssessmentPipelineV02</code>.</li>
 </ol>
 <pre><code class="language-text">Caller supplies assignment IDs, not arbitrary Evidence Events
     ↓ verify assignment linkage &amp; time &amp; scope
@@ -405,74 +405,74 @@ Evidence Event(s)
     ↓ existing eligibility + student state rules
 ObjectiveStateV02
 </code></pre>
-<p><strong>对 Claim 的边界</strong>：这些验证证明数据库中 Assignment 与 Attempt 的结构化关系符合预期，不证明回答一定由对应现实中的学生亲自完成，也不提供对调用方 Student ID 的真正认证。Repo 中的内部 <code>student_id</code> 参数未来仍须由已验证的 Server Session Context 生成。</p>
-<p><code>test_completed_assignment_reaches_state_engine</code>、<code>test_tampered_attempt_assignment_link_is_rejected</code>、<code>test_tampered_attempt_revision_is_rejected</code>、<code>test_state_estimation_cannot_precede_submission</code> 分别覆盖链路和关键负面情境。</p>
-<p><strong>源锚点</strong>：<code>174f259</code> 的 <code>completed_assignment_state_v01.py</code> / tests；最终 <code>persisted_numeric_pipeline_v02.py</code>。</p>
+<p><strong>Boundary of the claim</strong>: these checks prove the structured relationship between Assignments and Attempts in the database is as expected; they do not prove the answer was necessarily given in person by the corresponding real student, nor do they authenticate the caller's Student ID. The internal <code>student_id</code> parameter in the Repo must in the future still be derived from a verified server session context.</p>
+<p><code>test_completed_assignment_reaches_state_engine</code>, <code>test_tampered_attempt_assignment_link_is_rejected</code>, <code>test_tampered_attempt_revision_is_rejected</code>, and <code>test_state_estimation_cannot_precede_submission</code> cover the chain and the key negative scenarios respectively.</p>
+<p><strong>Source anchors</strong>: <code>completed_assignment_state_v01.py</code> / tests in <code>174f259</code>; final <code>persisted_numeric_pipeline_v02.py</code>.</p>
 <hr />
-<h2 id="08-sqlite">08. 为什么约束要逐渐下沉到 SQLite？</h2>
-<p>在单进程单线程 Demo 中，用 Python 层 <code>if pending: raise</code> 看上去足够；但多个 Repository 实例、数据库重开、并发写入和后续 Schema Migration 都会让“所有写入一定经过这段 if”变成无法保障的假设。</p>
-<p>逐渐增设的数据层保护有：</p>
+<h2 id="section-18">08. Why constraints gradually moved down into SQLite</h2>
+<p>In a single-process, single-threaded demo, a Python-level <code>if pending: raise</code> looks sufficient; but multiple Repository instances, database reopening, concurrent writes, and later schema migrations all turn "every write is guaranteed to pass through this if" into an assumption that cannot be guaranteed.</p>
+<p>The data-layer protections added step by step are:</p>
 <table>
 <thead>
 <tr>
-<th>保护条件</th>
-<th>负责位置</th>
-<th>具体阻止什么</th>
+<th>Protective condition</th>
+<th>Where it lives</th>
+<th>What exactly it blocks</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>assignment_id</code> Primary Key</td>
-<td>Assignment 表</td>
-<td>同 ID 重复插入</td>
+<td><code>assignment_id</code> primary key</td>
+<td>Assignment table</td>
+<td>Inserting the same ID twice</td>
 </tr>
 <tr>
 <td><code>(assessment_item_id,item_revision)</code> FK</td>
-<td>Assignment 表</td>
-<td>指向不存在的题目版本</td>
+<td>Assignment table</td>
+<td>Pointing to a non-existent item version</td>
 </tr>
 <tr>
 <td><code>completed_attempt_id</code> FK + UNIQUE</td>
-<td>Assignment 表</td>
-<td>引用不存在 Attempt；单份 Attempt 被多个 Assignment 直接引用</td>
+<td>Assignment table</td>
+<td>Referencing a non-existent Attempt; one Attempt referenced directly by several Assignments</td>
 </tr>
 <tr>
-<td><code>pending_session_key</code> UNIQUE + 状态一致性 CHECK / Trigger</td>
-<td>Assignment 表</td>
-<td>同一 Session 同时存在两个 Pending，或 Completed 不释放槽位</td>
+<td><code>pending_session_key</code> UNIQUE + state-consistency CHECK / Trigger</td>
+<td>Assignment table</td>
+<td>Two Pendings in the same Session at once, or a Completed that does not release the slot</td>
 </tr>
 <tr>
 <td><code>(session_id,decision_id)</code> UNIQUE</td>
-<td>Assignment 表</td>
-<td>同一会话复用同一 Decision ID</td>
+<td>Assignment table</td>
+<td>Reusing the same Decision ID within a session</td>
 </tr>
 <tr>
-<td>Registered Session 四列 FK</td>
-<td>Assignment + Session 表</td>
-<td>Assignment 关联到不存在或 Scope 不一致的 Session</td>
+<td>Registered Session four-column FK</td>
+<td>Assignment + Session tables</td>
+<td>An Assignment linked to a non-existent Session or one with inconsistent scope</td>
 </tr>
 <tr>
 <td><code>PRAGMA foreign_keys=ON</code></td>
-<td>当前受保护 Engine 的数据库连接</td>
-<td>SQLite 在该连接上执行声明的 FK</td>
+<td>Database connections of the current guarded Engine</td>
+<td>SQLite enforcing the declared FKs on that connection</td>
 </tr>
 <tr>
 <td>Readiness + Migration Audit</td>
-<td>应用启动前</td>
-<td>拒绝结构缺失、数据关联异常和未绑定历史行</td>
+<td>Before application startup</td>
+<td>Rejecting missing structures, data-link anomalies, and unbound historical rows</td>
 </tr>
 </tbody>
 </table>
-<p><strong>两个容易错的理解</strong>：一，SQLite 数据库文件中存在 FK 定义，不代表所有连接都必然执行 FK：<code>PRAGMA foreign_keys</code> 是连接级设置，需要实际启用。二，ORM Model 新增 CHECK/FK，不会自动更改已有数据库表；必须审计/迁移并验证旧数据。</p>
-<p>源码中 <code>test_concurrent_issuance_produces_at_most_one_pending</code> 以两名 Worker 同时尝试发题，允许失败侧出现唯一约束冲突或 SQLite 写锁冲突；成功侧必须只有一条 Pending。<code>test_concurrent_submission_creates_exactly_one_attempt</code> 要求最终只有一份 Attempt。它们是<strong>设计防护验证</strong>；这份源码包没有对应的原始“线上并发重复发题事故”日志。</p>
+<p><strong>Two easy misunderstandings</strong>: first, FK definitions existing in an SQLite database file do not mean every connection enforces FKs: <code>PRAGMA foreign_keys</code> is a per-connection setting and must actually be enabled. Second, adding CHECKs/FKs to the ORM Model does not automatically change existing database tables; old data must be audited/migrated and verified.</p>
+<p>In the source, <code>test_concurrent_issuance_produces_at_most_one_pending</code> has two workers try to issue at the same time, allowing the failing side to hit a unique-constraint conflict or an SQLite write-lock conflict; the successful side must have exactly one Pending. <code>test_concurrent_submission_creates_exactly_one_attempt</code> requires exactly one Attempt in the end. These are <strong>design-protection verifications</strong>; this source pack has no matching original log of a "production concurrent duplicate-delivery incident".</p>
 <hr />
-<h2 id="09-sqlite-migration-pending-slot-decision">09. 第一次历史 SQLite Migration：Pending Slot 与 Decision 唯一性</h2>
-<p>在 <code>a562e67</code> 中新增的 Schema 约束只适用于用新 Model 创建的表；旧数据库还没有 <code>pending_session_key</code>、对应 UNIQUE 以及新的 CHECK 语义。<code>79e250c::migrate_numeric_assignment_v01_sqlite.py</code> 提供受控升级路径。</p>
-<h3 id="9-1">9.1 两种运行模式</h3>
-<p><strong>默认是只读检查</strong>：用 <code>mode=ro</code> 打开已存在的 DB，执行 <code>PRAGMA quick_check</code> 与 FK 检查，识别是已知 Legacy Schema 还是 Current Schema，检查历史行是否满足状态与唯一性要求。<strong>显式 <code>apply=True</code></strong> 才会修改数据库，且要求提供一个原先不存在的备份文件路径。</p>
-<h3 id="9-2">9.2 确认旧库后才可升级</h3>
-<p>迁移拒绝缺失数据库、符号链接路径、未知 Schema、历史重复 Pending、重复 Decision、现有 FK 违规、错误 Pending/Completed 组合或已有备份路径。必须先停掉应用及其他写入者。它会用 SQLite Backup API 创建新备份，用 <code>PRAGMA data_version</code> 在获得 EXCLUSIVE 事务时检查备份期间数据库是否变化，再重验 Schema/行数后升级。</p>
-<p>升级动作：</p>
+<h2 id="section-19">09. The first historical SQLite migration: Pending slot and Decision uniqueness</h2>
+<p>The schema constraints added in <code>a562e67</code> apply only to tables created with the new Model; old databases do not yet have <code>pending_session_key</code>, the matching UNIQUE, or the new CHECK semantics. <code>79e250c::migrate_numeric_assignment_v01_sqlite.py</code> provides a controlled upgrade path.</p>
+<h3 id="section-20">9.1 Two run modes</h3>
+<p><strong>The default is a read-only check</strong>: it opens an existing DB with <code>mode=ro</code>, runs <code>PRAGMA quick_check</code> and FK checks, identifies whether it is the known Legacy Schema or the Current Schema, and checks whether historical rows meet the status and uniqueness requirements. Only <strong>explicit <code>apply=True</code></strong> modifies the database, and it requires a backup file path that does not exist yet.</p>
+<h3 id="section-21">9.2 Upgrade only after confirming the old database</h3>
+<p>The migration refuses a missing database, a symlink path, an unknown schema, historical duplicate Pendings, duplicate Decisions, existing FK violations, wrong Pending/Completed combinations, or an existing backup path. The application and all other writers must be stopped first. It creates a new backup with the SQLite Backup API, uses <code>PRAGMA data_version</code> when acquiring the EXCLUSIVE transaction to check whether the database changed during the backup, and re-validates schema/row counts before upgrading.</p>
+<p>Upgrade steps:</p>
 <pre><code class="language-text">Inspect legacy schema + row consistency
     → create NEW verified backup
     → BEGIN EXCLUSIVE / recheck
@@ -484,16 +484,16 @@ ObjectiveStateV02
     → COMMIT
     → final verification; retain backup
 </code></pre>
-<p>为什么旧表使用 Trigger？该工具的说明和实现指出：现有 SQLite 表不能直接通过这里采用的 <code>ALTER TABLE</code> 路径附加替换后的原生 CHECK。它因此对<strong>迁移旧表</strong>安装 INSERT/UPDATE Trigger，以约束 Pending Key 一致性；<strong>新建表</strong>继续使用 SQLAlchemy Model 中的 CHECK。两条 Schema 的外部行为目标一致，实现形式不完全相同；审计工具需同时识别两种已知形式。</p>
-<p>若事务内失败，执行 ROLLBACK；即使 COMMIT 之后最终校验失败，也不能假称数据已经自动撤销，应停止使用并保留备份调查。</p>
-<p><strong>源锚点</strong>：<code>79e250c::migrate_numeric_assignment_v01_sqlite.py</code> 的 <code>inspect()</code>、<code>_install_consistency_triggers()</code>、<code>migrate()</code>；<code>test_numeric_assignment_sqlite_migration_v01.py</code> 的 duplicate rows、backup、trigger 和 read-only tests。</p>
+<p>Why do old tables use triggers? The tool's notes and implementation point out that an existing SQLite table cannot directly get a replacement native CHECK through the <code>ALTER TABLE</code> path used here. So for <strong>migrated old tables</strong> it installs INSERT/UPDATE triggers to enforce Pending Key consistency, while <strong>newly created tables</strong> keep using the CHECK in the SQLAlchemy Model. The two schemas aim at the same external behavior with not quite the same implementation; the audit tool must recognize both known forms.</p>
+<p>If something fails inside the transaction, it runs ROLLBACK; if the final verification fails even after COMMIT, it must not pretend the data was undone automatically; it should stop using the database and keep the backup for investigation.</p>
+<p><strong>Source anchors</strong>: <code>inspect()</code>, <code>_install_consistency_triggers()</code>, and <code>migrate()</code> in <code>79e250c::migrate_numeric_assignment_v01_sqlite.py</code>; the duplicate-row, backup, trigger, and read-only tests in <code>test_numeric_assignment_sqlite_migration_v01.py</code>.</p>
 <hr />
-<h2 id="10-sqlite-migration-session-scope-fk">10. 第二次 SQLite Migration：将 Session Scope 变成真实的 FK</h2>
-<p>第一次迁移增强了 Pending/Decision 约束，但只靠 <code>assignment.session_id</code> 文字列和应用侧核验，不能从数据库层阻止所有交叉关联。因此出现 <code>registered_session_id</code> 和 Registered Session Composite FK。</p>
-<p><code>cd5c7d4</code> 的 <code>audit_numeric_session_fk_migration_v01.py</code> 会识别 Schema 阶段，检查已保存 Assignment 是否存在对应 Session、Student/Course/Objective Scope 是否匹配、时间是否合理，以及是否有 Legacy Unbound 记录。<code>3cbeffa</code> 的 <code>migrate_numeric_session_fk_v01_sqlite.py</code> 执行明确申请后的真正升级。</p>
-<h3 id="10-1-alter-table">10.1 为什么第二次不是简单 ALTER TABLE？</h3>
-<p>这次需要重建 Assignment 表，装入完整的 Composite FK、CHECK 和 UNIQUE 定义。工具从当前 SQLAlchemy Table Model 编译 SQLite CREATE TABLE DDL，替换影子表名，不维护一套独立手写的新 Schema。它拒绝未知入向 FK、未知依赖结构与已有 Shadow Table，避免重建时无意破坏并不认识的第三方对象。</p>
-<h3 id="10-2">10.2 事务化重建</h3>
+<h2 id="section-22">10. The second SQLite migration: turning Session scope into a real FK</h2>
+<p>The first migration strengthened the Pending/Decision constraints, but relying only on the <code>assignment.session_id</code> text column and application-side checks could not block all cross-links at the database layer. Hence <code>registered_session_id</code> and the Registered Session composite FK.</p>
+<p><code>audit_numeric_session_fk_migration_v01.py</code> in <code>cd5c7d4</code> identifies the schema stage and checks whether saved Assignments have a matching Session, whether the Student/Course/Objective scope matches, whether times are reasonable, and whether there are legacy unbound records. <code>migrate_numeric_session_fk_v01_sqlite.py</code> in <code>3cbeffa</code> performs the real upgrade once explicitly requested.</p>
+<h3 id="section-23">10.1 Why isn't the second one a simple ALTER TABLE?</h3>
+<p>This time the Assignment table must be rebuilt with the full composite FK, CHECK, and UNIQUE definitions. The tool compiles SQLite CREATE TABLE DDL from the current SQLAlchemy Table Model and replaces the shadow table name, rather than maintaining a separate hand-written new schema. It refuses unknown inbound FKs, unknown dependent structures, and existing shadow tables, to avoid unintentionally breaking unrecognized third-party objects during the rebuild.</p>
+<h3 id="section-24">10.2 Transactional rebuild</h3>
 <pre><code class="language-text">Read-only audit (pre-09? post-09/pre-12B? post-12B?)
     → if pre-09: require first migration, never silently chain
     → for known post-09/pre-12B: require NEW backup path
@@ -508,13 +508,13 @@ ObjectiveStateV02
     → COMMIT
     → run public read-only readiness and migration audit again
 </code></pre>
-<p>如果某条旧 Assignment 指向不存在的 Session，或者 Scope 不符，该工具不会“猜一个 Session”或者暗中修改 Student ID：它会拒绝自动升级。<code>test_orphan_assignment_blocks_upgrade</code>、<code>test_scope_mismatch_blocks_upgrade</code>、<code>test_inbound_foreign_key_blocks_table_rebuild</code>、<code>test_failed_transaction_restores_source_schema</code> 对应这类可复现的防护测试。</p>
-<p>重要的版本界限：第一次迁移工具只解决旧 Pending Key/Decision 约束；第二次解决 Session 绑定与 FK。<strong>不要运行第二次脚本去修复任意未知 SQLite Schema</strong>；它明确要求已知的 post-09/pre-12B 输入，且操作前应备份并停止所有 Writer。本网站是设计档案，不是对真实用户数据库执行 Migration 的操作许可。</p>
+<p>If an old Assignment points to a non-existent Session, or its scope does not match, the tool does not "guess a Session" or quietly change the Student ID: it refuses to upgrade automatically. <code>test_orphan_assignment_blocks_upgrade</code>, <code>test_scope_mismatch_blocks_upgrade</code>, <code>test_inbound_foreign_key_blocks_table_rebuild</code>, and <code>test_failed_transaction_restores_source_schema</code> are the matching reproducible protective tests.</p>
+<p>An important version boundary: the first migration tool only addresses the old Pending Key/Decision constraints; the second addresses Session binding and FKs. <strong>Do not run the second script to fix an arbitrary unknown SQLite schema</strong>; it explicitly requires known post-09/pre-12B input, and a backup and stopping all writers should come first. This website is a design archive, not permission to run a migration on a real user database.</p>
 <hr />
-<h2 id="11-readiness-schema">11. Readiness 与连接层：Schema 正确不代表运行路径已正确</h2>
-<p><code>check_sqlite_numeric_database(path)</code> 首先拒绝缺失数据库与符号链接，使用 SQLite <code>mode=ro</code> 只读连接检查必需的 Assessment Item、Attempt、Assignment、Teaching Session 四张表；验证 Assignment Schema 状态、SQLite <code>quick_check</code> 与 <code>foreign_key_check</code>，逐行审计 Session Scope 和时间。随着 12B FK 演进，最终快照还检查 Registered Session Composite FK 的四列定义，以及 <code>registered_session_id IS NULL</code> 历史 Unbound 记录数；发现这种记录就拒绝启动当前严格数值教学服务。</p>
-<p><strong>Readiness 不是数据库初始化器，也不是全部历史 Payload 的真实性验证</strong>。它不会创建缺失表，不会让任意旧 Schema 自动升级，也不能为调用者提供身份认证。</p>
-<p><code>create_numeric_sqlite_engine(path)</code> 是另一个边界：先执行 Readiness 和 FK Migration Audit，要求已知 <code>post-12B</code> Schema，然后使用 <code>mode=rw</code> 只打开已存在文件。<code>mode=rw</code> 的目的不是把数据库设置成 read-only，而是<strong>允许读写已存在的数据库，同时禁止路径消失时静默创建新文件</strong>。</p>
+<h2 id="section-25">11. Readiness and the connection layer: a correct schema does not mean the runtime path is correct</h2>
+<p><code>check_sqlite_numeric_database(path)</code> first rejects a missing database and symlinks, then uses an SQLite <code>mode=ro</code> read-only connection to check the four required tables (Assessment Item, Attempt, Assignment, Teaching Session); it validates the Assignment schema state, SQLite <code>quick_check</code> and <code>foreign_key_check</code>, and audits Session scope and times row by row. With the 12B FK evolution, the final snapshot also checks the four-column definition of the Registered Session composite FK and the count of historical unbound records with <code>registered_session_id IS NULL</code>; if any are found, it refuses to start the current strict numeric teaching service.</p>
+<p><strong>Readiness is not a database initializer, nor an authenticity check of all historical payloads.</strong> It does not create missing tables, does not automatically upgrade arbitrary old schemas, and cannot authenticate callers.</p>
+<p><code>create_numeric_sqlite_engine(path)</code> is another boundary: it first runs Readiness and the FK Migration Audit, requires the known <code>post-12B</code> schema, and then opens only an existing file with <code>mode=rw</code>. The purpose of <code>mode=rw</code> is not to make the database read-only; it is to <strong>allow reading and writing an existing database while forbidding silent creation of a new file if the path disappears</strong>.</p>
 <pre><code class="language-text">Application opts in with existing DB path
     → Readiness + FK Migration Audit
     → create Engine via SQLite URI mode=rw
@@ -522,25 +522,25 @@ ObjectiveStateV02
     → checkout event: verify pooled connection still has FK enabled
     → give Engine to Repository Bundle
 </code></pre>
-<p>这里的 Pool Checkout 校验只能保障“取出连接时”的 FK 状态；不能禁止某个已获得连接的调用者随后关掉 PRAGMA，也不能控制数据库外部其他程序自己的连接。源码对此限制有明确声明。<code>test_pool_rejects_connection_with_foreign_keys_disabled</code> 和 <code>test_database_is_not_recreated_if_removed_before_connect</code> 分别覆盖两个关键失效情境。</p>
+<p>The pool-checkout check only guarantees the FK state "when a connection is checked out"; it cannot stop a caller who already holds a connection from later turning the PRAGMA off, nor control other programs' own connections outside the database layer. The source states these limits explicitly. <code>test_pool_rejects_connection_with_foreign_keys_disabled</code> and <code>test_database_is_not_recreated_if_removed_before_connect</code> cover the two key failure scenarios.</p>
 <hr />
-<h2 id="12-application-startup-repository-injection-engine">12. Application Startup 与 Repository Injection：真正把受保护 Engine 用起来</h2>
-<p>仅创建一个 <code>create_numeric_sqlite_engine()</code> Factory 还不够。如果生产 Service 又独自创建了未经保护的 Engine，上述连接约束就无法保证该 Service 的写入。历史在 <code>fc91a60</code>、<code>f22dbf9</code>、<code>c24d1dc</code> 逐步将连接检查接入实际应用构造路径。</p>
-<h3 id="12-1-fastapi-lifespan">12.1 FastAPI lifespan 保持健康检查默认可用</h3>
-<p><code>main.py</code> 使用 <code>URPP_NUMERIC_SQLITE_DATABASE_PATH</code> 环境变量作为显式 opt-in。变量<strong>不存在</strong>时保留 health-only 应用的启动；变量<strong>存在但为空</strong>时拒绝；存在非空路径时执行受保护 Engine 构建，并将 Engine/Repository Bundle 挂到 <code>app.state</code>。退出 lifespan 时 <code>engine.dispose()</code> 并清理 <code>app.state</code> 的引用。</p>
-<p>这不是“已经上线生产学生 API”：代码没有数据库支持的学生端 HTTP Routes，也没有真实用户 Auth。默认 health-only 启动也不代表数据库服务已经激活。</p>
-<h3 id="12-2-repository-sessionmaker">12.2 为什么三个 Repository 共用一个 <code>sessionmaker</code>？</h3>
-<p><code>create_numeric_repository_bundle(engine)</code> 先验证接入的是 SQLite Engine 且当前连接的 Foreign Keys 已启用，再创建单一 <code>sessionmaker(bind=engine, expire_on_commit=False)</code>，从它构造 Assessment、Assignment 和 Teaching Session Repository。Assignment Repository 直接重用 Assessment Repository 的 Session Factory，而不是自己再连接别的 DB。</p>
-<p>这使数据库事务内的 Attempt/Assignment 可以在同一数据库范围内关联，也减少了“一边读 A.db，一边写 B.db”的应用构造错误。不过<strong>共享 Session Factory 并不意味着所有 Service 的每个调用自动共享同一个事务</strong>：每个 Repository 函数仍可能独立开 Session 和 Transaction。</p>
-<h3 id="12-3-recoverable-session-factory">12.3 Recoverable Session Factory 只做依赖注入</h3>
-<p><code>create_recoverable_numeric_session_service(bundle, *, orchestrator, student_id, course_id, objective_id, session_id)</code> 将现有 Bundle 中的三个 Repository 注入 Recovery Service，不新建 Engine、数据库或用户身份。这里依旧依赖调用方提供可信的 Server-side Session Context。该 Factory 也不会生成 LLM Agent，或者把 Jev / NeoHorse 的模型接入 URPP。</p>
-<p><strong>源锚点</strong>：<code>0bc3250</code> Engine / tests；<code>fc91a60</code> FastAPI startup / tests；<code>f22dbf9</code> Bundle / tests；<code>c24d1dc</code> Service Factory / tests；<code>final_snapshot_f86f68d7b4/backend/app/main.py</code>。</p>
+<h2 id="section-26">12. Application startup and Repository injection: actually putting the guarded Engine to use</h2>
+<p>Just creating a <code>create_numeric_sqlite_engine()</code> factory is not enough. If a production Service creates its own unguarded Engine, the connection constraints above cannot cover that Service's writes. Over <code>fc91a60</code>, <code>f22dbf9</code>, and <code>c24d1dc</code>, the history gradually wired the connection checks into the real application construction path.</p>
+<h3 id="section-27">12.1 The FastAPI lifespan keeps the health check available by default</h3>
+<p><code>main.py</code> uses the <code>URPP_NUMERIC_SQLITE_DATABASE_PATH</code> environment variable as an explicit opt-in. When the variable is <strong>absent</strong>, the health-only application startup is kept; when it is <strong>present but empty</strong>, startup is refused; when it holds a non-empty path, the guarded Engine is built and the Engine/Repository Bundle are attached to <code>app.state</code>. On lifespan exit, <code>engine.dispose()</code> runs and the references in <code>app.state</code> are cleared.</p>
+<p>This is not "a production student API is live": the code has no database-backed student HTTP routes and no real user auth. The default health-only startup also does not mean the database service is active.</p>
+<h3 id="section-28">12.2 Why do three Repositories share one <code>sessionmaker</code>?</h3>
+<p><code>create_numeric_repository_bundle(engine)</code> first verifies it received an SQLite Engine whose current connection has foreign keys enabled, then creates a single <code>sessionmaker(bind=engine, expire_on_commit=False)</code> and builds the Assessment, Assignment, and Teaching Session Repositories from it. The Assignment Repository directly reuses the Assessment Repository's session factory rather than connecting to another DB on its own.</p>
+<p>This lets the Attempt/Assignment in a database transaction be linked within the same database, and reduces application-construction errors like "reading A.db while writing B.db". However, <strong>sharing a session factory does not mean every call of every Service automatically shares one transaction</strong>: each Repository function may still open its own Session and Transaction.</p>
+<h3 id="section-29">12.3 The Recoverable Session Factory only does dependency injection</h3>
+<p><code>create_recoverable_numeric_session_service(bundle, *, orchestrator, student_id, course_id, objective_id, session_id)</code> injects the three Repositories from the existing Bundle into the Recovery Service, creating no new Engine, database, or user identity. It still relies on the caller to provide a trusted server-side session context. The factory also does not create an LLM Agent, nor connect Jev / NeoHorse models to URPP.</p>
+<p><strong>Source anchors</strong>: Engine / tests in <code>0bc3250</code>; FastAPI startup / tests in <code>fc91a60</code>; Bundle / tests in <code>f22dbf9</code>; Service Factory / tests in <code>c24d1dc</code>; <code>final_snapshot_f86f68d7b4/backend/app/main.py</code>.</p>
 <hr />
-<h2 id="13-13e-3c-cli-timestamp-bug">13. 真实故障：13E-3C CLI 的两次 Timestamp Bug</h2>
-<p><strong>证据来源区分</strong>：这份 Reply 6 ZIP 保存了 <code>b8abf71</code> 已修复的 CLI 代码、五个最终 CLI 测试及文档，<strong>没有收入最初两次失败的 pytest 日志和第一次修复的中间 Commit</strong>。以下失败信息与历史测试计数来自此前用户在聊天中提交的真实终端输出；对具体原因的描述同时可由 ZIP 中的最终 Repository、Recoverable Session 与 CLI 函数相互印证。不能把“代码包含修复逻辑”本身当成历史失败日志。</p>
-<h3 id="bug-13e-3c-time-01-commit-state-as-of">BUG-13E-3C-TIME-01：数据库已经 Commit，但 State 的 <code>as_of</code> 较早</h3>
-<p><strong>用户可见症状</strong>：CLI 似乎报告回答未被接受，然而 Assignment 已转 Completed，Attempt 已写入 SQLite。原始失败测试记录显示首次专项运行 <code>2 failed, 57 passed</code>；精确终端堆栈应在后续原始日志集中归档，本 ZIP 未包含。</p>
-<p><strong>执行时间线</strong>：</p>
+<h2 id="section-30">13. Real failures: the two timestamp bugs in the 13E-3C CLI</h2>
+<p><strong>Distinguishing evidence sources</strong>: this Reply 6 ZIP keeps the fixed CLI code of <code>b8abf71</code>, the five final CLI tests, and documentation; <strong>it does not include the pytest logs of the two original failures or the intermediate commit of the first fix</strong>. The failure information and historical test counts below come from real terminal output the user submitted earlier in chat; the description of the specific cause can also be cross-checked against the final Repository, Recoverable Session, and CLI functions in the ZIP. "The code contains fix logic" must not itself be treated as a historical failure log.</p>
+<h3 id="section-31">BUG-13E-3C-TIME-01: the database had already committed, but the State's <code>as_of</code> was earlier</h3>
+<p><strong>User-visible symptom</strong>: the CLI appeared to report that the answer was not accepted, yet the Assignment had become Completed and the Attempt had been written to SQLite. The original failing-test record shows the first focused run as <code>2 failed, 57 passed</code>; the exact terminal stack should be archived later with the original logs and is not in this ZIP.</p>
+<p><strong>Execution timeline</strong>:</p>
 <pre><code class="language-text">t0 = CLI calls now_utc() for as_of
     ↓
 submit_numeric_answer(..., as_of=t0)
@@ -555,163 +555,163 @@ ValueError: State-estimation time precedes submission.
     ↓
 Caller sees an exception, but database submission is already committed
 </code></pre>
-<p><strong>根因</strong>不是 Numeric Scorer 认为 <code>5</code> 错了，也不是事务部分失败；是 <strong>State Snapshot Time 的时间契约与数据库实际提交时生成的提交时间不同步</strong>。<code>RecoverableNumericSessionServiceV01.submit_numeric_answer()</code> 先调用 Repository，之后明确验证 <code>as_of &gt;= attempt.submitted_at</code>，因此这一异常可以发生在已经成功 Commit 之后。</p>
-<p><strong>为什么不能重新提交？</strong> Assignment 已 Completed；第二次提交既不能撤销第一笔 Attempt，也不是“重试未提交的事务”。用户在 UI 中看到的“提交失败”必须和数据库实际结果区分开。正确恢复路径是读取已有 Session/Assignment/Attempt，用新且足够晚的 <code>as_of</code> 调用 <code>resume()</code>。</p>
-<h3 id="bug-13e-3c-time-02-state">BUG-13E-3C-TIME-02：第一次修复制造了未来 State 快照</h3>
-<p>历史中间修复曾使用如下形式：</p>
+<p><strong>The root cause</strong> is not that the Numeric Scorer thought <code>5</code> was wrong, nor a partial transaction failure; it is that <strong>the time contract of the State Snapshot time was out of sync with the submit time generated when the database actually committed</strong>. <code>RecoverableNumericSessionServiceV01.submit_numeric_answer()</code> calls the Repository first and then explicitly checks <code>as_of &gt;= attempt.submitted_at</code>, so this exception can happen after a successful commit.</p>
+<p><strong>Why not resubmit?</strong> The Assignment is already Completed; a second submission can neither undo the first Attempt nor count as "retrying an uncommitted transaction". The "submission failed" the user sees in the UI must be distinguished from the database's actual result. The correct recovery path is to read the existing Session/Assignment/Attempt and call <code>resume()</code> with a new, late enough <code>as_of</code>.</p>
+<h3 id="section-32">BUG-13E-3C-TIME-02: the first fix created a future State snapshot</h3>
+<p>A historical intermediate fix once used this form:</p>
 <pre><code class="language-python"># historical intermediate approach, not current final code
 resume(as_of=now_utc() + timedelta(seconds=1))
 </code></pre>
-<p>它可以让恢复时刻晚于刚保存的 Attempt，但紧接着创建下一轮教学 Decision 却再次使用普通 <code>now_utc()</code>，于是出现：</p>
+<p>It could make the recovery moment later than the just-saved Attempt, but the next teaching Decision was then created with an ordinary <code>now_utc()</code> again, producing:</p>
 <pre><code class="language-text">Student State as_of = t_now + 1 second
 Next Decision requested_at = t_now + tiny_delta
 Decision requested_at &lt; state.as_of
     ↓
 ValueError: Decision cannot precede its Student State snapshot.
 </code></pre>
-<p>这是典型的<strong>局部修复满足 A 的时间条件，却破坏了 B 的时间条件</strong>。原始中间测试记录为 <code>3 failed, 2 passed</code>，但本资料包没有中间代码版本，具体失败堆栈仍需独立保存。</p>
-<p><strong>最终 CLI 的实现</strong>：匹配特定 <code>State-estimation time precedes submission.</code> 后，不重复提交；改用新的 <code>now_utc()</code> 调用 <code>resume()</code>，随后创建下一轮 Decision 时使用 <code>requested_at=completed.state.as_of</code>。因此下一轮 Decision 不会早于用于决策的 State 快照。最终 CLI 的五项测试、历史专项回归 59 项和完整 Backend 468 项通过（这三个<strong>测试计数取自此前用户提供的执行日志</strong>；ZIP 中没有这 59/468 次完整运行的原始输出）。</p>
-<p><strong>关键恢复规则</strong>：有明确证据表明 Commit 已成功之后，应恢复已保存的记录；若 Commit 结果未知，不能仅靠异常字符串假设一定已成功，正式应用应读取数据库确认 Assignment/Attempt 的最终状态再采取操作。当前 CLI 是一个受控本地合成 Demo，不等于已经实现通用的幂等 HTTP 提交协议。</p>
-<p><strong>源锚点</strong>：<code>b8abf71/scripts/run_local_numeric_lesson_v01.py</code> 的 <code>run_lesson()</code> 异常处理、<code>completed.state.as_of</code> 的下一轮 Decision；最终 <code>recoverable_numeric_session_v01.py::submit_numeric_answer()</code>；此前用户提供的两次原始失败输出。</p>
+<p>This is a classic case of <strong>a local fix satisfying time condition A while breaking time condition B</strong>. The original intermediate test record was <code>3 failed, 2 passed</code>, but this source pack has no intermediate code version, and the exact failure stack still needs to be saved separately.</p>
+<p><strong>The final CLI implementation</strong>: after matching the specific <code>State-estimation time precedes submission.</code>, it does not resubmit; it calls <code>resume()</code> with a fresh <code>now_utc()</code>, and then creates the next turn's Decision with <code>requested_at=completed.state.as_of</code>. So the next Decision is never earlier than the State snapshot used for deciding. The final CLI's five tests, the historical focused regression of 59, and the full backend of 468 passed (these three <strong>test counts come from execution logs the user provided earlier</strong>; the ZIP has no original output of those full 59/468 runs).</p>
+<p><strong>Key recovery rule</strong>: once there is clear evidence the commit succeeded, recover the saved records; if the commit outcome is unknown, do not assume it succeeded based on an exception string alone; a real application should read the database to confirm the final state of the Assignment/Attempt before acting. The current CLI is a controlled local synthetic demo and does not mean a general idempotent HTTP submission protocol is implemented.</p>
+<p><strong>Source anchors</strong>: the exception handling in <code>run_lesson()</code> and the next turn's Decision using <code>completed.state.as_of</code> in <code>b8abf71/scripts/run_local_numeric_lesson_v01.py</code>; final <code>recoverable_numeric_session_v01.py::submit_numeric_answer()</code>; the two original failure outputs the user provided earlier.</p>
 <hr />
-<h2 id="14-guard-casebook">14. Guard Casebook：测试覆盖的潜在失效，不冒充真实事故</h2>
-<p>以下均可在这份 ZIP 对应历史测试中定位。测试名称说明它<strong>试图验证什么</strong>；除非附有用户原始失败日志，否则不能声称这些问题曾经发生在真实教学或已部署环境。</p>
+<h2 id="section-33">14. Guard Casebook: potential failures covered by tests, not posing as real incidents</h2>
+<p>All of the following can be located in the matching historical tests in this ZIP. A test name says <strong>what it tries to verify</strong>; unless the user's original failure log is attached, it cannot be claimed that these problems ever happened in real teaching or a deployed environment.</p>
 <table>
 <thead>
 <tr>
 <th>Guard ID</th>
-<th>可复现失效情境</th>
-<th>核心防线</th>
-<th>相关测试</th>
+<th>Reproducible failure scenario</th>
+<th>Core defense</th>
+<th>Related tests</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>GUARD-P06-01</code></td>
-<td>向相同 Session 发出第二条 Pending</td>
-<td>Unique Pending Session Key；Repository <code>flush()</code> 检查</td>
+<td>Issuing a second Pending to the same Session</td>
+<td>Unique Pending Session Key; Repository <code>flush()</code> check</td>
 <td><code>test_second_pending_assignment_is_rejected_by_database</code></td>
 </tr>
 <tr>
 <td><code>GUARD-P06-02</code></td>
-<td>已完成 Assignment 仍占 Pending 槽</td>
-<td>同事务将 Key 置 NULL；状态一致性 CHECK/Trigger</td>
+<td>A completed Assignment still holding the Pending slot</td>
+<td>Key set to NULL in the same transaction; state-consistency CHECK/Trigger</td>
 <td><code>test_completed_assignment_releases_pending_slot</code></td>
 </tr>
 <tr>
 <td><code>GUARD-P06-03</code></td>
-<td>同会话重复使用 Decision ID</td>
+<td>Reusing a Decision ID in the same session</td>
 <td><code>(session_id,decision_id)</code> UNIQUE</td>
 <td><code>test_completed_decision_id_cannot_be_reused</code></td>
 </tr>
 <tr>
 <td><code>GUARD-P06-04</code></td>
-<td>两个线程同时发题</td>
-<td>DB 约束 + 事务；允许失败侧是唯一性或 SQLite Lock</td>
+<td>Two threads issuing at the same time</td>
+<td>DB constraints + transactions; the failing side may hit uniqueness or an SQLite lock</td>
 <td><code>test_concurrent_issuance_produces_at_most_one_pending</code></td>
 </tr>
 <tr>
 <td><code>GUARD-P06-05</code></td>
-<td>两个线程同时提交同一题</td>
-<td>条件 UPDATE + 事务；最终仅 1 Attempt</td>
+<td>Two threads submitting the same question at once</td>
+<td>Conditional UPDATE + transaction; exactly 1 Attempt in the end</td>
 <td><code>test_concurrent_submission_creates_exactly_one_attempt</code></td>
 </tr>
 <tr>
 <td><code>GUARD-P06-06</code></td>
-<td>Attempt INSERT flush 成功但 Assignment UPDATE 失败</td>
-<td><code>session.begin()</code> Rollback</td>
+<td>Attempt INSERT flushed but Assignment UPDATE failed</td>
+<td><code>session.begin()</code> rollback</td>
 <td><code>test_failed_assignment_update_rolls_back_attempt</code></td>
 </tr>
 <tr>
 <td><code>GUARD-P06-07</code></td>
-<td>数据库已经 Commit，状态重建人工注入失败</td>
-<td>新 Service 从持久化事实恢复</td>
+<td>Database already committed, state rebuild fails by injection</td>
+<td>A new Service recovers from persisted facts</td>
 <td><code>test_recovery_after_database_commit_and_state_failure</code></td>
 </tr>
 <tr>
 <td><code>GUARD-P06-08</code></td>
-<td>恢复后仍有 Pending 却再次发题</td>
-<td><code>resume()</code> 恢复 Pending；发题入口拒绝</td>
+<td>Issuing again while a Pending still exists after recovery</td>
+<td><code>resume()</code> restores the Pending; the delivery entry refuses</td>
 <td><code>test_pending_assignment_cannot_be_replaced_after_restart</code></td>
 </tr>
 <tr>
 <td><code>GUARD-P06-09</code></td>
-<td>错误学生或 Session 试图提交/恢复</td>
-<td>全字段 Scope 核查（非身份认证）</td>
-<td><code>test_another_student_cannot_complete_assignment</code>；<code>test_other_student_cannot_resume_session</code></td>
+<td>The wrong student or Session trying to submit/resume</td>
+<td>Full-field scope check (not identity authentication)</td>
+<td><code>test_another_student_cannot_complete_assignment</code>; <code>test_other_student_cannot_resume_session</code></td>
 </tr>
 <tr>
 <td><code>GUARD-P06-10</code></td>
-<td>用户提交记录被换到另一个 Assignment 或 Item Revision</td>
-<td>Completion Service 严格校验 ID/Revision/Response Group</td>
-<td><code>test_tampered_attempt_assignment_link_is_rejected</code>；<code>test_tampered_attempt_revision_is_rejected</code></td>
+<td>A submitted record swapped to another Assignment or Item Revision</td>
+<td>The Completion Service strictly checks ID/Revision/Response Group</td>
+<td><code>test_tampered_attempt_assignment_link_is_rejected</code>; <code>test_tampered_attempt_revision_is_rejected</code></td>
 </tr>
 <tr>
 <td><code>GUARD-P06-11</code></td>
-<td>迁移遇到重复 Pending/Decision 历史行</td>
-<td>只读数据审计阻止应用升级</td>
-<td><code>test_duplicate_pending_legacy_rows_stop_migration</code>；<code>test_duplicate_decision_legacy_rows_stop_migration</code></td>
+<td>Migration meets duplicate Pending/Decision historical rows</td>
+<td>Read-only data audit stops the upgrade</td>
+<td><code>test_duplicate_pending_legacy_rows_stop_migration</code>; <code>test_duplicate_decision_legacy_rows_stop_migration</code></td>
 </tr>
 <tr>
 <td><code>GUARD-P06-12</code></td>
-<td>不存在 Session 或历史 Scope 矛盾</td>
+<td>Non-existent Session or contradictory historical scope</td>
 <td>Migration Audit / Readiness fail closed</td>
-<td><code>test_orphan_assignment_blocks_upgrade</code>；<code>test_scope_mismatch_blocks_upgrade</code></td>
+<td><code>test_orphan_assignment_blocks_upgrade</code>; <code>test_scope_mismatch_blocks_upgrade</code></td>
 </tr>
 <tr>
 <td><code>GUARD-P06-13</code></td>
-<td>重建 Assignment 表时存在依赖它的外部表 FK</td>
-<td>拒绝自动重建未知依赖</td>
+<td>An external table has an FK depending on the Assignment table during rebuild</td>
+<td>Refuses to rebuild automatically with unknown dependencies</td>
 <td><code>test_inbound_foreign_key_blocks_table_rebuild</code></td>
 </tr>
 <tr>
 <td><code>GUARD-P06-14</code></td>
-<td>连接池中 FK 被关闭</td>
-<td>每次 checkout 再检查 <code>PRAGMA foreign_keys</code></td>
+<td>FKs turned off in the connection pool</td>
+<td><code>PRAGMA foreign_keys</code> re-checked on every checkout</td>
 <td><code>test_pool_rejects_connection_with_foreign_keys_disabled</code></td>
 </tr>
 <tr>
 <td><code>GUARD-P06-15</code></td>
-<td>Readiness 后数据库路径丢失</td>
-<td><code>mode=rw</code> 禁止静默创建替代 DB</td>
+<td>The database path disappears after Readiness</td>
+<td><code>mode=rw</code> forbids silently creating a replacement DB</td>
 <td><code>test_database_is_not_recreated_if_removed_before_connect</code></td>
 </tr>
 <tr>
 <td><code>GUARD-P06-16</code></td>
-<td>未配置数据库时误使健康检查失效</td>
-<td>FastAPI lifespan 数据库 opt-in</td>
+<td>The health check broken when no database is configured</td>
+<td>FastAPI lifespan database opt-in</td>
 <td><code>test_health_only_startup_needs_no_database</code></td>
 </tr>
 <tr>
 <td><code>GUARD-P06-17</code></td>
-<td>Session Factory 偷建另一套 Repository 或 Engine</td>
-<td>强制注入 Startup Bundle 的具体对象</td>
+<td>The Session Factory quietly building another set of Repositories or an Engine</td>
+<td>Forces injection of the Startup Bundle's exact objects</td>
 <td><code>test_factory_uses_exact_startup_repository_instances</code></td>
 </tr>
 <tr>
 <td><code>GUARD-P06-18</code></td>
-<td>CLI 意外覆盖已有真实数据库</td>
-<td><code>O_EXCL</code> 新建专用 Demo DB；已有文件拒绝</td>
+<td>The CLI accidentally overwriting an existing real database</td>
+<td><code>O_EXCL</code> creates a dedicated new demo DB; existing files refused</td>
 <td><code>test_cli_refuses_existing_database_without_modifying_it</code></td>
 </tr>
 <tr>
 <td><code>GUARD-P06-19</code></td>
-<td>无 app-help 日志错误地当成独立作答</td>
-<td>Attempt 的帮助字段保留 UNKNOWN</td>
+<td>No app-help log wrongly taken as independent answering</td>
+<td>The Attempt's help fields stay UNKNOWN</td>
 <td><code>test_real_cli_no_help_does_not_imply_independence</code></td>
 </tr>
 <tr>
 <td><code>GUARD-P06-20</code></td>
-<td>学生退出 CLI，Pending 丢失</td>
-<td>退出不完成 Assignment</td>
+<td>Student quits the CLI and the Pending is lost</td>
+<td>Quitting does not complete the Assignment</td>
 <td><code>test_cli_quit_keeps_assignment_pending</code></td>
 </tr>
 </tbody>
 </table>
-<p>特别说明：<code>test_failed_transaction_restores_source_schema</code> 是<strong>故障注入迁移测试</strong>；它验证在 COMMIT 前出错时旧 Schema 仍在，不意味着曾真实对用户数据库进行失败迁移。<code>test_real_cli_hint_answer_and_sqlite_recovery</code> 是本地受控演示的整合测试；它证明此场景可运行，但不是教学效果或独立掌握的验证。</p>
+<p>Special note: <code>test_failed_transaction_restores_source_schema</code> is a <strong>fault-injection migration test</strong>; it verifies that the old schema is still there when an error occurs before COMMIT, and does not mean a failed migration was ever really run on a user database. <code>test_real_cli_hint_answer_and_sqlite_recovery</code> is an integration test of a controlled local demo; it proves the scenario runs, but it is not a validation of teaching effect or independent mastery.</p>
 <hr />
-<h2 id="15-code-walkthrough">15. Code Walkthrough：一次完整的本地教学示范（不扩大其能力声明）</h2>
-<p><code>b8abf71</code> 的 <code>scripts/run_local_numeric_lesson_v01.py</code> 实际使用一项合成 Arithmetic Objective 和 Numeric Item：<code>What is 2 + 3?</code>，Rubric 预期 5，Tolerance 0。CLI 只接受<strong>不存在</strong>的新 Demo SQLite 文件，并使用本地 <code>Base.metadata.create_all(engine)</code> 初始化<strong>这一份明确的新数据库</strong>；它不把 <code>create_all()</code> 当成已有数据库的 Schema Migration。</p>
+<h2 id="section-34">15. Code walkthrough: one complete local teaching demo (without overstating its capabilities)</h2>
+<p><code>scripts/run_local_numeric_lesson_v01.py</code> in <code>b8abf71</code> actually uses one synthetic Arithmetic Objective and a Numeric Item: <code>What is 2 + 3?</code>, Rubric expecting 5, tolerance 0. The CLI accepts only a new demo SQLite file that <strong>does not exist</strong>, and uses local <code>Base.metadata.create_all(engine)</code> to initialize <strong>this one explicit new database</strong>; it does not treat <code>create_all()</code> as a schema migration for existing databases.</p>
 <pre><code class="language-text">CLI start with NEW synthetic DB
   → initialize schema and enable SQLite FK for demo engine
   → build Assessment / Assignment / Session / Assistance repositories
@@ -727,92 +727,88 @@ ValueError: Decision cannot precede its Student State snapshot.
   → Decision Engine selects next action from recovered State
   → static Professor Agent prints teaching content
 </code></pre>
-<p>本地输出 Flush 说明程序将文本交给终端输出流，<strong>不证明学生已经阅读或理解了内容</strong>。无帮助日志也不能证明学生没有外部帮助。CLI 的 Agent 返回固定字符串，没有接入真实 LLM，未提供生产学生身份认证或 HTTP 教学 API。它的测试记录是本地功能和数据一致性证据，而不是“真正证明学生学会了数学”的实验结论。</p>
+<p>A local output flush means the program handed the text to the terminal output stream, <strong>not that the student read or understood the content</strong>. An empty help log cannot prove the student had no outside help either. The CLI's Agents return fixed strings, no real LLM is connected, and no production student identity authentication or HTTP teaching API is provided. Its test records are evidence of local functionality and data consistency, not an experimental conclusion that "the student really learned the math".</p>
 <hr />
-<h2 id="16">16. 容易再次引入的架构错误：维护检查清单</h2>
+<h2 id="section-35">16. Architectural mistakes that are easy to reintroduce: maintenance checklist</h2>
 <ol>
-<li><strong>不要为一次课程建立一个跨整个教学过程的超大数据库事务</strong>：Assignment/Attempt Atomic Submission 与教学显示/State Reconstruction 属于不同边界。需要清晰报告“数据库提交成功、后续处理失败”这一可恢复状态。</li>
-<li><strong>不要在提交失败提示出现时盲目重新提交</strong>：先读取真实 Assignment 状态；若 Completed，恢复已有 Attempt；若 Pending，才可讨论重新提交。</li>
-<li><strong>不要使用未来时间来快速绕过 Snapshot 时序验证</strong>：<code>decision.requested_at &gt;= state.as_of</code> 和 <code>state.as_of &gt;= attempt.submitted_at</code> 都需满足。一次局部修复必须检查全链路时间关系。</li>
-<li><strong>不要把不存在的 Assistance Event 翻译成 <code>assistance_level=0</code></strong>：持久化提交的作答条件仍可能未知；后续 Learning Observation 与 Mastery Evidence 要分别维护。</li>
-<li><strong>不要默认 ORM Model 的变更已经作用于历史数据库</strong>：用已知的 Schema Audit、独立备份、显式 Migration 和部署前 Readiness；失败应停止而不是尝试“自动修好”。</li>
-<li><strong>不要通过另一套未经检查的 Engine 绕过 Startup Bundle</strong>：当前的 FK 保护仅对实际使用该 Engine 的连接有效。</li>
-<li><strong>不要把 Scope Equality 当成认证</strong>：当前 Internal Services 只比较字符串 ID；未来正式 API 必须从可信身份/会话上下文导出 Scope。</li>
-<li><strong>不要把用户已经看过题目或 Hint 作为数据库事实</strong>：Assignment 已发、Presenter 已 Flush、应用已记录帮助，分别属于不同观察层次。</li>
-<li><strong>不要在多个查询步骤之间默认存在原子 Read Snapshot</strong>：当前 Recovery 的 Repository 读取并不自动绑定为一个跨表的相同时间视图；更高并发需求应单独设计。</li>
-<li><strong>不要从 Test Function 名字反推出真实历史 Bug</strong>：应提供原始失败日志、当时假设、修复 Diff 和测试验证，才可在 Casebook 中标 <code>HISTORICAL BUG</code>。</li>
+<li><strong>Do not create one huge database transaction spanning a whole lesson</strong>: atomic Assignment/Attempt submission and teaching display/State reconstruction are different boundaries. The recoverable state "database commit succeeded, later processing failed" must be reported clearly.</li>
+<li><strong>Do not blindly resubmit when a submission-failure message appears</strong>: first read the real Assignment state; if Completed, recover the existing Attempt; only if Pending can resubmission be discussed.</li>
+<li><strong>Do not use future times to quickly bypass snapshot-ordering checks</strong>: both <code>decision.requested_at &gt;= state.as_of</code> and <code>state.as_of &gt;= attempt.submitted_at</code> must hold. A local fix must check the time relations of the whole chain.</li>
+<li><strong>Do not translate a missing Assistance Event into <code>assistance_level=0</code></strong>: the answering conditions of persisted submissions may still be unknown; later Learning Observations and Mastery Evidence must be maintained separately.</li>
+<li><strong>Do not assume ORM Model changes have been applied to historical databases</strong>: use known Schema Audits, independent backups, explicit migrations, and pre-deployment Readiness; on failure, stop rather than trying to "fix it automatically".</li>
+<li><strong>Do not bypass the Startup Bundle with another unchecked Engine</strong>: the current FK protection applies only to connections that actually use that Engine.</li>
+<li><strong>Do not treat Scope Equality as authentication</strong>: the current internal services only compare string IDs; a future real API must derive scope from a trusted identity/session context.</li>
+<li><strong>Do not record "the user has seen the question or hint" as a database fact</strong>: Assignment issued, Presenter flushed, and application-recorded help are different layers of observation.</li>
+<li><strong>Do not assume an atomic read snapshot exists across multiple query steps</strong>: the current Recovery's Repository reads are not automatically bound into one cross-table view at the same moment; higher-concurrency needs should be designed separately.</li>
+<li><strong>Do not infer a real historical bug from a test function's name</strong>: provide the original failure log, the hypothesis at the time, the fix diff, and test verification before labeling something <code>HISTORICAL BUG</code> in the Casebook.</li>
 </ol>
 <hr />
-<h2 id="17">17. 历史来源和证据级别</h2>
-<p><strong>直接源自 ZIP 的已核查事实</strong>：19 个历史 Commit 下列出的文件；源码对约束、Repository 方法、Migration、Readiness、Engine、Lifespan、CLI 的实际实现；各测试文件包含的验证用例。ZIP 的 <code>SOURCE_MANIFEST.json</code> 记录每份文件的 Commit、相对路径及 SHA-256。SHA-256 用于检测提取文件是否改变，不是代码来源的签名认证，也不证明作者或运行环境可信。</p>
-<p><strong>来自此前用户提供的真实运行日志（不在当前 ZIP 内）</strong>：13E-3C 的两次 CLI 时间戳异常、对应中间失败计数、最终 <code>5/59/468 passed</code> 和 Commit <code>b8abf71</code>。当前 ZIP 可以交叉核对最终错误处理代码和五项 CLI 测试，但若要在网站中逐行展示最初 Traceback 与原始 Repair Diff，仍需另存对应完整终端输出。</p>
-<p><strong>本章事后工程解释</strong>：例如“为什么先读 Pending 无法替代条件 UPDATE”“为什么 Scope FK 要四列”“为什么未来可能需要一致性 Read Snapshot”是从历史实现及数据库语义推导出的教学解读，不应被反写为当时开发者在每一次 Commit 中留下的逐字动机。</p>
-<p><strong>不能由本包证明的事</strong>：历史上每项 Guard 是否由真实事故触发；任何正式生产部署、跨进程完整并发认证、学生现实身份认证、真实 LLM 接入、独立作答证明、广泛教学有效性、其他数据库方言可用性。</p>
-<h3 id="section-1">文件级定位索引（读原始档案时按该路径查找）</h3>
+<h2 id="section-36">17. Historical sources and evidence levels</h2>
+<p><strong>Verified facts taken directly from the ZIP</strong>: the files listed under the 19 historical commits; the actual implementation in the source of constraints, Repository methods, migrations, Readiness, Engine, Lifespan, and CLI; the test cases contained in each test file. The ZIP's <code>SOURCE_MANIFEST.json</code> records each file's commit, relative path, and SHA-256. SHA-256 detects whether extracted files changed; it is not signature authentication of the code's origin and does not prove the author or runtime environment is trustworthy.</p>
+<p><strong>From real run logs the user provided earlier (not in the current ZIP)</strong>: 13E-3C's two CLI timestamp exceptions, the matching intermediate failure counts, the final <code>5/59/468 passed</code>, and commit <code>b8abf71</code>. The current ZIP can cross-check the final error-handling code and the five CLI tests, but showing the original tracebacks and repair diff line by line on the website still requires saving the matching complete terminal output separately.</p>
+<p><strong>After-the-fact engineering explanation in this chapter</strong>: for example "why reading Pending first cannot replace a conditional UPDATE", "why the scope FK needs four columns", and "why a consistent read snapshot may be needed in the future" are teaching interpretations derived from the historical implementation and database semantics, and must not be written back as the developer's word-for-word motivation left in each commit at the time.</p>
+<p><strong>What this pack cannot prove</strong>: whether each historical Guard was triggered by a real incident; any formal production deployment, complete cross-process concurrency certification, real-world student identity authentication, real LLM integration, proof of independent answering, broad teaching effectiveness, or usability with other database dialects.</p>
+<h3 id="section-37">File-level location index (look up these paths when reading the original archive)</h3>
 <table>
 <thead>
 <tr>
-<th>主题</th>
-<th>历史来源</th>
+<th>Topic</th>
+<th>Historical source</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Assignment 首次持久化与初始测试</td>
-<td><code>history/assignment_persistence_b36c7b5fba/backend/app/repositories/numeric_assignment_v01.py</code>；<code>.../test_numeric_assignment_v01.py</code></td>
+<td>First Assignment persistence and initial tests</td>
+<td><code>history/assignment_persistence_b36c7b5fba/backend/app/repositories/numeric_assignment_v01.py</code>; <code>.../test_numeric_assignment_v01.py</code></td>
 </tr>
 <tr>
-<td>Completed Assignment→State</td>
-<td><code>history/completed_assignment_state_174f259e7a/backend/app/services/decision/completed_assignment_state_v01.py</code>；对应测试</td>
+<td>Completed Assignment → State</td>
+<td><code>history/completed_assignment_state_174f259e7a/backend/app/services/decision/completed_assignment_state_v01.py</code>; matching tests</td>
 </tr>
 <tr>
-<td>Legacy Loop 的 <code>_requires_recovery</code></td>
+<td>The Legacy Loop's <code>_requires_recovery</code></td>
 <td><code>history/persisted_numeric_loop_692b6943f4/backend/app/services/decision/persisted_numeric_session_loop_v01.py</code></td>
 </tr>
 <tr>
-<td>Session Identity 和真正的新实例恢复</td>
-<td><code>history/session_recovery_cf9ab746db/backend/app/repositories/numeric_session_records_v01.py</code>；<code>.../recoverable_numeric_session_v01.py</code>；对应测试</td>
+<td>Session Identity and real new-instance recovery</td>
+<td><code>history/session_recovery_cf9ab746db/backend/app/repositories/numeric_session_records_v01.py</code>; <code>.../recoverable_numeric_session_v01.py</code>; matching tests</td>
 </tr>
 <tr>
-<td>Pending/Decision 约束及并发/回滚</td>
-<td><code>history/assignment_invariants_a562e6711b/backend/app/repositories/numeric_assignment_v01.py</code>；<code>.../test_numeric_assignment_invariants_v01.py</code></td>
+<td>Pending/Decision constraints and concurrency/rollback</td>
+<td><code>history/assignment_invariants_a562e6711b/backend/app/repositories/numeric_assignment_v01.py</code>; <code>.../test_numeric_assignment_invariants_v01.py</code></td>
 </tr>
 <tr>
-<td>第一代 Migration</td>
-<td><code>history/assignment_migration_79e250c760/backend/app/repositories/migrate_numeric_assignment_v01_sqlite.py</code>；对应测试</td>
+<td>First-generation migration</td>
+<td><code>history/assignment_migration_79e250c760/backend/app/repositories/migrate_numeric_assignment_v01_sqlite.py</code>; matching tests</td>
 </tr>
 <tr>
 <td>Readiness + Session FK Audit</td>
-<td><code>history/database_readiness_1f50e80483/...</code>；<code>history/foreign_key_readiness_cd5c7d4cde/...</code></td>
+<td><code>history/database_readiness_1f50e80483/...</code>; <code>history/foreign_key_readiness_cd5c7d4cde/...</code></td>
 </tr>
 <tr>
-<td>Registered Session FK 与更严格的默认发题</td>
-<td><code>history/strict_session_assignment_0f32231201/...</code>；<code>history/registered_session_default_e735c0fbdf/...</code>；<code>history/remove_unregistered_issuance_f86f68d7b4/...</code></td>
+<td>Registered Session FK and stricter default delivery</td>
+<td><code>history/strict_session_assignment_0f32231201/...</code>; <code>history/registered_session_default_e735c0fbdf/...</code>; <code>history/remove_unregistered_issuance_f86f68d7b4/...</code></td>
 </tr>
 <tr>
-<td>第二代 Migration</td>
-<td><code>history/foreign_key_migration_3cbeffabe4/backend/app/repositories/migrate_numeric_session_fk_v01_sqlite.py</code>；对应测试</td>
+<td>Second-generation migration</td>
+<td><code>history/foreign_key_migration_3cbeffabe4/backend/app/repositories/migrate_numeric_session_fk_v01_sqlite.py</code>; matching tests</td>
 </tr>
 <tr>
 <td>Engine → Startup → Bundle → Factory</td>
-<td><code>history/guarded_sqlite_engine_0bc3250fb7/...</code>；<code>history/sqlite_startup_fc91a60a7d/...</code>；<code>history/repository_injection_f22dbf930d/...</code>；<code>history/recoverable_session_factory_c24d1dc84d/...</code></td>
+<td><code>history/guarded_sqlite_engine_0bc3250fb7/...</code>; <code>history/sqlite_startup_fc91a60a7d/...</code>; <code>history/repository_injection_f22dbf930d/...</code>; <code>history/recoverable_session_factory_c24d1dc84d/...</code></td>
 </tr>
 <tr>
-<td>最终 CLI</td>
-<td><code>history/local_numeric_cli_b8abf71993/scripts/run_local_numeric_lesson_v01.py</code>；其五个 CLI Tests 与 <code>docs/24_local_numeric_teaching_cli_v0.1.md</code></td>
+<td>Final CLI</td>
+<td><code>history/local_numeric_cli_b8abf71993/scripts/run_local_numeric_lesson_v01.py</code>; its five CLI tests and <code>docs/24_local_numeric_teaching_cli_v0.1.md</code></td>
 </tr>
 </tbody>
 </table>
-<p><strong>完整索引</strong>见本次 Release 包内的 <code>evidence/reply6_source_index.json</code>，保存了 71 份文件的历史 Commit、Archive Path、Size、SHA-256 和逐阶段对象信息。下一阶段将继续研究后续教学链路，并将本章链接进网站的统一导航与全站检索。</p>
-</article>
-<aside class="archive-side"><div class="section-label">CHAPTER NAVIGATION</div><input id="chapter-search" class="archive-search" type="search" aria-label="搜索本章" placeholder="搜索术语 / Commit / 错误…"/><p class="archive-note" id="search-count">浏览本章或搜索关键词</p><nav><a href="#persistence-numeric-assignment-session-recovery-sqlite-migration">Persistence · Numeric Assignment · Session Recovery · SQLite Migration</a><a href="#01">01. 从“保存答案”到“恢复一次尚未结束的教学”</a><a href="#02-git-checkpoint">02. 按真实 Git Checkpoint 重建设计演进</a><a href="#03">03. 持久化模型：每个字段为什么存在？</a><a href="#04-issue-assignment">04. 发题（Issue Assignment）：真正写入了什么？</a><a href="#05-submit">05. 提交（Submit）：为什么必须在同一事务内？</a><a href="#06">06. 三条恢复路径，不能写成一种</a><a href="#07-completed-assignment-student-state">07. 从 Completed Assignment 重建 Student State：不让调用方直接指定证据</a><a href="#08-sqlite">08. 为什么约束要逐渐下沉到 SQLite？</a><a href="#09-sqlite-migration-pending-slot-decision">09. 第一次历史 SQLite Migration：Pending Slot 与 Decision 唯一性</a><a href="#10-sqlite-migration-session-scope-fk">10. 第二次 SQLite Migration：将 Session Scope 变成真实的 FK</a><a href="#11-readiness-schema">11. Readiness 与连接层：Schema 正确不代表运行路径已正确</a><a href="#12-application-startup-repository-injection-engine">12. Application Startup 与 Repository Injection：真正把受保护 Engine 用起来</a><a href="#13-13e-3c-cli-timestamp-bug">13. 真实故障：13E-3C CLI 的两次 Timestamp Bug</a><a href="#14-guard-casebook">14. Guard Casebook：测试覆盖的潜在失效，不冒充真实事故</a><a href="#15-code-walkthrough">15. Code Walkthrough：一次完整的本地教学示范（不扩大其能力声明）</a><a href="#16">16. 容易再次引入的架构错误：维护检查清单</a><a href="#17">17. 历史来源和证据级别</a></nav><hr/><p class="archive-note">源索引：<a href="../evidence/reply6_source_index.json">Reply 6 Source Index</a></p><button class="archive-button" type="button" id="clear-progress">清除阅读进度</button><p class="archive-note" id="read-progress"></p></aside></div></main>
-<script>
-(function(){'use strict';
-const input=document.getElementById('chapter-search');const nodes=[...document.querySelectorAll('.archive-article h1,.archive-article h2,.archive-article h3,.archive-article p,.archive-article li,.archive-article pre,.archive-article td')];
-input.addEventListener('input',()=>{for(const e of document.querySelectorAll('.archive-match'))e.classList.remove('archive-match');const q=input.value.trim().toLocaleLowerCase();if(!q){document.getElementById('search-count').textContent='浏览本章或搜索关键词';return;}const matches=nodes.filter(n=>n.textContent.toLocaleLowerCase().includes(q));document.getElementById('search-count').textContent=`匹配 ${matches.length} 个文本节点`;for(const e of matches.slice(0,70)) e.classList.add('archive-match');if(matches.length)matches[0].scrollIntoView({behavior:'smooth',block:'center'});});
-const headings=[...document.querySelectorAll('.archive-article h2')];const links=[...document.querySelectorAll('.archive-side nav a')];const key='urpp.archive.reply6.last-section';
-const watch=new IntersectionObserver(entries=>{for(const e of entries)if(e.isIntersecting){try{localStorage.setItem(key,e.target.id)}catch(_){}for(const a of links)a.classList.toggle('active',a.getAttribute('href')==='#'+e.target.id);document.getElementById('read-progress').textContent='阅读位置：'+e.target.textContent;}},{rootMargin:'-15% 0px -70% 0px'});for(const h of headings)watch.observe(h);
-const last=(()=>{try{return localStorage.getItem(key)}catch(_){return null}})();if(last&&document.getElementById(last)){const l=links.find(x=>x.getAttribute('href')==='#'+last);document.getElementById('read-progress').textContent='上次阅读：'+(l?l.textContent:last)}
-document.getElementById('clear-progress').addEventListener('click',()=>{try{localStorage.removeItem(key)}catch(_){}document.getElementById('read-progress').textContent='阅读进度已清除';});
-})();
+<p><strong>The full index</strong> is <code>evidence/reply6_source_index.json</code> in this release package, which stores the historical commit, archive path, size, SHA-256, and per-stage object information for the 71 files. The next stage continues with the later teaching chain and links this chapter into the website's unified navigation and site-wide search.</p><footer class="footer">URPP Engineering Archive · Reply 6 / 10 · English edition; Chinese original in zh-original/</footer></main></div><script>
+(()=>{const input=document.getElementById('chapter-search'),count=document.getElementById('search-count'),article=document.querySelector('.chapter-article');let hits=[],i=-1;
+function reset(){document.querySelectorAll('mark.search-hit').forEach(m=>m.replaceWith(document.createTextNode(m.textContent)));article.normalize();hits=[];i=-1}
+input.addEventListener('input',()=>{reset();const q=input.value.trim().toLowerCase();if(!q){count.textContent='Search this chapter';return}
+const w=document.createTreeWalker(article,NodeFilter.SHOW_TEXT,{acceptNode:n=>n.nodeValue.toLowerCase().includes(q)?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT});const nodes=[];while(w.nextNode())nodes.push(w.currentNode);
+for(const n of nodes){const t=n.nodeValue,low=t.toLowerCase();let p=0,s;const f=document.createDocumentFragment();while((s=low.indexOf(q,p))!==-1){f.append(t.slice(p,s));const m=document.createElement('mark');m.className='search-hit';m.textContent=t.slice(s,s+q.length);f.append(m);hits.push(m);p=s+q.length}f.append(t.slice(p));n.replaceWith(f)}
+count.textContent=hits.length+' matches (Enter = next)';});
+input.addEventListener('keydown',e=>{if(e.key==='Enter'&&hits.length){i=(i+1)%hits.length;hits[i].scrollIntoView({block:'center'});count.textContent=(i+1)+' / '+hits.length}});})();
 </script></body></html>

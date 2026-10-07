@@ -25,8 +25,8 @@ window.URPP_ARCHIVE = {
             title: `Implementation ${index}`,
             status: "HISTORICAL_MAPPING_PENDING",
             description:
-                "等待原始 Roadmap、Git History 和设计文档核对。" +
-                "当前占位不代表该阶段没有实际实现。",
+                "Pending verification against the original Roadmap, Git History, and design documents. " +
+                "This placeholder does not mean the stage had no real implementation.",
         })
     ),
 
@@ -36,8 +36,8 @@ window.URPP_ARCHIVE = {
             commit: "93e3680",
             title: "Initial URPP V0 Architecture",
             description:
-                "建立最初的工程骨架、核心领域目录、" +
-                "产品规范、架构文档、课程模型和教学策略设计。",
+                "Set up the initial engineering skeleton, core domain directories, " +
+                "product spec, architecture docs, course model, and teaching-policy design.",
             status: "CHAT_LOG_CONFIRMED",
             source: "SRC-001",
         },
@@ -46,7 +46,7 @@ window.URPP_ARCHIVE = {
             commit: "0dda011",
             title: "Student State Update Engine V0 Design",
             description:
-                "建立早期 Student State Update Engine 设计文档。",
+                "Wrote the early Student State Update Engine design document.",
             status: "CHAT_LOG_CONFIRMED",
             source: "SRC-002",
         },
@@ -55,7 +55,7 @@ window.URPP_ARCHIVE = {
             commit: "f61cd4b",
             title: "Student State Estimator Specification V0.2",
             description:
-                "修订 Student State Estimator 的设计。",
+                "Revised the Student State Estimator design.",
             status: "CHAT_LOG_CONFIRMED",
             source: "SRC-002",
         },
@@ -64,8 +64,8 @@ window.URPP_ARCHIVE = {
             commit: "2de3b83",
             title: "Evidence Schema and Eligibility Policy V0.2",
             description:
-                "增加 V0.2 Evidence Schema、Eligibility Policy。" +
-                "保存的专项测试记录为 9 passed。",
+                "Added the V0.2 Evidence Schema and Eligibility Policy. " +
+                "The saved focused test record is 9 passed.",
             status: "CHAT_LOG_CONFIRMED",
             source: "SRC-002",
         },
@@ -74,9 +74,9 @@ window.URPP_ARCHIVE = {
             commit: "e52095f",
             title: "13C-2B SQLite Recovery Integration Tests",
             description:
-                "修复错误测试断言，验证 Personalized Numeric " +
-                "Session 的 SQLite 恢复。" +
-                "专项测试 26 passed，完整回归 324 passed。",
+                "Fixed wrong test assertions and verified SQLite recovery of the Personalized Numeric " +
+                "Session. " +
+                "Focused tests 26 passed; full regression 324 passed.",
             status: "CHAT_LOG_CONFIRMED",
             source: "SRC-003",
         },
@@ -85,10 +85,10 @@ window.URPP_ARCHIVE = {
             commit: "b8abf71",
             title: "13E-3C Local Numeric Teaching CLI",
             description:
-                "完成本地教学 CLI。" +
-                "经历提交后 State 恢复时间和下一轮 Decision " +
-                "时间不一致的问题。" +
-                "最终完整回归 468 passed。",
+                "Completed the local teaching CLI. " +
+                "Went through a mismatch between the post-commit State recovery time and the next Decision " +
+                "time. " +
+                "Final full regression 468 passed.",
             status: "USER_LOG_CONFIRMED",
             source: "SRC-004",
         },
@@ -97,9 +97,9 @@ window.URPP_ARCHIVE = {
             commit: "ccb4a5a",
             title: "13E-4A Numeric Attempt Provenance Snapshot",
             description:
-                "新增读取真实 Assignment、Attempt 和" +
-                "应用程序报告的帮助事件的 Snapshot Service。" +
-                "完整回归 473 passed。",
+                "Added a Snapshot Service that reads real Assignments, Attempts, and " +
+                "application-reported help events. " +
+                "Full regression 473 passed.",
             status: "USER_LOG_CONFIRMED",
             source: "SRC-005",
         },
@@ -108,9 +108,9 @@ window.URPP_ARCHIVE = {
             commit: "a82b2ad",
             title: "13E-4B Numeric Provenance Review Candidate",
             description:
-                "新增来源指纹和重新检查机制。" +
-                "Candidate 不构成审核批准。" +
-                "完整回归 479 passed。",
+                "Added a source fingerprint and re-check mechanism. " +
+                "A Candidate is not a review approval. " +
+                "Full regression 479 passed.",
             status: "USER_LOG_CONFIRMED",
             source: "SRC-006",
         },
@@ -130,22 +130,22 @@ window.URPP_ARCHIVE = {
             status: "RESOLVED",
 
             symptom:
-                "验证 explanation request 不会错误发放 " +
-                "Numeric Assignment 的测试失败。" +
-                "第一次运行结果为 1 failed, 25 passed。",
+                "The test verifying that an explanation request does not wrongly issue a " +
+                "Numeric Assignment failed. " +
+                "The first run gave 1 failed, 25 passed.",
 
             error:
                 "assert not stack.last_assessment_agent\n" +
                 "AssertionError: assert not <RecordingAgent object ...>",
 
             investigation:
-                "测试断言检验了 Agent 对象是否存在，" +
-                "却没有准确检验 Agent 是否真正执行了 Assessment。" +
-                "对象已创建并不等于 Assessment 已发生。",
+                "The test assertion checked whether the Agent object existed, " +
+                "not whether the Agent actually executed an Assessment. " +
+                "An object being created does not mean an Assessment happened.",
 
             resolution:
-                "原始修复记录显示，调整新测试文件中的两个错误断言。" +
-                "没有修改生产代码。",
+                "The original fix record shows two wrong assertions in the new test file were adjusted. " +
+                "No production code was changed.",
 
             verification:
                 "Targeted: 26 passed\n" +
@@ -167,26 +167,26 @@ window.URPP_ARCHIVE = {
             status: "RESOLVED",
 
             symptom:
-                "学生提交答案后，Attempt 已写入 SQLite，" +
-                "但 CLI 仍报告答案未被接受。" +
-                "首次测试为 2 failed, 57 passed。",
+                "After the student submitted an answer, the Attempt was written to SQLite, " +
+                "but the CLI still reported the answer as not accepted. " +
+                "The first test run was 2 failed, 57 passed.",
 
             error:
                 "State-estimation time precedes submission.\n" +
                 "The submission may already be committed.",
 
             investigation:
-                "CLI 取得的 as_of 早于 Repository 后续生成的 " +
-                "submitted_at。" +
-                "错误发生在 Attempt 已经提交后的状态估计阶段。",
+                "The as_of taken by the CLI was earlier than the " +
+                "submitted_at the Repository generated later. " +
+                "The error happened in the state-estimation step after the Attempt was committed.",
 
             resolution:
-                "针对该特定错误使用 resume() " +
-                "恢复已提交的结果，避免再次提交答案。" +
-                "首次修复使用未来一秒的恢复时间，" +
-                "又引出了下一轮 Decision 的时间顺序错误。" +
-                "最终取消未来一秒，并让下一轮 Decision " +
-                "使用恢复后 Student State 的快照时间。",
+                "For this specific error, resume() is used " +
+                "to recover the committed result and avoid resubmitting the answer. " +
+                "The first fix used a recovery time one second in the future, " +
+                "which caused a time-ordering error in the next Decision. " +
+                "Finally the one-second offset was removed, and the next Decision " +
+                "uses the snapshot time of the recovered Student State.",
 
             verification:
                 "Initial tests: 2 failed, 57 passed\n" +
@@ -211,21 +211,21 @@ window.URPP_ARCHIVE = {
             status: "RESOLVED",
 
             symptom:
-                "第一次提交后恢复修复成功，" +
-                "但创建下一轮 Decision 时发生新的验证错误。",
+                "The first post-submission recovery fix succeeded, " +
+                "but a new validation error occurred when creating the next Decision.",
 
             error:
                 "Decision cannot precede its Student State snapshot.",
 
             investigation:
-                "恢复 State 时使用 now_utc() + 1 秒；" +
-                "创建 Decision 时使用普通 now_utc()。" +
-                "因此 Decision 时间早于 Student State 快照时间。",
+                "State recovery used now_utc() + 1 second; " +
+                "Decision creation used a plain now_utc(). " +
+                "So the Decision time was earlier than the Student State snapshot time.",
 
             resolution:
-                "恢复时使用新的当前时间，" +
-                "下一轮 Decision 使用恢复后 State 的 as_of。" +
-                "不修改 Decision Engine 的时间顺序约束。",
+                "Recovery uses a fresh current time, " +
+                "and the next Decision uses the recovered State's as_of. " +
+                "The Decision Engine's time-ordering constraint is not changed.",
 
             verification:
                 "CLI: 5 passed\n" +
@@ -246,8 +246,8 @@ window.URPP_ARCHIVE = {
             title: "Initial URPP V0 architecture",
             locator: "Git commit 93e3680",
             note:
-                "原始聊天中的初始化和首次提交日志。" +
-                "尚待与本地 Git History 交叉核对。",
+                "Initialization and first-commit logs from the original chat. " +
+                "Still to be cross-checked with the local Git History.",
         },
 
         {
@@ -257,7 +257,7 @@ window.URPP_ARCHIVE = {
             locator:
                 "Commits 0dda011, f61cd4b, 2de3b83",
             note:
-                "早期 Student State 设计与 Evidence Schema 日志。",
+                "Early Student State design and Evidence Schema logs.",
         },
 
         {
@@ -268,8 +268,8 @@ window.URPP_ARCHIVE = {
                 "Commit e52095f; " +
                 "test_personalized_numeric_session_sqlite_v01.py",
             note:
-                "包含原始失败、错误断言、" +
-                "修复后测试和最终提交记录。",
+                "Contains the original failure, the wrong assertion, " +
+                "the post-fix tests, and the final commit record.",
         },
 
         {
@@ -280,8 +280,8 @@ window.URPP_ARCHIVE = {
                 "Commit b8abf71; " +
                 "run_local_numeric_lesson_v01.py",
             note:
-                "包含两次失败、修复过程、" +
-                "最终 CLI 测试及完整回归。",
+                "Contains the two failures, the fix process, " +
+                "the final CLI tests, and the full regression.",
         },
 
         {
@@ -292,7 +292,7 @@ window.URPP_ARCHIVE = {
                 "Commit ccb4a5a; " +
                 "numeric_attempt_provenance_snapshot_v01.py",
             note:
-                "记录 SQLite Snapshot 集成测试和提交结果。",
+                "Records the SQLite Snapshot integration tests and commit result.",
         },
 
         {
@@ -303,32 +303,32 @@ window.URPP_ARCHIVE = {
                 "Commit a82b2ad; " +
                 "numeric_provenance_review_candidate_v01.py",
             note:
-                "记录来源检查、完整回归和提交结果。",
+                "Records the source check, full regression, and commit result.",
         },
 
     ],
 
     gaps: [
 
-        "需要取得 Implementation 0–13 的原始 Roadmap，" +
-        "确认准确的阶段名称、边界和顺序。",
+        "Obtain the original Implementation 0–13 Roadmap " +
+        "to confirm the exact stage names, boundaries, and order.",
 
-        "需要取得完整 Git Commit History，" +
-        "核对每次实现与设计文件的对应关系。",
+        "Obtain the complete Git Commit History " +
+        "to check how each implementation corresponds to the design files.",
 
-        "Git History 不一定包含提交前失败的测试日志。" +
-        "这些内容需要从原始聊天、Terminal 输出或保存的日志恢复。",
+        "Git History does not necessarily include failing test logs from before a commit. " +
+        "These must be recovered from the original chats, terminal output, or saved logs.",
 
-        "需要区分当时记录的设计理由与现在根据代码做出的事后分析。",
+        "Distinguish design reasons recorded at the time from after-the-fact analysis based on the code now.",
 
-        "需要核对同一功能是否曾经经历多次实现、" +
-        "废弃、重构或回滚。",
+        "Check whether the same feature went through multiple implementations, " +
+        "abandonment, refactoring, or rollback.",
 
-        "需要确定 Implementation 13 各子阶段的完整边界，" +
-        "不能把所有后期功能都归入 13E。",
+        "Determine the full boundaries of each Implementation 13 sub-stage; " +
+        "not every later feature belongs in 13E.",
 
-        "Architecture V2 和 NeoHorse-1 相关研究属于后续规划，" +
-        "不能写成 Implementation 0–13 已经完成的功能。",
+        "Architecture V2 and NeoHorse-1 research belong to later planning " +
+        "and must not be written as features completed in Implementation 0–13.",
     ],
 
 };

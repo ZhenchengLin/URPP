@@ -1,289 +1,269 @@
-<!doctype html>
-<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>URPP · Assessment & Evidence Scoring · Reply 4</title><link rel="stylesheet" href="../assets/styles.css"><style>
-.archive-page{display:grid;grid-template-columns:minmax(210px,260px) minmax(0,1050px);max-width:1450px;margin:auto;gap:46px;padding:38px 32px 90px}
-.archive-toc{position:sticky;top:88px;align-self:start;max-height:calc(100vh - 110px);overflow:auto;padding:18px 10px 24px;border-right:1px solid var(--border,#324055)}
-.archive-toc a{display:block;color:var(--muted,#a4b3c4);padding:5px 9px;line-height:1.5;font-size:12px;border-radius:6px}
-.archive-toc a.sub{padding-left:24px;font-size:11px}.archive-toc a:hover,.archive-toc a:focus{color:var(--accent,#8ebcff);background:var(--accent-soft,rgba(142,188,255,.12));text-decoration:none}
-.archive-body{min-width:0;line-height:1.95}.archive-body>h1:first-child{margin-top:0;font-size:19px;color:var(--accent,#8ebcff)}
-.archive-body h2{font-size:29px;margin-top:64px;padding-top:18px;border-top:1px solid var(--border,#324055)}.archive-body h3{font-size:20px;margin-top:32px}
-.archive-body blockquote{border-left:3px solid var(--accent,#8ebcff);margin:24px 0;padding:13px 22px;background:var(--surface,#162030)}.archive-body blockquote p{margin:0}
-.archive-body pre{white-space:pre;max-width:100%;overflow-x:auto;font-size:13px}.archive-body code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.91em;overflow-wrap:anywhere}
-.archive-body p code,.archive-body td code{background:var(--surface-2,#243043);border-radius:3px;padding:2px 5px}.archive-body table{display:block;overflow-x:auto;border-collapse:collapse;width:100%;font-size:13px;margin:18px 0 32px}.archive-body th,.archive-body td{padding:10px 13px;border:1px solid var(--border,#324055);text-align:left;vertical-align:top;min-width:110px}.archive-body th{background:var(--surface-2,#243043)}.archive-body tr:nth-child(even) td{background:var(--surface,#152030)}
-.archive-body hr{border:0;border-top:1px solid var(--border,#324055);margin:40px 0}.archive-body strong{color:var(--text,#eef2f6)}
-.archive-tools{display:flex;gap:12px;flex-wrap:wrap;margin:12px 0 25px;align-items:center}.archive-tools input{max-width:350px}.archive-tools button{background:var(--surface-2,#243043);color:var(--text,#eef2f6);border:1px solid var(--border,#324055);border-radius:6px;padding:9px 13px;cursor:pointer}
-.archive-tools button:hover{border-color:var(--accent,#8ebcff)}.archive-hit{background:rgba(255,220,95,.2);border-left:2px solid #ffdc5f;padding-left:8px}
-.archive-meta{font-size:12px;color:var(--muted,#a4b3c4)}
-@media(max-width:920px){.archive-page{display:block;padding:25px 18px 65px}.archive-toc{position:relative;top:0;max-height:260px;border-right:0;border-bottom:1px solid var(--border,#324055);margin-bottom:26px}.archive-body h2{font-size:24px}}
-@media print{.archive-toc,.archive-tools,.topbar{display:none!important}.archive-page{display:block;padding:0}.archive-body{font-size:11pt}.archive-body pre,.archive-body blockquote{break-inside:avoid}}
-</style></head>
-<body><header class="topbar"><div class="brand"><span class="brand-symbol">U</span><div><strong>URPP Engineering Archive</strong><small>Reply 4 / 10 · Design 01C · Historical Source Analysis</small></div></div><a href="../index.html">← Archive Home</a></header>
-<div class="archive-page"><aside class="archive-toc"><div class="eyebrow">本章目录</div><p class="archive-meta">仅来自上传的八个历史 Git 节点。<br><a href="../evidence/assessment_history_source_pack.zip">原始资料 ZIP</a> · <a href="../chapters/assessment-evidence-scoring-v01.md">Markdown 原稿</a></p><a class="" href="#section-00">Design 01C：从 Student Response 到有条件的 Learning Evidence</a>
-<a class="" href="#section-01">1. 证据目录：八个真实历史节点</a>
-<a class="sub" href="#section-02">1.1 为什么这个发展顺序重要？</a>
-<a class="" href="#section-03">2. Numeric Assessment Contract：如何定义题目与原始作答</a>
-<a class="sub" href="#section-04">2.1 NumericRubricV02</a>
-<a class="sub" href="#section-05">2.2 AssessmentItemV02</a>
-<a class="sub" href="#section-06">2.3 StudentAttemptV02</a>
-<a class="sub" href="#section-07">2.4 三种不同的“不知道”</a>
-<a class="" href="#section-08">3. Numeric Scoring：确定性、解析规则与证据生成</a>
-<a class="sub" href="#section-09">3.1 parse_numeric_answer() 是受限 Parser，不是计算器</a>
-<a class="sub" href="#section-10">3.2 score_numeric_attempt() 的真实调用顺序</a>
-<a class="sub" href="#section-11">3.3 从一条正确答案到 Objective State</a>
-<a class="" href="#section-12">4. Open Response：为什么“评分 Preview”不能直接成为 Evidence</a>
-<a class="sub" href="#section-13">4.1 结构化 Rubric 与 Review</a>
-<a class="sub" href="#section-14">4.2 Preview 的逐项验证</a>
-<a class="sub" href="#section-15">4.3 分数的精确算法</a>
-<a class="sub" href="#section-16">4.4 状态不是一串可以省略的“批准”字眼</a>
-<a class="" href="#section-17">5. HMAC Approval：保证什么，不能保证什么？</a>
-<a class="sub" href="#section-18">5.1 Approval 消息绑定的确切内容</a>
-<a class="sub" href="#section-19">5.2 颁发审批前的检查</a>
-<a class="sub" href="#section-20">5.3 Finalization 的独立验证</a>
-<a class="sub" href="#section-21">5.4 四种不同的 Trust Claim</a>
-<a class="" href="#section-22">6. Assessment Pipeline：为什么只接收 Assessment Submission？</a>
-<a class="" href="#section-23">7. Design 01C 文档：哪些只是计划？</a>
-<a class="sub" href="#section-24">7.1 不同 Scoring Policy 不可默默混算</a>
-<a class="" href="#section-25">8. Versioned Repository：为什么旧答案必须用旧 Rubric？</a>
-<a class="sub" href="#section-26">8.1 数据表结构</a>
-<a class="sub" href="#section-27">8.2 原始 Rubric 版本的精确示例</a>
-<a class="sub" href="#section-28">8.3 “不可覆盖”的准确范围</a>
-<a class="" href="#section-29">9. Persisted Numeric Pipeline：将真实历史记录接到现有评分链</a>
-<a class="sub" href="#section-30">9.1 回归合同：从 SQLite 中恢复原始评分上下文</a>
-<a class="" href="#section-31">10. Engineering Casebook：真实问题、受控失败与防范合同</a>
-<a class="sub" href="#section-32">10.1 这类调查应该怎样记录为真正 Debugging？</a>
-<a class="sub" href="#section-33">10.2 源码包里可以直接观察的设计债</a>
-<a class="" href="#section-34">11. 从 Design 01C 到后续 Implementation 的边界</a>
-<a class="" href="#section-35">12. 下一批资料：如何恢复真实的错误调查历史？</a>
-<a class="sub" href="#section-36">本章的来源文件总表</a></aside>
-<main class="archive-body"><div class="archive-tools"><input id="chapter-search" type="search" placeholder="在本章查找内容…" aria-label="本章查找"><button id="find-next" type="button">查找下一个</button><button id="reset-find" type="button">清除</button><span id="search-count" class="archive-meta"></span></div><h1>URPP Engineering Archive · Reply 4 / 10</h1>
-<h2 id="section-00">Design 01C：从 Student Response 到有条件的 Learning Evidence</h2>
-<p><strong>档案类型：</strong> 历史源码解读 + 测试合同分析 + 明确标注的事后工程推论。<br/>
-<strong>来源范围：</strong> 用户上传的 <code>assessment_history_source_pack.zip</code>，包含八个 Git 节点的 16 份历史源码/测试/设计文件及 <code>SOURCE_MANIFEST.json</code>。<br/>
-<strong>重要限制：</strong> 本包只有各节点选定的新增/修改文件，不包含每个节点所有依赖的历史版本，也没有原始失败的 pytest 输出、讨论记录或部署日志。因此本章不得声称“某个 Bug 曾经真实触发”，除非另有原始失败记录。<br/>
-<strong>编号说明：</strong> 文件中使用 <code>Design 01C</code> / <code>V0.2</code>；它们不等于尚未恢复的完整 Implementation 0–13 Roadmap 编号。</p>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>URPP Archive — Assessment &amp; Evidence Scoring</title><link rel="stylesheet" href="../assets/styles.css"><style>.chapter-layout{display:grid;grid-template-columns:240px minmax(0,1fr);gap:30px;max-width:1480px;margin:auto;padding:0 24px}.chapter-toc{position:sticky;top:80px;align-self:start;max-height:calc(100vh - 100px);overflow:auto;background:#111821;border:1px solid var(--border);border-radius:10px;padding:16px}.chapter-toc a{display:block;font-size:12px;padding:6px 4px;color:var(--muted)}.chapter-toc a.sub{padding-left:16px}.chapter-toc a:hover{color:var(--accent)}.chapter-toc input{width:100%;box-sizing:border-box;margin:8px 0 4px;padding:7px 9px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:inherit;font:inherit;font-size:12px}.chapter-toc .hint{font-size:11px;color:var(--muted);margin:0 0 10px}.chapter-article{min-width:0;max-width:950px;padding:24px 10px 80px}.chapter-article h2{margin-top:52px;padding-top:25px;border-top:1px solid var(--border);font-size:25px}.chapter-article h3{margin-top:28px}.chapter-article blockquote{margin:25px 0;padding:17px 20px;border-left:3px solid var(--accent);background:var(--surface);border-radius:5px}.chapter-article blockquote p:last-child{margin-bottom:0}.chapter-article table{width:100%;border-collapse:collapse;display:block;overflow-x:auto;margin:22px 0;font-size:13px}.chapter-article th,.chapter-article td{border:1px solid var(--border);padding:9px 12px;vertical-align:top;min-width:145px}.chapter-article th{background:var(--surface-2)}.chapter-article code:not(pre code){font-size:0.91em;color:#b7d6ff;overflow-wrap:anywhere}.chapter-article pre{white-space:pre;max-width:100%;overflow:auto}.chapter-article p{max-width:86ch}.chapter-article li{margin-bottom:8px}.chapter-article a{overflow-wrap:anywhere}.chapter-intro{font-size:13px;color:var(--muted);margin:0 0 12px}.topbar .chapter-back{font-size:13px}mark.search-hit{background:#ffd76a;color:#111}@media(max-width:1020px){.chapter-layout{display:block}.chapter-toc{position:static;max-height:220px;margin-top:18px}.chapter-article{padding:18px 0 60px}}</style></head><body><header class="topbar"><div class="brand"><span class="brand-symbol">U</span><div><strong>URPP Engineering Archive</strong><small>Reply 4 / 10 · Assessment &amp; Evidence Scoring</small></div></div><a class="chapter-back" href="../index.html">← Archive Home</a></header><div class="chapter-layout"><aside class="chapter-toc"><div class="sidebar-heading">CHAPTER INDEX</div><input id="chapter-search" type="search" placeholder="Search this chapter" autocomplete="off"><p id="search-count" class="hint">Search this chapter</p><a class="" href="#section-01">Design 01C: From Student Response to Conditional Learning Evidence</a>
+<a class="" href="#section-02">1. Evidence catalogue: eight real historical checkpoints</a>
+<a class="sub" href="#section-03">1.1 Why does this order of development matter?</a>
+<a class="" href="#section-04">2. Numeric Assessment Contract: how a question and a raw answer are defined</a>
+<a class="sub" href="#section-05">2.1 NumericRubricV02</a>
+<a class="sub" href="#section-06">2.2 AssessmentItemV02</a>
+<a class="sub" href="#section-07">2.3 StudentAttemptV02</a>
+<a class="sub" href="#section-08">2.4 Three different kinds of &quot;don&#x27;t know&quot;</a>
+<a class="" href="#section-09">3. Numeric Scoring: determinism, parsing rules, and evidence generation</a>
+<a class="sub" href="#section-10">3.1 parse_numeric_answer() is a restricted parser, not a calculator</a>
+<a class="sub" href="#section-11">3.2 The actual call order of score_numeric_attempt()</a>
+<a class="sub" href="#section-12">3.3 From one correct answer to an Objective State</a>
+<a class="" href="#section-13">4. Open Response: why a &quot;score Preview&quot; cannot directly become Evidence</a>
+<a class="sub" href="#section-14">4.1 Structured Rubric and Review</a>
+<a class="sub" href="#section-15">4.2 Item-by-item validation of the Preview</a>
+<a class="sub" href="#section-16">4.3 The exact scoring algorithm</a>
+<a class="sub" href="#section-17">4.4 Status is not a string of &quot;approval&quot; words that can be skipped</a>
+<a class="" href="#section-18">5. HMAC Approval: what it guarantees and what it does not</a>
+<a class="sub" href="#section-19">5.1 Exactly what the Approval message binds</a>
+<a class="sub" href="#section-20">5.2 Checks before issuing an approval</a>
+<a class="sub" href="#section-21">5.3 Independent verification at Finalization</a>
+<a class="sub" href="#section-22">5.4 Four different trust claims</a>
+<a class="" href="#section-23">6. Assessment Pipeline: why it only accepts Assessment Submissions</a>
+<a class="" href="#section-24">7. The Design 01C document: what was only a plan?</a>
+<a class="sub" href="#section-25">7.1 Different Scoring Policies must not be silently combined</a>
+<a class="" href="#section-26">8. Versioned Repository: why old answers must use the old Rubric</a>
+<a class="sub" href="#section-27">8.1 Table structure</a>
+<a class="sub" href="#section-28">8.2 A precise example of the original Rubric version</a>
+<a class="sub" href="#section-29">8.3 The exact scope of &quot;cannot be overwritten&quot;</a>
+<a class="" href="#section-30">9. Persisted Numeric Pipeline: connecting real historical records to the existing scoring chain</a>
+<a class="sub" href="#section-31">9.1 Regression contract: restoring the original scoring context from SQLite</a>
+<a class="" href="#section-32">10. Engineering Casebook: real problems, controlled failures, and preventive contracts</a>
+<a class="sub" href="#section-33">10.1 How should such an investigation be recorded as real debugging?</a>
+<a class="sub" href="#section-34">10.2 Design debt directly observable in the source pack</a>
+<a class="" href="#section-35">11. The boundary between Design 01C and later implementations</a>
+<a class="" href="#section-36">12. Next material: how to recover the real history of error investigations</a>
+<a class="sub" href="#section-37">Source file list for this chapter</a><hr style="border:0;border-top:1px solid var(--border)"><a href="../chapters/assessment-evidence-scoring-v01.md">Markdown source</a><a href="../evidence/assessment_history_source_pack.zip">Original source pack</a></aside><main class="chapter-article"><p class="chapter-intro">4edec7f → aadd8e3 · Historical source analysis (English edition)</p><h1 id="chapter-title">URPP Engineering Archive · Reply 4 / 10</h1>
+<h2 id="section-01">Design 01C: From Student Response to Conditional Learning Evidence</h2>
+<p><strong>Archive type:</strong> historical source reading + test-contract analysis + clearly labeled after-the-fact engineering inference.<br />
+<strong>Source scope:</strong> the user-uploaded <code>assessment_history_source_pack.zip</code>, containing 16 historical source/test/design files from eight Git checkpoints plus <code>SOURCE_MANIFEST.json</code>.<br />
+<strong>Important limitation:</strong> the pack contains only the files selected as added/changed at each checkpoint. It does not include the historical versions of every dependency, nor original failing pytest output, discussion records, or deployment logs. So this chapter must not claim that "a bug really fired" unless there is an original failure record.<br />
+<strong>Numbering note:</strong> the files use <code>Design 01C</code> / <code>V0.2</code>; these are not the numbers of the still-unrecovered full Implementation 0–13 roadmap.</p>
 <blockquote>
-<p><strong>一条主线：</strong> Assessment Item 预先定义题目与 Rubric → Student Attempt 保存原始作答和已知条件 → Scoring 生成 EvidenceEvent → Eligibility / State Estimator 决定如何使用该 Evidence。开放题中间还必须经过 Structured Review → Preview → 经外部授权后签发 Approval → 验签 Finalization。引入 Repository 后，Attempt 必须绑定其原始 Item Revision，不能拿新 Rubric 重算旧答案。</p>
+<p><strong>One thread:</strong> an Assessment Item defines the question and Rubric in advance → a Student Attempt stores the raw answer and known conditions → Scoring produces an EvidenceEvent → Eligibility / State Estimator decides how that evidence is used. Open-response items must additionally pass Structured Review → Preview → Approval issued after external authorization → signature-verified Finalization. Once a Repository is introduced, an Attempt must be bound to its original Item Revision; an old answer cannot be re-scored with a new Rubric.</p>
 </blockquote>
-<hr/>
-<h2 id="section-01">1. 证据目录：八个真实历史节点</h2>
+<hr />
+<h2 id="section-02">1. Evidence catalogue: eight real historical checkpoints</h2>
 <table>
 <thead>
 <tr>
-<th>节点前缀</th>
-<th>本包可见的文件</th>
-<th>能从源码直接确认的工作</th>
-<th>不应据此推断的事</th>
+<th>Checkpoint prefix</th>
+<th>Files visible in this pack</th>
+<th>Work directly confirmable from the source</th>
+<th>What must not be inferred from it</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>4edec7f</code></td>
 <td><code>models_v02.py</code>, <code>numeric_scoring_v02.py</code>, <code>test_numeric_scoring_v02.py</code></td>
-<td>建立数值 Assessment Contract、确定性评分和与 State Engine 的测试连接</td>
-<td>客户端认证、真实学生的独立作答证明</td>
+<td>Numeric Assessment Contract, deterministic scoring, and test connection to the State Engine</td>
+<td>Client authentication; proof that a real student answered independently</td>
 </tr>
 <tr>
 <td><code>0bfa364</code></td>
-<td><code>open_response_models_v02.py</code>, 对应测试</td>
-<td>建立开放题 Rubric、CriterionReview、Review 结构</td>
-<td>开放题已经自动评分或 Review 已可信</td>
+<td><code>open_response_models_v02.py</code>, matching tests</td>
+<td>Open-response Rubric, CriterionReview, Review structures</td>
+<td>That open responses are auto-scored or Reviews are trustworthy</td>
 </tr>
 <tr>
 <td><code>e6ac6e7</code></td>
-<td><code>open_response_scoring_v02.py</code>, 对应测试</td>
-<td>Review 一致性验证与分数 Preview</td>
-<td>Preview 可以直接写入掌握证据</td>
+<td><code>open_response_scoring_v02.py</code>, matching tests</td>
+<td>Review consistency validation and score Preview</td>
+<td>That a Preview can be written directly as mastery evidence</td>
 </tr>
 <tr>
 <td><code>55bd26b</code></td>
-<td><code>review_approval_v02.py</code>, 对应测试</td>
-<td>将 Review 和来源绑定到 HMAC-SHA256 Approval；验签后生成 Evidence</td>
-<td>HMAC 自己能认证人、能证明 Review 的数学判断正确</td>
+<td><code>review_approval_v02.py</code>, matching tests</td>
+<td>Binds Review and sources to an HMAC-SHA256 Approval; Evidence produced after verification</td>
+<td>That HMAC by itself authenticates a person or proves the Review's math judgment is right</td>
 </tr>
 <tr>
 <td><code>1374ed1</code></td>
-<td><code>assessment_pipeline_v02.py</code>, 对应测试</td>
-<td>内部入口将 Numeric / 已批准开放题转为 Evidence，再交给 State Estimator</td>
-<td>这是 HTTP API 或完整生产信任边界</td>
+<td><code>assessment_pipeline_v02.py</code>, matching tests</td>
+<td>Internal entry point turning Numeric / approved open responses into Evidence, then into the State Estimator</td>
+<td>That this is an HTTP API or a complete production trust boundary</td>
 </tr>
 <tr>
 <td><code>3424920</code></td>
 <td><code>docs/03c_assessment_records_and_authorization.md</code></td>
-<td>记录权威题目、身份授权、数据库和评分版本计划</td>
-<td>PostgreSQL、Alembic、API 授权已经部署</td>
+<td>Records the plan for authoritative items, identity authorization, database, and scoring versions</td>
+<td>That PostgreSQL, Alembic, or API authorization were deployed</td>
 </tr>
 <tr>
 <td><code>1b8dfdb</code></td>
-<td><code>assessment_records_v02.py</code>, 对应测试</td>
-<td>SQLAlchemy 持久化 Item Revision 与 Attempt 的版本绑定</td>
-<td>数据库内容具有防篡改签名或已完成身份授权</td>
+<td><code>assessment_records_v02.py</code>, matching tests</td>
+<td>SQLAlchemy persistence of Item Revisions with version-bound Attempts</td>
+<td>That database content is tamper-signed or identity authorization is complete</td>
 </tr>
 <tr>
 <td><code>aadd8e3</code></td>
-<td><code>persisted_numeric_pipeline_v02.py</code>, 对应测试</td>
-<td>从 Repository 加载原始题目版本并走现有评分/状态链路</td>
-<td>这个服务支持开放题持久化评分或验证独立性</td>
+<td><code>persisted_numeric_pipeline_v02.py</code>, matching tests</td>
+<td>Loads the original item version from the Repository and runs the existing scoring/state chain</td>
+<td>That this service supports persisted open-response scoring or verifies independence</td>
 </tr>
 </tbody>
 </table>
-<p><strong>如何核对：</strong> 打开本地 <code>engineering-archive/evidence/assessment_history_source_pack.zip</code>；ZIP 内的路径由 <code>commit-prefix/backend/...</code> 或 <code>commit-prefix/docs/...</code> 组成。本文在段落末使用 <code>〔commit / file:行号〕</code> 标注原始版本位置。测试函数名可以在同一节点的 <code>backend/tests/test_*.py</code> 中查到。当前网页不需要联网。</p>
-<h3 id="section-02">1.1 为什么这个发展顺序重要？</h3>
-<p>最初的 Student State 设计要求“有证据才更新状态”，但还必须回答证据究竟来自哪里。这个阶段将“用户说自己答了 5”拆成四种不同对象：题目及既定标准（Item/Rubric）、学生提交的文本与作答条件（Attempt）、评分后的观测记录（EvidenceEvent）、针对一组证据估计的 Objective State。<strong>四者数据关联，并不互相替代。</strong></p>
-<p>一个 <code>EvidenceEvent</code> 可以报告 <code>correctness=1.0</code>，但并不意味着独立完成、充分练习或已掌握。一次有效评分只回答“该回答在所用 Rubric 下如何得分”；能否进入掌握估计、能否满足 Independent Success Gate，是后续规则的责任。</p>
-<hr/>
-<h2 id="section-03">2. Numeric Assessment Contract：如何定义题目与原始作答</h2>
-<h3 id="section-04">2.1 <code>NumericRubricV02</code></h3>
-<p>Rubric 是评分依据，包含 <code>expected_value: float</code>、非负 <code>absolute_tolerance</code> 和非空 <code>rubric_version</code>。<code>expected_value</code> 与 <code>absolute_tolerance</code> 必须是有限值，拒绝 <code>NaN</code> 和正负无穷。模型被冻结，且 <code>extra="forbid"</code>，减少在创建 Rubric 时偷偷附加未知字段的可能。Rubric 这里是<strong>绝对误差</strong>条件，不是相对误差或有效数字判断。〔<code>4edec7f / models_v02.py:24–55</code>〕</p>
+<p><strong>How to check:</strong> open the local <code>engineering-archive/evidence/assessment_history_source_pack.zip</code>; paths inside the ZIP look like <code>commit-prefix/backend/...</code> or <code>commit-prefix/docs/...</code>. This chapter marks original version locations at the end of paragraphs as <code>〔commit / file:lines〕</code>. Test function names can be found in <code>backend/tests/test_*.py</code> at the same checkpoint. The page needs no network access.</p>
+<h3 id="section-03">1.1 Why does this order of development matter?</h3>
+<p>The original Student State design required "update the state only with evidence", but still had to answer where the evidence comes from. This phase splits "the user says they answered 5" into four different objects: the question and its fixed standard (Item/Rubric), the student's submitted text and answering conditions (Attempt), the scored observation record (EvidenceEvent), and the Objective State estimated from a set of evidence. <strong>The four are linked in the data, but none replaces another.</strong></p>
+<p>An <code>EvidenceEvent</code> can report <code>correctness=1.0</code>, but that does not mean independent work, enough practice, or mastery. A valid score answers only "how did this response score under the Rubric used"; whether it can enter the mastery estimate or satisfy the Independent Success Gate is the job of later rules.</p>
+<hr />
+<h2 id="section-04">2. Numeric Assessment Contract: how a question and a raw answer are defined</h2>
+<h3 id="section-05">2.1 <code>NumericRubricV02</code></h3>
+<p>The Rubric is the scoring basis: <code>expected_value: float</code>, a non-negative <code>absolute_tolerance</code>, and a non-empty <code>rubric_version</code>. <code>expected_value</code> and <code>absolute_tolerance</code> must be finite, rejecting <code>NaN</code> and ±infinity. The model is frozen with <code>extra="forbid"</code>, reducing the chance of quietly attaching unknown fields when creating a Rubric. The Rubric here is an <strong>absolute-error</strong> condition, not relative error or significant figures. 〔<code>4edec7f / models_v02.py:24–55</code>〕</p>
 <pre><code class="language-python">is_correct = (
     abs(answer - item.rubric.expected_value)
     &lt;= item.rubric.absolute_tolerance
 )
 </code></pre>
-<p>例如 <code>expected_value=1.0</code>、<code>absolute_tolerance=0.02</code>、回答 <code>1.01</code> 将通过。<code>0.02</code> 是题目自身的容差；不是 Student Mastery 的不确定性。关于极端有限浮点值的减法溢出、不同学科对有效数字的要求，属于<strong>后续工程边界</strong>，本包不证明历史上发生了相关故障。</p>
-<h3 id="section-05">2.2 <code>AssessmentItemV02</code></h3>
-<p>Item 包含 <code>assessment_item_id</code>、<code>course_id</code>、<code>objective_id</code>、题干 <code>prompt</code>、<code>evidence_type</code>、<code>rubric</code> 与 <code>alignment_verified</code>。只支持三种 Performance Evidence 类型作为 Item 合法枚举：<code>PROBLEM_ATTEMPT</code>、<code>TRANSFER_ATTEMPT</code>、<code>RETRIEVAL_ATTEMPT</code>。然而<strong>本节点的 Numeric Scoring 函数只允许 <code>PROBLEM_ATTEMPT</code></strong>；数据结构允许声明一种类型，不表示对应的评分与评估政策已实现。〔<code>4edec7f / models_v02.py:58–102</code>；<code>numeric_scoring_v02.py:73–82</code>〕</p>
-<p><code>alignment_verified</code> 默认 <code>False</code>。代码注释指出，匹配 <code>objective_id</code> 本身不足以证明题目真的测到了该 Learning Objective；评分前必须有外部机制确认这一关系。这个字段的存在不等于认证机制已实现。本阶段 <code>score_numeric_attempt</code> 只检查它是否为真，不核验谁设置了它。</p>
-<h3 id="section-06">2.3 <code>StudentAttemptV02</code></h3>
-<p>Attempt 原样保存 <code>response_text</code>，还保存 <code>attempt_id</code>、学生/课程/会话/目标/题目作用域、<code>source_message_id</code>、<code>response_group_id</code> 和带时区的 <code>submitted_at</code>。作答条件单独保留为 <code>assistance_level: int | None</code>（允许 0–6 或未知）、<code>prior_solution_exposure: bool | None</code> 和 <code>novelty: repeated | similar | novel | unknown</code>。<strong>不能从答对推导为 <code>assistance_level=0</code>，也不能从没有 App Hint 日志推断未用外部帮助。</strong> 〔<code>4edec7f / models_v02.py:104–158</code>〕</p>
-<p>测试 <code>make_attempt()</code> 会明确人工构造 <code>assistance_level=0</code>、<code>prior_solution_exposure=False</code>、<code>novelty="novel"</code>。这只是<strong>受控测试 Fixture 的输入</strong>，不是生产系统已经验证独立性。若未来把 Fixture 中的这些字段拿来证明真实学生活动，便混淆了测试假设与观察事实。〔<code>4edec7f / test_numeric_scoring_v02.py:49–73</code>〕</p>
-<h3 id="section-07">2.4 三种不同的“不知道”</h3>
+<p>For example, <code>expected_value=1.0</code>, <code>absolute_tolerance=0.02</code>, and the answer <code>1.01</code> passes. <code>0.02</code> is the item's own tolerance, not uncertainty about Student Mastery. Subtraction overflow with extreme finite floats and subject-specific significant-figure requirements are <strong>later engineering boundaries</strong>; this pack does not show that such failures happened historically.</p>
+<h3 id="section-06">2.2 <code>AssessmentItemV02</code></h3>
+<p>An Item contains <code>assessment_item_id</code>, <code>course_id</code>, <code>objective_id</code>, the question <code>prompt</code>, <code>evidence_type</code>, <code>rubric</code>, and <code>alignment_verified</code>. Only three Performance Evidence types are valid Item enum values: <code>PROBLEM_ATTEMPT</code>, <code>TRANSFER_ATTEMPT</code>, and <code>RETRIEVAL_ATTEMPT</code>. However, <strong>this checkpoint's Numeric Scoring function only accepts <code>PROBLEM_ATTEMPT</code></strong>; a data structure that allows declaring a type does not mean the matching scoring and assessment policy exists. 〔<code>4edec7f / models_v02.py:58–102</code>; <code>numeric_scoring_v02.py:73–82</code>〕</p>
+<p><code>alignment_verified</code> defaults to <code>False</code>. The code comment notes that matching <code>objective_id</code> alone does not prove the question really tests that Learning Objective; an external mechanism must confirm this before scoring. The field's existence does not mean such a mechanism was implemented. At this stage <code>score_numeric_attempt</code> only checks that it is true, not who set it.</p>
+<h3 id="section-07">2.3 <code>StudentAttemptV02</code></h3>
+<p>An Attempt stores <code>response_text</code> verbatim, plus <code>attempt_id</code>, student/course/session/objective/item scope, <code>source_message_id</code>, <code>response_group_id</code>, and a timezone-aware <code>submitted_at</code>. Answering conditions are kept separately as <code>assistance_level: int | None</code> (0–6 or unknown), <code>prior_solution_exposure: bool | None</code>, and <code>novelty: repeated | similar | novel | unknown</code>. <strong>A correct answer cannot imply <code>assistance_level=0</code>, and the absence of an App Hint log cannot imply no outside help.</strong> 〔<code>4edec7f / models_v02.py:104–158</code>〕</p>
+<p>The test helper <code>make_attempt()</code> explicitly constructs <code>assistance_level=0</code>, <code>prior_solution_exposure=False</code>, <code>novelty="novel"</code> by hand. These are only <strong>inputs to a controlled test fixture</strong>, not proof that the production system verified independence. Using these fixture fields to prove real student activity would confuse a test assumption with an observed fact. 〔<code>4edec7f / test_numeric_scoring_v02.py:49–73</code>〕</p>
+<h3 id="section-08">2.4 Three different kinds of "don't know"</h3>
 <table>
 <thead>
 <tr>
-<th>层级</th>
-<th>例子</th>
-<th>正确处理</th>
+<th>Level</th>
+<th>Example</th>
+<th>Correct handling</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>格式未知</td>
+<td>Format unknown</td>
 <td><code>response_text="I need another explanation"</code></td>
-<td>Numeric Parser 返回 <code>None</code>，本次自动数值评分记为中立/无效；不能改写成数学回答错误</td>
+<td>The Numeric Parser returns <code>None</code>; this automatic numeric score is neutral/invalid, not rewritten as a wrong math answer</td>
 </tr>
 <tr>
-<td>作答条件未知</td>
-<td>回答 <code>5</code>，<code>assistance_level=None</code></td>
-<td>数值评分可以算出 1.0，但仍原样保留 <code>None</code>，后续 Eligibility 独立判断</td>
+<td>Answering conditions unknown</td>
+<td>Answer <code>5</code>, <code>assistance_level=None</code></td>
+<td>Numeric scoring can compute 1.0 but keeps <code>None</code> as is; Eligibility decides separately later</td>
 </tr>
 <tr>
-<td>掌握证据不足</td>
-<td>一道满足条件的新题答对</td>
-<td>State Estimator 仍可能返回 <code>UNKNOWN</code>，表示证据量/门槛不足，而非判断学生不会</td>
+<td>Not enough mastery evidence</td>
+<td>One qualifying new item answered correctly</td>
+<td>The State Estimator may still return <code>UNKNOWN</code>, meaning not enough evidence / thresholds unmet, not that the student doesn't know it</td>
 </tr>
 </tbody>
 </table>
-<p>这三个层次发生在不同的函数。<strong>不要为消除一个 <code>UNKNOWN</code>，就在上游随意补出“没有帮助”或“已掌握”。</strong></p>
-<hr/>
-<h2 id="section-08">3. Numeric Scoring：确定性、解析规则与证据生成</h2>
-<h3 id="section-09">3.1 <code>parse_numeric_answer()</code> 是受限 Parser，不是计算器</h3>
-<p>源码先 <code>strip()</code>，拒绝空串和长度超过 64 的字符串，再用 <code>NUMERIC_PATTERN.fullmatch(text)</code> 要求<strong>整个答案</strong>必须是一枚十进制数，可选符号、小数部分和 <code>e/E</code> 科学计数法。<code>float()</code> 转换后，还必须 <code>math.isfinite(value)</code>。整个过程不执行用户输入，不使用 <code>eval()</code>。〔<code>4edec7f / numeric_scoring_v02.py:23–50</code>〕</p>
-<p>被测试接受的格式：<code>5</code>、<code>5.0</code>、<code>.5</code>、<code>-2.5</code>、<code>+5</code>、<code>5e0</code>、<code>1.25E+2</code>。被测试拒绝的格式：空串、自然语言、<code>2+3</code>、<code>5 meters</code>、<code>5,000</code>、<code>nan</code>、<code>inf</code>、<code>1e309</code>、<code>5 5</code>。这意味着 <code>2+3</code> 虽然在数学上能得到 5，却不符合<strong>此题的单个数值输入协议</strong>；它不是“3 分”或“答错了”，而是自动评分不可用。〔<code>4edec7f / test_numeric_scoring_v02.py:77–112</code>〕</p>
-<p><strong>教学上的后果：</strong> 用户输入 <code>2+3</code> 可能是表达式，输入 <code>5 meters</code> 可能涉及单位题；未来若要支持表达式与单位，需要单独的 Parser/Score Policy，不应悄悄扩大当前 <code>numeric-scoring-v0.2</code> 的含义。</p>
-<h3 id="section-10">3.2 <code>score_numeric_attempt()</code> 的真实调用顺序</h3>
+<p>These three levels happen in different functions. <strong>Do not fill in "no help" or "mastered" upstream just to remove an <code>UNKNOWN</code>.</strong></p>
+<hr />
+<h2 id="section-09">3. Numeric Scoring: determinism, parsing rules, and evidence generation</h2>
+<h3 id="section-10">3.1 <code>parse_numeric_answer()</code> is a restricted parser, not a calculator</h3>
+<p>The code first calls <code>strip()</code>, rejects empty strings and strings longer than 64 characters, then uses <code>NUMERIC_PATTERN.fullmatch(text)</code> to require that the <strong>whole answer</strong> be one decimal number, with optional sign, fractional part, and <code>e/E</code> scientific notation. After <code>float()</code> conversion it must also satisfy <code>math.isfinite(value)</code>. User input is never executed and <code>eval()</code> is not used. 〔<code>4edec7f / numeric_scoring_v02.py:23–50</code>〕</p>
+<p>Formats the tests accept: <code>5</code>, <code>5.0</code>, <code>.5</code>, <code>-2.5</code>, <code>+5</code>, <code>5e0</code>, <code>1.25E+2</code>. Formats the tests reject: empty string, natural language, <code>2+3</code>, <code>5 meters</code>, <code>5,000</code>, <code>nan</code>, <code>inf</code>, <code>1e309</code>, <code>5 5</code>. So although <code>2+3</code> equals 5 mathematically, it does not follow <strong>this item's single-number input protocol</strong>; it is not "3 points" or "wrong", it means automatic scoring is unavailable. 〔<code>4edec7f / test_numeric_scoring_v02.py:77–112</code>〕</p>
+<p><strong>Teaching consequence:</strong> a user typing <code>2+3</code> may be writing an expression, and <code>5 meters</code> may involve units. Supporting expressions and units in the future needs a separate Parser/Score Policy, not a silent widening of what <code>numeric-scoring-v0.2</code> means.</p>
+<h3 id="section-11">3.2 The actual call order of <code>score_numeric_attempt()</code></h3>
 <pre><code class="language-text">AssessmentItemV02 + StudentAttemptV02
-  → 核对 course_id / objective_id / assessment_item_id
-  → 检查 alignment_verified=True
-  → 只接收 ordinary PROBLEM_ATTEMPT
-  → 调用 parse_numeric_answer(response_text)
-  ├─ 不能解析：neutral + correctness=None + assessment_validity=invalid + confidence=0
-  └─ 可以解析：比较绝对误差 → success/1.0 或 failure/0.0
-  → 构造 EvidenceEventV02，继承 Attempt 的帮助/先前看答案/新颖性字段
+  → check course_id / objective_id / assessment_item_id
+  → check alignment_verified=True
+  → accept only ordinary PROBLEM_ATTEMPT
+  → call parse_numeric_answer(response_text)
+  ├─ unparseable: neutral + correctness=None + assessment_validity=invalid + confidence=0
+  └─ parseable: compare absolute error → success/1.0 or failure/0.0
+  → build EvidenceEventV02, inheriting the Attempt's assistance / prior-solution / novelty fields
 </code></pre>
-<p><strong>为什么先比对三个 ID？</strong> 如果题目是课程 A 的加法，而 Attempt 声称属于课程 B 或另一个 Learning Objective，就不能仅凭数值恰好为 5 而产生该目标的 Evidence。源码在范围不符时抛出 <code>ValueError</code>，不是自动修正目标。〔<code>4edec7f / numeric_scoring_v02.py:53–82</code>〕</p>
-<p><strong>为什么 <code>model_confidence=1.0</code>？</strong> 在这个受限 Numeric Parser 中，该值说明提交文本可以被明确解析为一个有限数字，<strong>不是学生已经掌握该技能的概率</strong>。原始代码注释明确提醒了这一点。对于无法解析的文本，则为 0.0。〔<code>4edec7f / numeric_scoring_v02.py:84–115</code>〕</p>
-<p><strong>哪些字段没有被评分函数“升级”？</strong> <code>assistance_level</code>、<code>prior_solution_exposure</code>、<code>novelty</code> 直接复制 Attempt；<code>created_at</code> 使用 Attempt 的 <code>submitted_at</code>；<code>scoring_policy_version</code> 固定为 <code>numeric-scoring-v0.2</code>。<code>evidence_id</code> 采用 <code>numeric-v02:{attempt_id}</code>，用于建立稳定关联，不意味着此处已经进行了持久化唯一性或调用权限验证。〔<code>4edec7f / numeric_scoring_v02.py:116–138</code>〕</p>
-<h3 id="section-11">3.3 从一条正确答案到 Objective State</h3>
-<p>历史测试使用受控 Fixture 构造一条正确数值 Evidence，调用 <code>estimate_objective_state()</code> 后断言：该 Evidence 被纳入，<code>performance_estimate=1.0</code>，但 <code>state="unknown"</code>。第二个测试构造<strong>两个不同 Item 的独立正确回答</strong>，断言 <code>distinct_assessment_count=2</code>、<code>independent_success_count=2</code>、<code>state="competent"</code>。这是测试条件下的规则表现；不代表真实学生无需更多检查就能被认证为掌握。〔<code>4edec7f / test_numeric_scoring_v02.py:194–237</code>〕</p>
-<p>完整资格规则属于 State Estimator/Eligibility 的历史版本，本资料包没有把那些依赖源码再次完整收录。本章不会从一组测试倒推出未提供的全部 State Gate 常数。</p>
-<hr/>
-<h2 id="section-12">4. Open Response：为什么“评分 Preview”不能直接成为 Evidence</h2>
-<h3 id="section-13">4.1 结构化 Rubric 与 Review</h3>
-<p>Numeric Scoring 有有限数字和可执行容差；开放题的数学证明、概念解释却没有天然的单值比较。该节点因此采用 Criterion-Based Rubric：每项 Criterion 有唯一 ID、可观察的描述、Full-Credit Guidance 与权重，所有权重总和必须接近 1（源码 <code>isclose(..., abs_tol=1e-9)</code>；<code>rel_tol</code> 未被设置为零，见源码与后续边界）。Rubric 版本非空，Criterion 权重为 <code>(0,1]</code> 且有限。〔<code>0bfa364 / open_response_models_v02.py:24–67</code>〕</p>
-<p>开放题 Item 默认 <code>SELF_EXPLANATION</code>，还允许 <code>DEFINITION_RECALL</code>、<code>PROBLEM_ATTEMPT</code>。若 <code>alignment_verified=True</code>，要求非空 <code>alignment_reviewer_id</code>；<strong>这只是字段一致性验证，并非认证 reviewer 身份</strong>。〔<code>0bfa364 / open_response_models_v02.py:69–107</code>〕</p>
-<p><code>CriterionReviewV02</code> 对每条 Criterion 使用 <code>met</code>、<code>partial</code>、<code>not_met</code>、<code>unscorable</code> 四种判断。当给予 <code>met</code> 或 <code>partial</code> 时，结构校验要求提供 <code>supporting_quote</code>；<code>not_met</code> 无需引用。<code>OpenResponseReviewV02</code> 记录 Review/Attempt/Item/Rubric/Reviewer 的 ID、Criterion 列表与带时区的 Reviewed Time。来源文件直接说明：此模型<strong>不自动评分</strong>，Quote 此阶段也尚未对照学生原文验证。〔<code>0bfa364 / open_response_models_v02.py:110–177</code>〕</p>
-<h3 id="section-14">4.2 Preview 的逐项验证</h3>
-<p><code>preview_open_response_review(item, attempt, review)</code> 依次检查：Item 与 Attempt 的 Course/Objective/Item ID 相符；Review 指向同一 Attempt 与 Item；Rubric Version 相符；<code>reviewed_at &gt;= submitted_at</code>；题目已标为 Alignment Verified；Review 不存在重复 Criterion ID 且恰好覆盖 Rubric 中每一项。给予正分的 Quote 必须<strong>以字面子串形式</strong>出现在 <code>attempt.response_text</code> 中。〔<code>e6ac6e7 / open_response_scoring_v02.py:42–116</code>〕</p>
-<p>这项 Quote 检查证明的是<strong>文本出现过</strong>，不证明引用能支持 Review 的数学判断。例如引用包含一个正确术语，Reviewer 仍可能给出错误的 <code>met</code>；该函数不能代替语义判断或独立复核。源码开头明确写明：它不认证 Reviewer 的身份与语义判断，输出不应视为 Mastery Evidence。〔<code>e6ac6e7 / open_response_scoring_v02.py:1–9, 42–52</code>〕</p>
-<h3 id="section-15">4.3 分数的精确算法</h3>
-<pre><code class="language-python">scores = {"met": 1.0, "partial": 0.5, "not_met": 0.0}
+<p><strong>Why compare three IDs first?</strong> If the item is an addition problem for course A, but the Attempt claims to belong to course B or another Learning Objective, evidence for that objective must not be produced just because the number happens to be 5. The code raises <code>ValueError</code> on a scope mismatch instead of auto-correcting the objective. 〔<code>4edec7f / numeric_scoring_v02.py:53–82</code>〕</p>
+<p><strong>Why <code>model_confidence=1.0</code>?</strong> In this restricted Numeric Parser, the value says the submitted text could be parsed unambiguously as one finite number; it is <strong>not the probability that the student has mastered the skill</strong>. The original code comment explicitly warns about this. For unparseable text it is 0.0. 〔<code>4edec7f / numeric_scoring_v02.py:84–115</code>〕</p>
+<p><strong>Which fields are not "upgraded" by the scoring function?</strong> <code>assistance_level</code>, <code>prior_solution_exposure</code>, and <code>novelty</code> are copied straight from the Attempt; <code>created_at</code> uses the Attempt's <code>submitted_at</code>; <code>scoring_policy_version</code> is fixed at <code>numeric-scoring-v0.2</code>. <code>evidence_id</code> is <code>numeric-v02:{attempt_id}</code> to create a stable link; it does not mean persistence uniqueness or caller permission was checked here. 〔<code>4edec7f / numeric_scoring_v02.py:116–138</code>〕</p>
+<h3 id="section-12">3.3 From one correct answer to an Objective State</h3>
+<p>The historical tests use a controlled fixture to build one correct numeric piece of evidence, call <code>estimate_objective_state()</code>, and assert: the evidence is included, <code>performance_estimate=1.0</code>, but <code>state="unknown"</code>. A second test builds <strong>independent correct answers on two different items</strong> and asserts <code>distinct_assessment_count=2</code>, <code>independent_success_count=2</code>, <code>state="competent"</code>. This is rule behavior under test conditions; it does not mean a real student can be certified as having mastered something without further checks. 〔<code>4edec7f / test_numeric_scoring_v02.py:194–237</code>〕</p>
+<p>The full eligibility rules belong to the historical versions of the State Estimator/Eligibility, and this pack does not include those dependency sources again. This chapter does not reverse-engineer all the State Gate constants from one set of tests.</p>
+<hr />
+<h2 id="section-13">4. Open Response: why a "score Preview" cannot directly become Evidence</h2>
+<h3 id="section-14">4.1 Structured Rubric and Review</h3>
+<p>Numeric scoring has finite numbers and an executable tolerance; mathematical proofs and concept explanations in open responses have no natural single-value comparison. This checkpoint therefore uses a criterion-based Rubric: each Criterion has a unique ID, an observable description, full-credit guidance, and a weight, and all weights must sum to approximately 1 (source: <code>isclose(..., abs_tol=1e-9)</code>; <code>rel_tol</code> is not set to zero, see the source and later boundaries). The Rubric version is non-empty and Criterion weights are finite in <code>(0,1]</code>. 〔<code>0bfa364 / open_response_models_v02.py:24–67</code>〕</p>
+<p>Open-response Items default to <code>SELF_EXPLANATION</code> and also allow <code>DEFINITION_RECALL</code> and <code>PROBLEM_ATTEMPT</code>. If <code>alignment_verified=True</code>, a non-empty <code>alignment_reviewer_id</code> is required; <strong>this is only a field-consistency check, not authentication of the reviewer</strong>. 〔<code>0bfa364 / open_response_models_v02.py:69–107</code>〕</p>
+<p><code>CriterionReviewV02</code> uses four judgments per Criterion: <code>met</code>, <code>partial</code>, <code>not_met</code>, <code>unscorable</code>. When <code>met</code> or <code>partial</code> is given, structural validation requires a <code>supporting_quote</code>; <code>not_met</code> needs no quote. <code>OpenResponseReviewV02</code> records the Review/Attempt/Item/Rubric/Reviewer IDs, the Criterion list, and a timezone-aware review time. The source file says directly that this model <strong>does not auto-score</strong>, and at this stage quotes were not yet checked against the student's original text. 〔<code>0bfa364 / open_response_models_v02.py:110–177</code>〕</p>
+<h3 id="section-15">4.2 Item-by-item validation of the Preview</h3>
+<p><code>preview_open_response_review(item, attempt, review)</code> checks in order: the Item and Attempt Course/Objective/Item IDs match; the Review points to the same Attempt and Item; the Rubric Version matches; <code>reviewed_at &gt;= submitted_at</code>; the item is marked Alignment Verified; the Review has no duplicate Criterion IDs and covers exactly every Criterion in the Rubric. Quotes that earn positive credit must appear <strong>as a literal substring</strong> in <code>attempt.response_text</code>. 〔<code>e6ac6e7 / open_response_scoring_v02.py:42–116</code>〕</p>
+<p>This quote check proves <strong>the text appeared</strong>, not that the quote supports the Review's mathematical judgment. For example, a quote can contain a correct term while the Reviewer still gives a wrong <code>met</code>; the function cannot replace semantic judgment or independent re-review. The top of the source file states explicitly that it does not authenticate the Reviewer's identity or semantic judgment, and its output should not be treated as Mastery Evidence. 〔<code>e6ac6e7 / open_response_scoring_v02.py:1–9, 42–52</code>〕</p>
+<h3 id="section-16">4.3 The exact scoring algorithm</h3>
+<pre><code class="language-python">scores = {&quot;met&quot;: 1.0, &quot;partial&quot;: 0.5, &quot;not_met&quot;: 0.0}
 total += rubric_criteria[result.criterion_id].weight * scores[result.judgment]
 </code></pre>
-<p>测试的 Dot Product 题包含 <code>definition</code>（权重 0.6，<code>met</code>）和 <code>geometry</code>（权重 0.4，<code>partial</code>）。Preview 得分：<code>0.6×1 + 0.4×0.5 = 0.8</code>，因此 <code>outcome="partial"</code>、<code>status="requires_reviewer_confirmation"</code>。该分数仍不等于已批准 Evidence；<code>partial</code> 也不是“学生掌握 80% 的知识”的统计结论。〔<code>e6ac6e7 / open_response_scoring_v02.py:102–159</code>；<code>test_open_response_scoring_v02.py:117–127</code>〕</p>
-<p>如果<strong>任意一项</strong> <code>unscorable</code>，函数返回 <code>outcome="neutral"</code>、<code>correctness=None</code>、<code>status="requires_additional_review"</code>，而不是把那一项当 0 分，也不会擅自对剩余 Criterion 重新归一化。这保存了<strong>缺少评分依据</strong>与<strong>明确未满足标准</strong>之间的区别。〔<code>e6ac6e7 / open_response_scoring_v02.py:108–140</code>〕</p>
-<h3 id="section-16">4.4 状态不是一串可以省略的“批准”字眼</h3>
-<pre><code class="language-text">学生回答
-  → Structured Review（内容可能有误，身份可能未认证）
-  → Preview（检查记录一致性/字面引用/计算加权分）
+<p>The test's dot-product question has <code>definition</code> (weight 0.6, <code>met</code>) and <code>geometry</code> (weight 0.4, <code>partial</code>). Preview score: <code>0.6×1 + 0.4×0.5 = 0.8</code>, so <code>outcome="partial"</code>, <code>status="requires_reviewer_confirmation"</code>. This score is still not approved Evidence, and <code>partial</code> is not a statistical conclusion that "the student has mastered 80% of the knowledge". 〔<code>e6ac6e7 / open_response_scoring_v02.py:102–159</code>; <code>test_open_response_scoring_v02.py:117–127</code>〕</p>
+<p>If <strong>any</strong> Criterion is <code>unscorable</code>, the function returns <code>outcome="neutral"</code>, <code>correctness=None</code>, <code>status="requires_additional_review"</code>, rather than counting that Criterion as 0 or quietly re-normalizing the remaining Criteria. This preserves the difference between <strong>missing grounds for a score</strong> and <strong>clearly not meeting the standard</strong>. 〔<code>e6ac6e7 / open_response_scoring_v02.py:108–140</code>〕</p>
+<h3 id="section-17">4.4 Status is not a string of "approval" words that can be skipped</h3>
+<pre><code class="language-text">Student answer
+  → Structured Review (content may be wrong, identity may be unauthenticated)
+  → Preview (checks record consistency / literal quotes / computes weighted score)
   → requires_reviewer_confirmation
-  → 外部可信服务认证并授权 Reviewer【本模块不实现】
-  → issue_review_approval()（绑定来源并签名）
-  → finalize_approved_review()（完整来源验签）
+  → external trusted service authenticates and authorizes the Reviewer [not implemented in this module]
+  → issue_review_approval() (binds sources and signs)
+  → finalize_approved_review() (verifies signature over all sources)
   → EvidenceEventV02
-  → 下游 Eligibility / Student State
+  → downstream Eligibility / Student State
 </code></pre>
-<p>任何将 <code>Preview</code> 直接送入 State Estimator 的捷径，都绕过了此历史设计中的 Review Approval 边界。不能通过“让 LLM 在文本里写 approved”来替代签名与权限检查。</p>
-<hr/>
-<h2 id="section-17">5. HMAC Approval：保证什么，不能保证什么？</h2>
-<h3 id="section-18">5.1 Approval 消息绑定的确切内容</h3>
-<p><code>_approval_message()</code> 将 Item、Attempt、Review 的完整 <code>model_dump(mode="json")</code>，连同 <code>approved_by</code>、<code>approved_at</code>、<code>scoring_confidence</code> 和 <code>approval_policy_version</code> 整合成排序、紧凑 JSON 字节。<code>_sign()</code> 使用 <code>hmac.new(key, message, hashlib.sha256).hexdigest()</code>；Key 必须是至少 32 字节。Approval Model 要求 64 字符小写十六进制签名以及带时区的审批时间。〔<code>55bd26b / review_approval_v02.py:44–126</code>〕</p>
-<p><strong>工程含义：</strong> 事后改动答案、Criterion Review、Rubric/Prompt 或审批字段，将改变签名消息；在相同 Key 下通常无法通过验签。测试确实覆盖伪造签名、改变学生答案、改变 Review 和改变 Item Prompt。〔<code>55bd26b / test_review_approval_v02.py:172–236, 282–302</code>〕</p>
-<h3 id="section-19">5.2 颁发审批前的检查</h3>
-<p><code>issue_review_approval()</code> 首先重新计算 Preview；若 <code>requires_additional_review</code>，拒绝签发。随后检查调用者<strong>传入的</strong> <code>authenticated_reviewer_id</code> 与 <code>review.reviewer_id</code> 相同、审批时间不能早于 Review、字段合法，再对消息签名。〔<code>55bd26b / review_approval_v02.py:128–194</code>〕</p>
-<p><strong>不能误读：</strong> 参数叫 <code>authenticated_reviewer_id</code> 并不使它自动可信。函数没有 Login、Role Check 或 Course Authorization。源码注明调用该函数的后端服务<strong>必须先认证和授权</strong> Reviewer。没有这一上游边界，任意具有 Signing Key 的调用方仍可能为自己构造的 Review 签名。签名证明的是“持有 Key 的实体对这些字节作了认证”，不是“真实的授权教师认可了此数学判断”。</p>
-<h3 id="section-20">5.3 Finalization 的独立验证</h3>
-<p><code>finalize_approved_review()</code> 再次生成 Preview，校验 Review/Approval ID 与审批时间，重新构造签名消息，然后使用 <code>hmac.compare_digest()</code> 比较签名；验证失败抛错，成功才构造 Evidence。Evidence 复制 Attempt 的 assistance/exposure/novelty，不会自行提升独立性。<code>created_at=approval.approved_at</code>，<strong>不是原始提交时间</strong>；源码明确留言：以后的 Schema 应区分原始作答时间与 Approval/Recording 时间。〔<code>55bd26b / review_approval_v02.py:197–280</code>〕</p>
-<p>Reviewer 指定的 <code>scoring_confidence</code> 被带入 Evidence 的 <code>model_confidence</code>，该数值不是经过标定的 Mastery Probability。测试中较低的 Review Confidence 不会自动建立 Student State。〔<code>55bd26b / review_approval_v02.py:59–65, 273–279</code>；<code>test_review_approval_v02.py:304–...</code>〕</p>
-<h3 id="section-21">5.4 四种不同的 Trust Claim</h3>
+<p>Any shortcut that sends a <code>Preview</code> straight into the State Estimator bypasses the Review Approval boundary of this historical design. "Having the LLM write approved in the text" cannot replace signature and permission checks.</p>
+<hr />
+<h2 id="section-18">5. HMAC Approval: what it guarantees and what it does not</h2>
+<h3 id="section-19">5.1 Exactly what the Approval message binds</h3>
+<p><code>_approval_message()</code> combines the full <code>model_dump(mode="json")</code> of the Item, Attempt, and Review with <code>approved_by</code>, <code>approved_at</code>, <code>scoring_confidence</code>, and <code>approval_policy_version</code> into sorted, compact JSON bytes. <code>_sign()</code> uses <code>hmac.new(key, message, hashlib.sha256).hexdigest()</code>; the key must be at least 32 bytes. The Approval model requires a 64-character lowercase hex signature and a timezone-aware approval time. 〔<code>55bd26b / review_approval_v02.py:44–126</code>〕</p>
+<p><strong>Engineering meaning:</strong> changing the answer, Criterion Review, Rubric/Prompt, or approval fields afterwards changes the signed message, which normally fails verification under the same key. The tests do cover a forged signature, a changed student answer, a changed Review, and a changed Item Prompt. 〔<code>55bd26b / test_review_approval_v02.py:172–236, 282–302</code>〕</p>
+<h3 id="section-20">5.2 Checks before issuing an approval</h3>
+<p><code>issue_review_approval()</code> first recomputes the Preview; if it is <code>requires_additional_review</code>, it refuses to sign. It then checks that the <strong>caller-supplied</strong> <code>authenticated_reviewer_id</code> equals <code>review.reviewer_id</code>, that the approval time is not earlier than the Review, and that fields are valid, then signs the message. 〔<code>55bd26b / review_approval_v02.py:128–194</code>〕</p>
+<p><strong>Do not misread this:</strong> a parameter named <code>authenticated_reviewer_id</code> is not automatically trustworthy. The function has no login, role check, or course authorization. The source notes that the backend service calling it <strong>must authenticate and authorize</strong> the Reviewer first. Without that upstream boundary, any caller holding the signing key could sign a Review it constructed itself. A signature proves "an entity holding the key authenticated these bytes", not "a real authorized instructor endorsed this mathematical judgment".</p>
+<h3 id="section-21">5.3 Independent verification at Finalization</h3>
+<p><code>finalize_approved_review()</code> regenerates the Preview, checks the Review/Approval IDs and approval time, rebuilds the signed message, and compares signatures with <code>hmac.compare_digest()</code>; a failure raises an error and only success produces Evidence. The Evidence copies the Attempt's assistance/exposure/novelty and never raises independence on its own. <code>created_at=approval.approved_at</code>, <strong>not the original submission time</strong>; the source explicitly notes that a later schema should separate the original answer time from the approval/recording time. 〔<code>55bd26b / review_approval_v02.py:197–280</code>〕</p>
+<p>The Reviewer-assigned <code>scoring_confidence</code> is carried into the Evidence's <code>model_confidence</code>; it is not a calibrated Mastery Probability. In the tests, a lower Review Confidence does not automatically establish Student State. 〔<code>55bd26b / review_approval_v02.py:59–65, 273–279</code>; <code>test_review_approval_v02.py:304–...</code>〕</p>
+<h3 id="section-22">5.4 Four different trust claims</h3>
 <table>
 <thead>
 <tr>
 <th>Claim</th>
-<th>本阶段能否支持</th>
-<th>理由</th>
+<th>Supported at this stage?</th>
+<th>Reason</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Item/Attempt/Review 的签名绑定完整</td>
-<td><strong>条件性支持</strong>：需可信 Key 和正确调用链</td>
-<td><code>HMAC-SHA256</code> 覆盖完整序列化来源</td>
+<td>The signature binds Item/Attempt/Review intact</td>
+<td><strong>Conditionally</strong>: needs a trusted key and the correct call chain</td>
+<td><code>HMAC-SHA256</code> covers the full serialized sources</td>
 </tr>
 <tr>
-<td>Reviewer 是已授权课程教师</td>
-<td><strong>不能由此模块证明</strong></td>
-<td>认证与权限由外部服务提供，本包未给出实现</td>
+<td>The Reviewer is an authorized course instructor</td>
+<td><strong>Cannot be proven by this module</strong></td>
+<td>Authentication and permission come from an external service not implemented in this pack</td>
 </tr>
 <tr>
-<td>Review 数学判断正确</td>
-<td><strong>不能证明</strong></td>
-<td>Quote 子串与签名都不验证数学语义</td>
+<td>The Review's mathematical judgment is correct</td>
+<td><strong>Cannot be proven</strong></td>
+<td>Neither the quote substring nor the signature checks mathematical meaning</td>
 </tr>
 <tr>
-<td>学生作答真正独立</td>
-<td><strong>不能证明</strong></td>
-<td><code>assistance_level</code> 原样复制，不是签名自动推得</td>
+<td>The student really answered independently</td>
+<td><strong>Cannot be proven</strong></td>
+<td><code>assistance_level</code> is copied as is, not derived from the signature</td>
 </tr>
 </tbody>
 </table>
-<hr/>
-<h2 id="section-22">6. Assessment Pipeline：为什么只接收 Assessment Submission？</h2>
-<p><code>AssessmentPipelineV02</code> 是<strong>内部应用服务</strong>，不是 HTTP Endpoint。其输入是 <code>NumericSubmissionV02(item, attempt)</code> 或 <code>ApprovedOpenResponseSubmissionV02(item, attempt, review, approval)</code>；构造时可提供至少 32 字节的 <code>verification_key</code>。〔<code>1374ed1 / assessment_pipeline_v02.py:1–68</code>〕</p>
-<p>执行时：Numeric 分支调用 <code>score_numeric_attempt</code>；开放题分支要求 Verification Key 后调用 <code>finalize_approved_review</code>；其他类型抛出 <code>TypeError</code>；收集生成的 Evidence 后调用 <code>estimate_objective_state()</code>，返回 <code>ObjectiveStateV02</code>。〔<code>1374ed1 / assessment_pipeline_v02.py:69–140</code>〕</p>
+<hr />
+<h2 id="section-23">6. Assessment Pipeline: why it only accepts Assessment Submissions</h2>
+<p><code>AssessmentPipelineV02</code> is an <strong>internal application service</strong>, not an HTTP endpoint. Its inputs are <code>NumericSubmissionV02(item, attempt)</code> or <code>ApprovedOpenResponseSubmissionV02(item, attempt, review, approval)</code>; a <code>verification_key</code> of at least 32 bytes can be supplied at construction. 〔<code>1374ed1 / assessment_pipeline_v02.py:1–68</code>〕</p>
+<p>At run time: the Numeric branch calls <code>score_numeric_attempt</code>; the open-response branch requires the verification key and calls <code>finalize_approved_review</code>; other types raise <code>TypeError</code>; the generated Evidence is collected and passed to <code>estimate_objective_state()</code>, which returns <code>ObjectiveStateV02</code>. 〔<code>1374ed1 / assessment_pipeline_v02.py:69–140</code>〕</p>
 <pre><code class="language-text">NumericSubmission ──── score_numeric_attempt ───────┐
                                                      ├─ EvidenceEvent[] → estimate_objective_state → ObjectiveState
 ApprovedOpenResponse ── HMAC verification + finalize ┘
 </code></pre>
-<p>此入口<strong>不接受调用者预先构造的 <code>EvidenceEventV02</code></strong>。这是为了避免在这个入口把任意伪造 Evidence 当成评分结果；不过源码同时坦承：底层 State Update Engine 可以被其他代码独立调用，这一限制只覆盖 <code>AssessmentPipelineV02</code> 的入口，不能把它误说成全局权限机制。〔<code>1374ed1 / assessment_pipeline_v02.py:46–55</code>〕</p>
-<p>更重要的是：这个 Pipeline 对它收到的 Numeric Item 和 Attempt 假设调用方提供的是权威记录；<strong>它本身不负责认证调用者，也不负责从可信存储读取这些对象</strong>。因此从“内部原型”到“生产应用”之间仍存在权限、数据来源和持久化边界。测试覆盖缺少 Verification Key、错误 Key、预构造 Evidence 被拒、跨学生范围被拒等合同；它们是<strong>预防性测试</strong>，本包无原始现场入侵或失败事故记录。〔<code>1374ed1 / test_assessment_pipeline_v02.py:172–238</code>〕</p>
-<hr/>
-<h2 id="section-23">7. Design 01C 文档：哪些只是计划？</h2>
-<p><code>3424920/docs/03c_assessment_records_and_authorization.md</code> 明确提出：未来生产数据库 PostgreSQL，SQLAlchemy 操作、Alembic Migration、psycopg Driver；本地 Repository Test 可以采用 SQLite。它还规定学生身份来自已认证的后端上下文、Rubric Revision 不得覆盖、Reviewer 的签名 Key 留在服务器、审批及撤销应当可审计，并要求处理 Numeric 与 Open-Response 不同的 <code>scoring_policy_version</code> 混合问题。〔<code>3424920 / docs/03c_assessment_records_and_authorization.md:1–89</code>〕</p>
-<p><strong>历史准确性：</strong> 文档的 “Technical direction” / “Implementation order” 不等于已经部署 PostgreSQL、完成迁移、注册真实 Reviewer、完成 Audit/Revocation 或公开 Assessment HTTP API。本包的后续 Repository 是 SQLAlchemy 内部 Prototype，测试 Fixture 使用 SQLite 内存库。此差别在网站必须持续保留。</p>
-<h3 id="section-24">7.1 不同 Scoring Policy 不可默默混算</h3>
-<p>Numeric Evidence 的 <code>scoring_policy_version="numeric-scoring-v0.2"</code>；签名开放题的 Version 是 <code>open-response-approval-v0.2</code>。Design 01C 文档明确要求混合版本聚合在部署前有显式兼容政策。仅因为两者都把 <code>correctness</code> 放进 0–1 区间，就假设可直接比较，不符合该阶段记录的边界。〔<code>4edec7f / numeric_scoring_v02.py:23</code>；<code>55bd26b / review_approval_v02.py:44, 273–279</code>；<code>3424920 / docs/03c_assessment_records_and_authorization.md:59–72</code>〕</p>
-<hr/>
-<h2 id="section-25">8. Versioned Repository：为什么旧答案必须用旧 Rubric？</h2>
-<h3 id="section-26">8.1 数据表结构</h3>
+<p>This entry point <strong>does not accept <code>EvidenceEventV02</code> constructed in advance by the caller</strong>. This prevents arbitrary forged Evidence from being treated as a scoring result at this entry point; but the source also admits that the underlying State Update Engine can be called independently by other code, so this restriction covers only the <code>AssessmentPipelineV02</code> entry point and must not be described as a global permission mechanism. 〔<code>1374ed1 / assessment_pipeline_v02.py:46–55</code>〕</p>
+<p>More importantly, the Pipeline assumes that the Numeric Items and Attempts it receives are authoritative records supplied by the caller; <strong>it does not authenticate the caller or read these objects from trusted storage itself</strong>. So between "internal prototype" and "production application" there are still permission, data-source, and persistence boundaries. The tests cover contracts such as a missing verification key, a wrong key, rejected pre-built Evidence, and rejected cross-student scope; these are <strong>preventive tests</strong>, and the pack has no record of a real intrusion or failure incident. 〔<code>1374ed1 / test_assessment_pipeline_v02.py:172–238</code>〕</p>
+<hr />
+<h2 id="section-24">7. The Design 01C document: what was only a plan?</h2>
+<p><code>3424920/docs/03c_assessment_records_and_authorization.md</code> explicitly proposes PostgreSQL as the future production database, with SQLAlchemy, Alembic migrations, and the psycopg driver; local Repository tests may use SQLite. It also requires that student identity come from an authenticated backend context, that Rubric Revisions must not be overwritten, that the Reviewer's signing key stay on the server, that approvals and revocations be auditable, and that mixing of different Numeric and Open-Response <code>scoring_policy_version</code>s be handled. 〔<code>3424920 / docs/03c_assessment_records_and_authorization.md:1–89</code>〕</p>
+<p><strong>Historical accuracy:</strong> the document's "Technical direction" / "Implementation order" does not mean PostgreSQL was deployed, migrations completed, real Reviewers registered, audit/revocation completed, or an Assessment HTTP API published. The later Repository in this pack is an internal SQLAlchemy prototype, and its test fixtures use in-memory SQLite. The website must keep this distinction throughout.</p>
+<h3 id="section-25">7.1 Different Scoring Policies must not be silently combined</h3>
+<p>Numeric Evidence has <code>scoring_policy_version="numeric-scoring-v0.2"</code>; signed open responses have version <code>open-response-approval-v0.2</code>. The Design 01C document explicitly requires an explicit compatibility policy before deploying aggregation of mixed versions. Assuming the two are directly comparable just because both put <code>correctness</code> in 0–1 does not match the boundary recorded at this stage. 〔<code>4edec7f / numeric_scoring_v02.py:23</code>; <code>55bd26b / review_approval_v02.py:44, 273–279</code>; <code>3424920 / docs/03c_assessment_records_and_authorization.md:59–72</code>〕</p>
+<hr />
+<h2 id="section-26">8. Versioned Repository: why old answers must use the old Rubric</h2>
+<h3 id="section-27">8.1 Table structure</h3>
 <pre><code class="language-text">assessment_items_v02
   primary key = (assessment_item_id, revision)
   item_type = numeric | open_response
@@ -292,139 +272,138 @@ ApprovedOpenResponse ── HMAC verification + finalize ┘
 student_attempts_v02
   primary key = attempt_id
   foreign key = (assessment_item_id, item_revision)
-                → assessment_items_v02 同一复合键
+                → same composite key in assessment_items_v02
   payload = original Attempt JSON
 </code></pre>
-<p><code>AssessmentRecordRepositoryV02</code> 接收外部 <code>session_factory</code>，使用 SQLAlchemy。<code>save_item()</code> 要求 Revision 是<strong>真正的正整数</strong>，拒绝布尔值；已存在的 <code>(item_id, revision)</code> 不允许覆盖。<code>load_item()</code> 根据行内 <code>item_type</code> 恢复正确的 Pydantic Model。〔<code>1b8dfdb / assessment_records_v02.py:1–200</code>〕</p>
-<p><code>save_attempt(attempt, item_revision)</code> 先加载该 Revision，检查课程/目标/题目身份，拒绝重复 <code>attempt_id</code>，再把 Attempt JSON 与 <code>item_revision</code> 存入同一行；<code>load_attempt(attempt_id)</code> 返回 <code>(StudentAttemptV02, int)</code>。注意 <code>item_revision</code> 是单独的可信关联字段，并不依赖学生随意提交“最新版本”。〔<code>1b8dfdb / assessment_records_v02.py:202–271</code>〕</p>
-<h3 id="section-27">8.2 原始 Rubric 版本的精确示例</h3>
+<p><code>AssessmentRecordRepositoryV02</code> takes an external <code>session_factory</code> and uses SQLAlchemy. <code>save_item()</code> requires the Revision to be a <strong>real positive integer</strong>, rejecting booleans; an existing <code>(item_id, revision)</code> cannot be overwritten. <code>load_item()</code> restores the correct Pydantic model from the row's <code>item_type</code>. 〔<code>1b8dfdb / assessment_records_v02.py:1–200</code>〕</p>
+<p><code>save_attempt(attempt, item_revision)</code> first loads that Revision, checks course/objective/item identity, rejects a duplicate <code>attempt_id</code>, then stores the Attempt JSON and <code>item_revision</code> in the same row; <code>load_attempt(attempt_id)</code> returns <code>(StudentAttemptV02, int)</code>. Note that <code>item_revision</code> is a separate trusted link field and does not depend on the student submitting "the latest version". 〔<code>1b8dfdb / assessment_records_v02.py:202–271</code>〕</p>
+<h3 id="section-28">8.2 A precise example of the original Rubric version</h3>
 <pre><code class="language-text">T0: Item A / revision 1 / expected_value=5
-T1: Attempt X / answer="5" / item_revision=1 → 保存
-T2: Item A / revision 2 / expected_value=7 → 新增，不覆盖 rev1
-T3: 恢复 Attempt X → 从数据库读到 revision=1 → 用 expected=5 评分 → 正确
+T1: Attempt X / answer=&quot;5&quot; / item_revision=1 → saved
+T2: Item A / revision 2 / expected_value=7 → added, rev1 not overwritten
+T3: restore Attempt X → revision=1 read from the database → scored with expected=5 → correct
 </code></pre>
-<p>如果 T3 错误地读取最新 rev2，同一份历史回答 <code>5</code> 会被重新评价为错误，属于<strong>历史评分标准漂移</strong>。历史测试分别断言旧 Attempt 继续使用旧 Rubric、新 Attempt 按 rev2 得分；还检查重复 Item Revision 与重复 Attempt ID 被拒。这里是<strong>测试防范的错误情境</strong>，不是本包有证据证明曾发生的真实生产 Bug。〔<code>1b8dfdb / test_assessment_records_v02.py:93–201</code>；<code>aadd8e3 / test_persisted_numeric_pipeline_v02.py:138–184</code>〕</p>
-<h3 id="section-28">8.3 “不可覆盖”的准确范围</h3>
-<p>这些 Repository 方法拒绝 API 层重复写入原有 Revision / Attempt ID；底层 JSON 表并没有在本包中被证明拥有数据库级不可篡改存储、完整的迁移链、角色授权或审计日志。<strong>API 的一次写入限制不等于整个存储永久不可更改。</strong> Foreign Key 也需在目标数据库连接配置下正确启用才能依赖数据库层强制检查。</p>
-<hr/>
-<h2 id="section-29">9. Persisted Numeric Pipeline：将真实历史记录接到现有评分链</h2>
-<p><code>PersistedNumericAssessmentServiceV02(repository)</code> 的入口是 <code>estimate_from_attempt_ids(attempt_ids, student_id, course_id, objective_id, as_of)</code>。它拒绝单个字符串误当 ID 序列、空列表、空白 ID 与重复 Attempt ID。对每个 ID 先调用 <code>load_attempt()</code>，检查 Student/Course/Objective Scope，然后使用该 Attempt 存储的 <code>item_revision</code> 精确加载 Item；只有 Numeric Item 可以构造 <code>NumericSubmissionV02</code>。最终复用 <code>AssessmentPipelineV02</code> 进行评分与状态估计。〔<code>aadd8e3 / persisted_numeric_pipeline_v02.py:31–130</code>〕</p>
-<pre><code class="language-text">Attempt ID 列表
+<p>If T3 wrongly read the latest rev2, the same historical answer <code>5</code> would be re-evaluated as wrong, i.e. <strong>drift of the historical grading standard</strong>. The historical tests assert separately that the old Attempt keeps using the old Rubric and that a new Attempt is scored by rev2; they also check that duplicate Item Revisions and duplicate Attempt IDs are rejected. These are <strong>error scenarios the tests guard against</strong>, not real production bugs that this pack proves happened. 〔<code>1b8dfdb / test_assessment_records_v02.py:93–201</code>; <code>aadd8e3 / test_persisted_numeric_pipeline_v02.py:138–184</code>〕</p>
+<h3 id="section-29">8.3 The exact scope of "cannot be overwritten"</h3>
+<p>These Repository methods reject repeated API-level writes of an existing Revision / Attempt ID; this pack does not show that the underlying JSON tables have database-level tamper-proof storage, a complete migration chain, role authorization, or audit logs. <strong>A write-once restriction in the API is not permanent immutability of the whole store.</strong> Foreign keys must also be correctly enabled in the target database connection before the database layer can be relied on to enforce them.</p>
+<hr />
+<h2 id="section-30">9. Persisted Numeric Pipeline: connecting real historical records to the existing scoring chain</h2>
+<p>The entry point of <code>PersistedNumericAssessmentServiceV02(repository)</code> is <code>estimate_from_attempt_ids(attempt_ids, student_id, course_id, objective_id, as_of)</code>. It rejects a single string mistaken for an ID sequence, an empty list, blank IDs, and duplicate Attempt IDs. For each ID it calls <code>load_attempt()</code>, checks Student/Course/Objective scope, then loads the Item exactly by the Attempt's stored <code>item_revision</code>; only Numeric Items can build a <code>NumericSubmissionV02</code>. Finally it reuses <code>AssessmentPipelineV02</code> for scoring and state estimation. 〔<code>aadd8e3 / persisted_numeric_pipeline_v02.py:31–130</code>〕</p>
+<pre><code class="language-text">List of Attempt IDs
   → Repository.load_attempt(id) → (Attempt, item_revision)
-  → 检查 requested student/course/objective
+  → check requested student/course/objective
   → Repository.load_item(assessment_item_id, revision=item_revision)
-  → 要求 Numeric AssessmentItem
+  → require a Numeric AssessmentItem
   → NumericSubmission(item, attempt)
   → AssessmentPipeline.score_numeric_attempt
   → Evidence Eligibility / estimate_objective_state
 </code></pre>
-<p>这里的 <code>student_id</code> 来自函数参数。函数注释明确声明：未来 API 必须从已认证和授权的服务端上下文确定学生身份和读取权限。当前的 Scope Equality Check 防止把一个 Attempt <strong>误用于另一个请求的 Student State</strong>，但<strong>不是认证</strong>。〔<code>aadd8e3 / persisted_numeric_pipeline_v02.py:8–12, 47–61, 92–104</code>〕</p>
-<h3 id="section-30">9.1 回归合同：从 SQLite 中恢复原始评分上下文</h3>
-<p>在历史测试中，每项测试使用隔离的内存 SQLite，先 <code>Base.metadata.create_all(engine)</code>，再建立 Repository，保存 Item/Attempt 后调用该 Service。该节点测试覆盖：一条正确历史 Attempt 进入状态估计、Rubric 更新不改变旧作答成绩、新 Attempt 使用新 Revision、两个符合 Fixture 条件的新题正确作答支持 <code>competent</code>、未知 ID/空/重复 ID 被拒、跨学生 Scope 被拒、Open-Response Item 不会被 Numeric Pipeline 悄悄评分。〔<code>aadd8e3 / test_persisted_numeric_pipeline_v02.py:1–...</code>，各函数见测试文件〕</p>
-<p><strong>为什么重复 ID 要拒绝，而非默默去重？</strong> 如果输入是一张本应包含两个不同证据的列表，却重复同一 Attempt，静默去重会掩盖调用端的数据错误；按该服务的合同，输入本身应被纠正。要区分这与 State Estimator 可能有的 Evidence Deduplication：两者发生在不同层级，不应相互代替。</p>
-<hr/>
-<h2 id="section-31">10. Engineering Casebook：真实问题、受控失败与防范合同</h2>
-<p><strong>证据状态声明：</strong> 本次 ZIP 内没有原始失败的 pytest 控制台输出，也没有逐轮 Debugging 聊天，因此下面不是“当时真实发生过的八个 Bug”。这些是由代码和测试直接证实的<strong>失效情境、防护逻辑及验证合同</strong>。网站单列为 <code>GUARD-01C-*</code>，将来若找到当时真实失败日志，再添加具有时间线的 <code>BUG-*</code> 案例。</p>
+<p>Here <code>student_id</code> comes from a function parameter. The function comment explicitly states that a future API must determine student identity and read permission from an authenticated and authorized server-side context. The current scope-equality check prevents an Attempt from <strong>being misused for another request's Student State</strong>, but <strong>it is not authentication</strong>. 〔<code>aadd8e3 / persisted_numeric_pipeline_v02.py:8–12, 47–61, 92–104</code>〕</p>
+<h3 id="section-31">9.1 Regression contract: restoring the original scoring context from SQLite</h3>
+<p>In the historical tests, each test uses an isolated in-memory SQLite database: <code>Base.metadata.create_all(engine)</code>, then a Repository, then saving Items/Attempts and calling the Service. The tests at this checkpoint cover: one correct historical Attempt entering state estimation; a Rubric update not changing old answer scores; a new Attempt using the new Revision; two correct answers on new items meeting the fixture conditions supporting <code>competent</code>; unknown/empty/duplicate IDs rejected; cross-student scope rejected; and Open-Response Items not being silently scored by the Numeric Pipeline. 〔<code>aadd8e3 / test_persisted_numeric_pipeline_v02.py:1–...</code>, see each function in the test file〕</p>
+<p><strong>Why reject duplicate IDs instead of quietly deduplicating?</strong> If the input is a list that should contain two different pieces of evidence but repeats the same Attempt, silent deduplication would hide a data error at the caller; by this service's contract, the input itself should be corrected. Distinguish this from Evidence Deduplication that the State Estimator may do: the two happen at different layers and should not substitute for each other.</p>
+<hr />
+<h2 id="section-32">10. Engineering Casebook: real problems, controlled failures, and preventive contracts</h2>
+<p><strong>Evidence status:</strong> this ZIP has no original failing pytest console output and no round-by-round debugging chat, so the following are not "eight bugs that really happened at the time". They are <strong>failure scenarios, protective logic, and verification contracts</strong> directly confirmed by code and tests. The website lists them separately as <code>GUARD-01C-*</code>; if real failure logs from the time are found later, timeline-based <code>BUG-*</code> cases will be added.</p>
 <table>
 <thead>
 <tr>
-<th>ID / 类型</th>
-<th>若缺少该保护，可能发生什么</th>
-<th>源码中实际防护</th>
-<th>对应可见测试</th>
+<th>ID / type</th>
+<th>What could happen without this protection</th>
+<th>Actual protection in the source</th>
+<th>Matching visible tests</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>GUARD-01C-01</code> 输入解析</td>
-<td><code>eval('2+3')</code> 执行表达式、单位/无穷值被错误当作数字</td>
-<td>Regex Fullmatch、最长 64、Finite Float、无 eval；不能解析→neutral/invalid</td>
+<td><code>GUARD-01C-01</code> input parsing</td>
+<td><code>eval('2+3')</code> executes an expression; units/infinite values wrongly treated as numbers</td>
+<td>Regex fullmatch, max length 64, finite float, no eval; unparseable → neutral/invalid</td>
 <td><code>test_valid_numeric_formats</code>, <code>test_invalid_numeric_formats</code>, <code>test_unparseable_response_is_not_automatically_incorrect</code></td>
 </tr>
 <tr>
-<td><code>GUARD-01C-02</code> 错目标/错类型</td>
-<td>课程或题目不相符仍记入某目标；Transfer 被普通题评分</td>
-<td>检查 Course/Objective/Item、Alignment、仅普通 Problem</td>
+<td><code>GUARD-01C-02</code> wrong objective/type</td>
+<td>A mismatched course or item still recorded against an objective; a Transfer scored as an ordinary problem</td>
+<td>Checks Course/Objective/Item, Alignment, ordinary Problem only</td>
 <td><code>test_mismatched_assessment_identity_is_rejected</code>, <code>test_unverified_alignment_is_rejected</code>, <code>test_transfer_assessment_is_not_silently_supported</code></td>
 </tr>
 <tr>
-<td><code>GUARD-01C-03</code> Rubric 失真</td>
-<td>Review 漏项、重复项、错误版本或虚构引用仍计入分数</td>
-<td>Version/ID/全集校验，正分 Quote 必须出现在原文</td>
+<td><code>GUARD-01C-03</code> Rubric distortion</td>
+<td>A Review with missing items, duplicates, the wrong version, or invented quotes still counted</td>
+<td>Version/ID/full-coverage checks; positive-credit quotes must appear in the original text</td>
 <td><code>test_review_must_cover_every_criterion</code>, <code>test_duplicate_criterion_reviews_are_rejected</code>, <code>test_quote_must_occur_in_student_response</code></td>
 </tr>
 <tr>
-<td><code>GUARD-01C-04</code> 无法评分≠零分</td>
-<td>某 Criterion 未能判分，被算作 <code>not_met</code></td>
-<td>任意 <code>unscorable</code>→requires_additional_review，不加权继续结算</td>
+<td><code>GUARD-01C-04</code> unscorable ≠ zero</td>
+<td>A Criterion that could not be judged gets counted as <code>not_met</code></td>
+<td>Any <code>unscorable</code> → requires_additional_review, no weighted settlement</td>
 <td><code>test_unscorable_criterion_requires_additional_review</code>, <code>test_unscorable_review_cannot_be_approved</code></td>
 </tr>
 <tr>
-<td><code>GUARD-01C-05</code> Approval 篡改</td>
-<td>审核后有人改变答案、Rubric 或 Review，却复用旧批准</td>
-<td>全来源 HMAC 绑定与重验签</td>
+<td><code>GUARD-01C-05</code> Approval tampering</td>
+<td>After review someone changes the answer, Rubric, or Review but reuses the old approval</td>
+<td>HMAC binding over all sources and re-verification</td>
 <td><code>test_forged_signature_is_rejected</code>, <code>test_modifying_student_response_invalidates_approval</code>, <code>test_approval_is_bound_to_rubric</code></td>
 </tr>
 <tr>
-<td><code>GUARD-01C-06</code> Evidence 注入</td>
-<td>调用方绕过 Scoring/Approval 直接塞入预构造 Evidence</td>
-<td>Pipeline 入口只识别两种 Submission Contract</td>
-<td><code>test_preconstructed_evidence_cannot_enter_pipeline</code>（只保护这一入口）</td>
+<td><code>GUARD-01C-06</code> Evidence injection</td>
+<td>A caller bypasses Scoring/Approval and pushes pre-built Evidence in</td>
+<td>The Pipeline entry point recognizes only the two Submission contracts</td>
+<td><code>test_preconstructed_evidence_cannot_enter_pipeline</code> (protects this entry point only)</td>
 </tr>
 <tr>
-<td><code>GUARD-01C-07</code> 历史改卷</td>
-<td>修改题目 Rubric 后用新标准重算旧 Attempt</td>
-<td><code>(assessment_item_id, revision)</code> 复合版本键 + Attempt 绑定</td>
+<td><code>GUARD-01C-07</code> regrading history</td>
+<td>After the item's Rubric changes, an old Attempt is recomputed under the new standard</td>
+<td><code>(assessment_item_id, revision)</code> composite version key + Attempt binding</td>
 <td><code>test_new_revision_preserves_old_rubric</code>, <code>test_historical_attempt_uses_original_rubric</code></td>
 </tr>
 <tr>
-<td><code>GUARD-01C-08</code> 错人/重复/错题型</td>
-<td>跨学生取证、重复 ID、开放题进入数值评分</td>
-<td>Scope Check、拒重复、Numeric Type Check</td>
+<td><code>GUARD-01C-08</code> wrong person/duplicates/wrong item type</td>
+<td>Evidence taken across students, duplicate IDs, open responses entering numeric scoring</td>
+<td>Scope check, duplicate rejection, Numeric type check</td>
 <td><code>test_attempt_cannot_be_used_for_another_student</code>, <code>test_duplicate_attempt_ids_are_rejected</code>, <code>test_open_response_item_is_not_silently_scored</code></td>
 </tr>
 </tbody>
 </table>
-<h3 id="section-32">10.1 这类调查应该怎样记录为真正 Debugging？</h3>
-<p>只有拿到对应的原始失败现场后，才填写：① 运行命令与 Commit；② 精确异常及发生位置；③ 最初假设与反例；④ 被检查的对象与时间；⑤ 修改前后的源码 Diff；⑥ 失败的中间方案；⑦ 新增 Regression Test；⑧ 测试实际输出与最终 Commit。<strong>测试名只能证明代码中规定了某个期望，不能证明历史上曾发生相应事故，也不能证明本次聊天重新执行过所有测试。</strong></p>
-<h3 id="section-33">10.2 源码包里可以直接观察的设计债</h3>
-<p>以下均为<strong>事后分析/待核实风险</strong>，不是历史 Bug 记录：</p>
+<h3 id="section-33">10.1 How should such an investigation be recorded as real debugging?</h3>
+<p>Only after obtaining the matching original failure context should these be filled in: ① the command run and commit; ② the exact exception and where it occurred; ③ the initial hypothesis and counterexample; ④ the objects examined and when; ⑤ the source diff before and after; ⑥ intermediate approaches that failed; ⑦ the new regression test; ⑧ the actual test output and final commit. <strong>A test name can only prove that the code specifies an expectation; it cannot prove that a matching incident happened historically, nor that this chat re-ran all the tests.</strong></p>
+<h3 id="section-34">10.2 Design debt directly observable in the source pack</h3>
+<p>All of the following are <strong>after-the-fact analysis / risks to verify</strong>, not historical bug records:</p>
 <ol>
-<li><strong>真实 Authorization 缺失：</strong> Review 签名函数相信上游输入的 Reviewer ID；Persisted Service 的 Student ID 同样是函数参数。需后端可信入口保证身份与数据权限。</li>
-<li><strong>Alignment 权威来源尚未统一：</strong> <code>alignment_verified</code> 是 Item 字段，需来自可追溯的权威审核，而不是客户端任意填写。</li>
-<li><strong>Quote 检查只有文本一致性：</strong> 不能代替数学判定和 Rubric 判断质量检查。</li>
-<li><strong>评分版本差异：</strong> Numeric / Open Response 的 Policy Version 不同，混合聚合需显式兼容决策。</li>
-<li><strong>时间轴含义不同：</strong> Numeric Evidence 用 Submit Time；批准开放题 Evidence 用 Approval Time。未来做时间衰减、延迟检索或审计，必须分别保存作答时间与审核/入库时间。</li>
-<li><strong>仓库级版本不可覆盖≠防恶意数据库篡改：</strong> 审计、授权、迁移、数据库约束配置和密钥治理不在本包已实现范围。</li>
-<li><strong>测试 Fixture 与现实观察不同：</strong> <code>assistance_level=0</code>、<code>prior_solution_exposure=False</code> 是单元测试手动提供的条件，不是 URPP 真实作答下自动取得的证明。</li>
+<li><strong>Real authorization missing:</strong> the Review signing function trusts the Reviewer ID passed from upstream; the Persisted Service's Student ID is likewise a function parameter. A trusted backend entry point must guarantee identity and data permissions.</li>
+<li><strong>No single authoritative source for Alignment yet:</strong> <code>alignment_verified</code> is an Item field and must come from a traceable authoritative review, not arbitrary client input.</li>
+<li><strong>The quote check is only textual consistency:</strong> it cannot replace mathematical judgment or quality checks of Rubric judgments.</li>
+<li><strong>Scoring version differences:</strong> Numeric and Open Response have different Policy Versions; mixed aggregation needs an explicit compatibility decision.</li>
+<li><strong>Different meanings of time:</strong> Numeric Evidence uses submit time; approved open-response Evidence uses approval time. Future time decay, delayed retrieval, or auditing must store answer time and review/recording time separately.</li>
+<li><strong>Repository-level no-overwrite ≠ protection against malicious database tampering:</strong> auditing, authorization, migrations, database constraint configuration, and key management are outside what this pack implements.</li>
+<li><strong>Test fixtures differ from real observations:</strong> <code>assistance_level=0</code> and <code>prior_solution_exposure=False</code> are conditions supplied by hand in unit tests, not proof obtained automatically from real URPP answers.</li>
 </ol>
-<hr/>
-<h2 id="section-34">11. 从 Design 01C 到后续 Implementation 的边界</h2>
-<p>本阶段的主要结果是建立<strong>可测试的 Assessment → Evidence → Student State 内部管线</strong>，并为开放题提供“Review Preview 不得直接转为 Evidence”的结构性限制，为数值题提供与历史 Rubric 绑定的 Repository 恢复路径。</p>
-<p>它不应与后来 Implementation 13E 的应用程序 Assistance Log、可恢复教学 CLI、Numeric Attempt Provenance Snapshot、Architecture V2 的 Learning Observation Proposal 混写为同一时间点。这些后续能力必须分别从各自的历史 Commit/原始日志恢复。</p>
-<p>与 Architecture V2 的真正连接在于：旧系统的 Numeric Scorer <strong>本来就不推断作答独立性</strong>；它只复制 Attempt 的作答条件。未来 Teaching Harness 如果增加一层 Learning Observation，可以记录“在应用程序报告提供帮助后完成当前任务”的事实，但不能绕过既有 Mastery Eligibility 或把没有 Help Log 当作 <code>assistance_level=0</code>。</p>
-<hr/>
-<h2 id="section-35">12. 下一批资料：如何恢复真实的错误调查历史？</h2>
-<p>本章完成了八个节点的<strong>源码与测试合同层面</strong>的初步重建。若要满足“0–13 遇到的错误如何分析/如何解决全部写下来”，还需要以下原始证据：失败的测试输出与对应临时 Commit/Working Tree、发生错误前后真实的 Code Diff、当时的调查对话及已经保存的修复日志。Repository Git 只能保留已提交的状态，不能自动还原所有未提交的失败试验。</p>
-<p>接下来的网站章节应沿 Git 时间线检查：这八个节点之间是否有补丁/回滚/架构切换；并把这些模块与后来的 Assignment、Session Recovery、Decision Engine 中的真实调用链对齐。<strong>不能把 01C 的内部 Pipeline 描述为后来完整本地教学 CLI 已经接通的同一个用户界面。</strong></p>
-<h3 id="section-36">本章的来源文件总表</h3>
+<hr />
+<h2 id="section-35">11. The boundary between Design 01C and later implementations</h2>
+<p>The main result of this phase is a <strong>testable internal Assessment → Evidence → Student State pipeline</strong>, with a structural rule for open responses that "a Review Preview must not directly become Evidence", and a Repository recovery path for numeric items bound to the historical Rubric.</p>
+<p>It should not be written as the same point in time as the later Implementation 13E application Assistance Log, the recoverable teaching CLI, the Numeric Attempt Provenance Snapshot, or the Architecture V2 Learning Observation proposal. Those later capabilities must each be recovered from their own historical commits/original logs.</p>
+<p>The real link to Architecture V2 is that the old system's Numeric Scorer <strong>never inferred answer independence in the first place</strong>; it only copied the Attempt's answering conditions. If a future Teaching Harness adds a Learning Observation layer, it can record the fact "the current task was completed after the application reported providing help", but it must not bypass the existing Mastery Eligibility or treat the absence of a Help Log as <code>assistance_level=0</code>.</p>
+<hr />
+<h2 id="section-36">12. Next material: how to recover the real history of error investigations</h2>
+<p>This chapter completes a first reconstruction of the eight checkpoints at the <strong>source and test-contract level</strong>. To satisfy "write down how every error in 0–13 was analyzed and solved", the following original evidence is still needed: failing test output with the matching temporary commit/working tree, the real code diff before and after each error, and the investigation conversations and fix logs saved at the time. Repository Git keeps only committed states and cannot automatically restore all uncommitted failed experiments.</p>
+<p>The next website chapters should check along the Git timeline whether there were patches/rollbacks/architecture switches between these eight checkpoints, and align these modules with the real call chains in the later Assignment, Session Recovery, and Decision Engine. <strong>01C's internal Pipeline must not be described as the same user interface that the later complete local teaching CLI connected to.</strong></p>
+<h3 id="section-37">Source file list for this chapter</h3>
 <ul>
-<li><code>4edec7f/backend/app/services/assessment/models_v02.py</code> 与 <code>numeric_scoring_v02.py</code>；<code>backend/tests/test_numeric_scoring_v02.py</code></li>
-<li><code>0bfa364/backend/app/services/assessment/open_response_models_v02.py</code>；<code>backend/tests/test_open_response_models_v02.py</code></li>
-<li><code>e6ac6e7/backend/app/services/assessment/open_response_scoring_v02.py</code>；<code>backend/tests/test_open_response_scoring_v02.py</code></li>
-<li><code>55bd26b/backend/app/services/assessment/review_approval_v02.py</code>；<code>backend/tests/test_review_approval_v02.py</code></li>
-<li><code>1374ed1/backend/app/services/assessment/assessment_pipeline_v02.py</code>；<code>backend/tests/test_assessment_pipeline_v02.py</code></li>
+<li><code>4edec7f/backend/app/services/assessment/models_v02.py</code> and <code>numeric_scoring_v02.py</code>; <code>backend/tests/test_numeric_scoring_v02.py</code></li>
+<li><code>0bfa364/backend/app/services/assessment/open_response_models_v02.py</code>; <code>backend/tests/test_open_response_models_v02.py</code></li>
+<li><code>e6ac6e7/backend/app/services/assessment/open_response_scoring_v02.py</code>; <code>backend/tests/test_open_response_scoring_v02.py</code></li>
+<li><code>55bd26b/backend/app/services/assessment/review_approval_v02.py</code>; <code>backend/tests/test_review_approval_v02.py</code></li>
+<li><code>1374ed1/backend/app/services/assessment/assessment_pipeline_v02.py</code>; <code>backend/tests/test_assessment_pipeline_v02.py</code></li>
 <li><code>3424920/docs/03c_assessment_records_and_authorization.md</code></li>
-<li><code>1b8dfdb/backend/app/repositories/assessment_records_v02.py</code>；<code>backend/tests/test_assessment_records_v02.py</code></li>
-<li><code>aadd8e3/backend/app/services/assessment/persisted_numeric_pipeline_v02.py</code>；<code>backend/tests/test_persisted_numeric_pipeline_v02.py</code></li>
+<li><code>1b8dfdb/backend/app/repositories/assessment_records_v02.py</code>; <code>backend/tests/test_assessment_records_v02.py</code></li>
+<li><code>aadd8e3/backend/app/services/assessment/persisted_numeric_pipeline_v02.py</code>; <code>backend/tests/test_persisted_numeric_pipeline_v02.py</code></li>
 </ul>
-<p><strong>Source Scope：</strong> 以上文件是用户提供的八个历史节点的选定文件，不是一个可独立执行的完整历史仓库。<code>assessment_history_source_pack.zip</code> 内保存各版本的原文；本章是附有版本定位符的解释，所有尚无事故日志的失效情境均标为 Guard/Test，而非真实事故。</p>
-</main></div>
-<script>
-(()=>{'use strict';const input=document.getElementById('chapter-search'),count=document.getElementById('search-count'),body=document.querySelector('.archive-body');let matches=[],index=-1;
-function clear(){body.querySelectorAll('.archive-hit').forEach(e=>e.classList.remove('archive-hit'));matches=[];index=-1;}
-function find(){clear();const q=input.value.trim().toLocaleLowerCase();if(!q){count.textContent='';return;}matches=Array.from(body.querySelectorAll('p,li,td,th,h2,h3')).filter(el=>!el.closest('pre')&&el.textContent.toLocaleLowerCase().includes(q));count.textContent=matches.length+' 个包含该词的段落';if(matches.length)next();}
-function next(){if(!matches.length)return;if(index>=0)matches[index].classList.remove('archive-hit');index=(index+1)%matches.length;matches[index].classList.add('archive-hit');matches[index].scrollIntoView({block:'center',behavior:'smooth'});count.textContent=(index+1)+' / '+matches.length+' 个匹配段落';}
-input.addEventListener('input',find);document.getElementById('find-next').addEventListener('click',next);document.getElementById('reset-find').addEventListener('click',()=>{input.value='';clear();count.textContent='';});
-})();
+<p><strong>Source scope:</strong> the files above are selected files from eight historical checkpoints provided by the user, not a complete, independently runnable historical repository. <code>assessment_history_source_pack.zip</code> holds the original text of each version; this chapter is an explanation with version locators, and every failure scenario without an incident log is labeled Guard/Test, not a real incident.</p><footer class="footer">URPP Engineering Archive · Reply 4 / 10 · English edition; Chinese original in zh-original/</footer></main></div><script>
+(()=>{const input=document.getElementById('chapter-search'),count=document.getElementById('search-count'),article=document.querySelector('.chapter-article');let hits=[],i=-1;
+function reset(){document.querySelectorAll('mark.search-hit').forEach(m=>m.replaceWith(document.createTextNode(m.textContent)));article.normalize();hits=[];i=-1}
+input.addEventListener('input',()=>{reset();const q=input.value.trim().toLowerCase();if(!q){count.textContent='Search this chapter';return}
+const w=document.createTreeWalker(article,NodeFilter.SHOW_TEXT,{acceptNode:n=>n.nodeValue.toLowerCase().includes(q)?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT});const nodes=[];while(w.nextNode())nodes.push(w.currentNode);
+for(const n of nodes){const t=n.nodeValue,low=t.toLowerCase();let p=0,s;const f=document.createDocumentFragment();while((s=low.indexOf(q,p))!==-1){f.append(t.slice(p,s));const m=document.createElement('mark');m.className='search-hit';m.textContent=t.slice(s,s+q.length);f.append(m);hits.push(m);p=s+q.length}f.append(t.slice(p));n.replaceWith(f)}
+count.textContent=hits.length+' matches (Enter = next)';});
+input.addEventListener('keydown',e=>{if(e.key==='Enter'&&hits.length){i=(i+1)%hits.length;hits[i].scrollIntoView({block:'center'});count.textContent=(i+1)+' / '+hits.length}});})();
 </script></body></html>

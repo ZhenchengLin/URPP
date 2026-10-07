@@ -1,53 +1,53 @@
 # URPP Engineering Archive · Reply 5 / 10
-## Logical Decision Engine、Teaching Orchestration 与 Personalized Session Adapter
+## Logical Decision Engine, Teaching Orchestration, and the Personalized Session Adapter
 
-> **档案性质：历史源码复原与事后技术分析。** 本章依据 `decision_orchestration_history_source_pack.zip` 内八个 Git 节点的代码、测试和设计文档，辅以此前保存的 13C-2B 原始测试失败与修复日志。函数名称与字段按当时的历史版本记录。**本章不是当前 HEAD 的完整代码审计，也不把防御性测试写成已经发生的生产事故。**
+> **Archive nature: historical source reconstruction and after-the-fact technical analysis.** This chapter is based on the code, tests, and design documents of eight Git checkpoints in `decision_orchestration_history_source_pack.zip`, supplemented by the previously saved original 13C-2B test-failure and fix logs. Function names and fields are recorded as in the historical versions. **This chapter is not a complete audit of the current HEAD, and it does not describe defensive tests as production incidents that happened.**
 >
-> **历史定位：** Design 01D，以及明确标记为 Implementation 13B-1、13B-2、13C-1、13C-2A 的后续实现。原始 Implementation 0–13 总 Roadmap 的整体阶段对应关系仍待查证。**这里的八个 Commit 是历史检查点，不是八个完整 Implementation。**
+> **Historical placement:** Design 01D, plus the later work explicitly labeled Implementation 13B-1, 13B-2, 13C-1, and 13C-2A. How these map onto the original overall Implementation 0–13 roadmap is still unverified. **The eight commits here are historical checkpoints, not eight complete Implementations.**
 
-## 导读：为什么这一章必须从“选择”和“执行”的区别讲起？
+## Introduction: why this chapter must start from the difference between "selecting" and "executing"
 
-上一章关注 `Student Response → Scoring → Evidence → ObjectiveStateV02`。本章接上另外半圈：`ObjectiveStateV02 → DecisionContext → TeachingAction → Agent → Content`。这两半圈不是同一个函数：一个答案被评分，不会自动使 Agent 的一段解释成为新学习证据；一个模型选择了 `TRANSFER_ASSESSMENT`，也不会自动证明学生已完成 Transfer。
+The previous chapter covered `Student Response → Scoring → Evidence → ObjectiveStateV02`. This chapter covers the other half of the loop: `ObjectiveStateV02 → DecisionContext → TeachingAction → Agent → Content`. The two halves are not the same function: scoring an answer does not automatically make an Agent's explanation new learning evidence, and a model choosing `TRANSFER_ASSESSMENT` does not automatically prove the student completed a transfer.
 
-本章将严格区分六个时刻：**State 已生成、动作被允许、动作被选择、Agent 被调用、Assessment 被发放、Attempt 被接受并重新估计 State**。历史实现逐次增加这些能力；早期版本不能被描述成后期完整的恢复式教学会话。
+This chapter strictly distinguishes six moments: **State produced, action allowed, action selected, Agent called, Assessment delivered, Attempt accepted and State re-estimated**. The historical implementation added these capabilities one at a time; early versions must not be described as the later complete recoverable teaching session.
 
-**一条主线：**
+**One thread:**
 
 ```text
-已计算的 ObjectiveStateV02
-   → DecisionContextV01（时间、decision_id）
-   → PedagogicalPolicyV01.allowed_actions()（状态依赖候选集）
-   → RuleBasedControllerV01.propose() / 可替换 Controller
-   → DecisionEngineV01.decide()（检查提议，必要时 fallback）
-   → DecisionResultV01（选择结果，不是已执行事件）
+Computed ObjectiveStateV02
+   → DecisionContextV01 (time, decision_id)
+   → PedagogicalPolicyV01.allowed_actions() (state-dependent candidate set)
+   → RuleBasedControllerV01.propose() / replaceable Controller
+   → DecisionEngineV01.decide() (checks the proposal, falls back if needed)
+   → DecisionResultV01 (a selection, not an executed event)
    → TeachingTurnOrchestratorV01.run_turn()
-   → 根据 selected_action 路由到 Professor 或 Assessment Agent
-   → TeachingTurnResultV01（返回内容，不是学习证据）
-   → [后续版本：存储题目绑定、待答题、Attempt 和状态重新计算]
+   → route to the Professor or Assessment Agent by selected_action
+   → TeachingTurnResultV01 (returned content, not learning evidence)
+   → [later versions: stored item binding, pending question, Attempt, and state recomputation]
 ```
 
-## 1. 八个 Git 历史检查点：组件是什么时候出现的？
+## 1. Eight Git checkpoints: when did each component appear?
 
-| Commit 前缀 | 资料包中的历史对象 | 能确认的改变 | 此时仍不能声称的能力 |
+| Commit prefix | Historical objects in the source pack | Confirmable change | Capability that still cannot be claimed |
 |---|---|---|---|
-| `1b26d215` | `models_v01.py`、`policy_v01.py`、`engine_v01.py`、对应测试、`docs/03d_logical_decision_engine.md` | 建立规则式 Controller、允许动作列表、Proposal/Result 和受限的 fallback | 没有真实 LLM、Agent 执行、作答提交或 Session 持久化 |
-| `9151b227` | `turn_orchestrator_v01.py`、测试 | 将已选择动作分发到 Professor/Assessment 两类 Agent Port；禁止把返回内容当证据 | 无法保证学生实际看见内容；不提交 Attempt |
-| `98f08802` | `numeric_teaching_session_v01.py`、测试 | 在内存中记录 Pending Numeric Assessment；绑定已存题目、Revision、Student/Session 和已有 Attempt ID | Pending 不是数据库持久化；进程重启后不可据此恢复 |
-| `99c983b8` | 同名 Session 文件的后续版本和新增测试 | 增加 `AssessmentDeliveryV01`、服务端 Assignment ID、结构化返回，沿用旧版交互入口 | Assignment ID 不是登录凭证；该版本 Pending 仍在内存中 |
-| `0e9b77b1` | `student_request_v01.py`、测试、`docs/07_*` | 13B-1：显式结构化学习请求与独立的 `PersonalizedDecisionContextV01` | 只定义请求，不选择或执行个性化动作 |
-| `5aec0609` | `personalized_engine_v01.py`、测试、`docs/08_*` | 13B-2：无请求时沿用基线，有请求时映射动作、记录来源，必要时扩展原基线动作集 | 不代表题目存在、不发放题目、不授予掌握 |
-| `ad0f9a51` | `personalized_turn_orchestrator_v01.py`、测试、`docs/09_*` | 13C-1：一次个性化决策，仅调用对应的一个 Agent；原始请求传递到 Agent | 无持久化 Assignment、真实 LLM、学习证据或完整会话 |
-| `9ea307b7` | `personalized_numeric_session_adapter_v01.py`、测试、`docs/10_*` | 13C-2A：通过 Adapter 将个性化教学 Turn 接入既有 Recoverable Numeric Session 接口 | Adapter 本身不保存个性化决策来源，且其单元测试不等于重启集成测试 |
+| `1b26d215` | `models_v01.py`, `policy_v01.py`, `engine_v01.py`, matching tests, `docs/03d_logical_decision_engine.md` | Rule-based Controller, allowed-action list, Proposal/Result, and a restricted fallback | No real LLM, Agent execution, answer submission, or Session persistence |
+| `9151b227` | `turn_orchestrator_v01.py`, tests | Dispatches a selected action to one of two Agent Ports (Professor/Assessment); returned content must not be treated as evidence | Cannot guarantee the student actually saw the content; no Attempt submission |
+| `98f08802` | `numeric_teaching_session_v01.py`, tests | Records a Pending Numeric Assessment in memory; binds the stored item, Revision, Student/Session, and existing Attempt IDs | Pending is not database persistence; cannot be recovered after a process restart |
+| `99c983b8` | Later version of the same Session file and new tests | Adds `AssessmentDeliveryV01`, a server-side Assignment ID, structured returns, keeping the old interaction entry point | The Assignment ID is not a login credential; Pending is still in memory in this version |
+| `0e9b77b1` | `student_request_v01.py`, tests, `docs/07_*` | 13B-1: explicit structured learning requests and a separate `PersonalizedDecisionContextV01` | Defines requests only; does not select or execute personalized actions |
+| `5aec0609` | `personalized_engine_v01.py`, tests, `docs/08_*` | 13B-2: baseline when there is no request; with a request, maps to an action, records the source, and expands the baseline action set if needed | Does not mean an item exists, does not deliver items, does not grant mastery |
+| `ad0f9a51` | `personalized_turn_orchestrator_v01.py`, tests, `docs/09_*` | 13C-1: one personalized decision calls only the matching single Agent; the original request is passed to the Agent | No persisted Assignment, real LLM, learning evidence, or full session |
+| `9ea307b7` | `personalized_numeric_session_adapter_v01.py`, tests, `docs/10_*` | 13C-2A: an Adapter connects personalized teaching turns to the existing Recoverable Numeric Session interface | The Adapter itself does not store the personalized decision source, and its unit tests are not a restart integration test |
 
-**关于历史范围：** 这些都是 `git show <commit>:<file>` 恢复的历史版本。`9ea307b7` 引用的 `RecoverableNumericSessionServiceV01` 并不包含在本轮源码包中，因此本章只分析 Adapter 直接可见的调用契约，不杜撰该 Service 的内部事务实现。上一轮已经保存的 13C-2B 日志可证明另一次 SQLite 集成测试曾经出现错误测试断言；它不能替代本轮八个 Commit 的全部开发日志。
+**About historical scope:** these are historical versions recovered with `git show <commit>:<file>`. The `RecoverableNumericSessionServiceV01` referenced by `9ea307b7` is not in this round's source pack, so this chapter analyzes only the call contract directly visible in the Adapter and does not invent that Service's internal transaction implementation. The previously saved 13C-2B log proves that another SQLite integration test once had a wrong test assertion; it cannot replace the full development logs of these eight commits.
 
-## 2. Decision Engine V0.1：模型“建议动作”和策略“允许动作”分开
+## 2. Decision Engine V0.1: the model "suggests" an action, the policy "allows" actions
 
-### 2.1 六种动作如何划分
+### 2.1 How the six actions are divided
 
-历史 `TeachingActionV01` 枚举定义了六种名称：
+The historical `TeachingActionV01` enum defines six names:
 
-| `TeachingActionV01` | 原始值 | 早期路由 |
+| `TeachingActionV01` | Raw value | Early routing |
 |---|---|---|
 | `DIAGNOSTIC_ASSESSMENT` | `diagnostic_assessment` | Assessment Agent |
 | `CONCEPTUAL_REVIEW` | `conceptual_review` | Professor Agent |
@@ -56,11 +56,11 @@
 | `SELF_EXPLANATION` | `self_explanation` | Professor Agent |
 | `TRANSFER_ASSESSMENT` | `transfer_assessment` | Assessment Agent |
 
-动作的**名称不是执行保证**。例如 `INDEPENDENT_PRACTICE` 是一种教学活动类型，并不能证明学生没有额外使用工具；`TRANSFER_ASSESSMENT` 是拟执行的动作，并不能证明发生了成功的知识迁移。早期 Orchestrator 只分发这六种动作，不生成可直接用于 Mastery 的 Evidence。
+An action's **name is not a guarantee of execution**. For example, `INDEPENDENT_PRACTICE` is a type of teaching activity and cannot prove the student used no extra tools; `TRANSFER_ASSESSMENT` is an intended action and cannot prove a successful knowledge transfer happened. The early Orchestrator only dispatches these six actions and produces no Evidence usable directly for Mastery.
 
-### 2.2 DecisionContextV01：谁对学生状态负责？
+### 2.2 DecisionContextV01: who is responsible for student state?
 
-`DecisionContextV01` 内含 `decision_id`、已有的 `ObjectiveStateV02` 和 `requested_at`。文件注释明说：Context 由应用层构造，Decision Model **不得自行构造 Student State**。`requested_at` 必须带时区，并满足：
+`DecisionContextV01` holds `decision_id`, an existing `ObjectiveStateV02`, and `requested_at`. The file comment says explicitly: the Context is built by the application layer, and the Decision Model **must not build Student State on its own**. `requested_at` must be timezone-aware and satisfy:
 
 ```python
 if self.requested_at < self.objective_state.as_of:
@@ -69,27 +69,27 @@ if self.requested_at < self.objective_state.as_of:
     )
 ```
 
-这不是为了让时间戳看起来整齐，而是确定一项因果顺序约束：**一次教学选择不应被标注为发生在其所依据的状态快照之前。** 在后期 CLI 的实际错误中，错误的恢复时间和下一轮 Decision 时间违反了这个约束；根因不是应该删除这个检查，而是调用链使用了相互矛盾的时间。
+This is not about tidy timestamps; it fixes a causal-order constraint: **a teaching choice must not be labeled as happening before the state snapshot it is based on.** In a real error in the later CLI, a wrong recovery time and the next turn's Decision time violated this constraint; the root cause was not that this check should be removed, but that the call chain used contradictory times.
 
-`model_config = ConfigDict(frozen=True, extra="forbid")` 使这些 Pydantic Contract 对普通赋值和未声明字段保持约束；但这本身不是身份验证或面对恶意进程的隔离边界。引用 `ObjectiveStateV02` 也不自动证明调用方有权读取某个真实学生的数据。
+`model_config = ConfigDict(frozen=True, extra="forbid")` keeps these Pydantic contracts constrained against ordinary assignment and undeclared fields; but this by itself is not authentication or an isolation boundary against a malicious process. Referencing an `ObjectiveStateV02` also does not automatically prove the caller may read a real student's data.
 
-### 2.3 PedagogicalPolicyV01：早期允许动作集合
+### 2.3 PedagogicalPolicyV01: the early allowed-action sets
 
-原始 `allowed_actions()` 的**精确映射**如下：
+The **exact mapping** of the original `allowed_actions()` is:
 
-| `state.state` | 原始 `allowed_actions()` 返回值（保留顺序） |
+| `state.state` | Original `allowed_actions()` return value (order preserved) |
 |---|---|
 | `UNKNOWN` | `DIAGNOSTIC_ASSESSMENT`, `CONCEPTUAL_REVIEW`, `INDEPENDENT_PRACTICE` |
-| `EMERGING` 或 `DEVELOPING` | `CONCEPTUAL_REVIEW`, `CONCEPTUAL_HINT`, `INDEPENDENT_PRACTICE`, `SELF_EXPLANATION` |
+| `EMERGING` or `DEVELOPING` | `CONCEPTUAL_REVIEW`, `CONCEPTUAL_HINT`, `INDEPENDENT_PRACTICE`, `SELF_EXPLANATION` |
 | `COMPETENT` | `INDEPENDENT_PRACTICE`, `SELF_EXPLANATION`, `TRANSFER_ASSESSMENT` |
 | `STRONG` | `SELF_EXPLANATION`, `TRANSFER_ASSESSMENT`, `INDEPENDENT_PRACTICE` |
-| 其他标签 | `ValueError("Unsupported Student State. No teaching action allowed.")` |
+| Other labels | `ValueError("Unsupported Student State. No teaching action allowed.")` |
 
-这个列表是**教学策略基线**，不是经过随机实验验证的最优教学顺序。原始 `policy_v01.py` 注释明确说明这些规则是 engineering baselines。`allowed_actions` 的顺序也很重要：在 Controller 无法给出被允许的动作时，fallback 会采用自己的偏好，必要时选集合中的第一个动作。
+This list is a **teaching-policy baseline**, not an optimal teaching order validated by randomized experiments. The comments in the original `policy_v01.py` say explicitly that these rules are engineering baselines. The order of `allowed_actions` also matters: when the Controller cannot provide an allowed action, the fallback uses its own preference and, if necessary, the first action in the set.
 
-### 2.4 RuleBasedControllerV01：同为 UNKNOWN，为什么可能选不同动作？
+### 2.4 RuleBasedControllerV01: why can two UNKNOWN states choose different actions?
 
-核心源码的条件分支为：
+The core source branch is:
 
 ```python
 if (
@@ -113,31 +113,31 @@ else:
     preferred = allowed_actions[0]
 ```
 
-所以 `UNKNOWN + distinct_assessment_count == 0` 选 `DIAGNOSTIC_ASSESSMENT`；`UNKNOWN + distinct_assessment_count > 0` 选 `INDEPENDENT_PRACTICE`。这只基于代码可见的字段，**不代表系统已判定学生需要多少帮助**。例如一条 Attempt 因 Assistance Unknown 被排除后，计数究竟如何变化取决于 State Estimator 的证据统计语义，不能仅凭这段分支推断。
+So `UNKNOWN + distinct_assessment_count == 0` selects `DIAGNOSTIC_ASSESSMENT`, and `UNKNOWN + distinct_assessment_count > 0` selects `INDEPENDENT_PRACTICE`. This is based only on fields visible in the code and **does not mean the system has decided how much help the student needs**. For example, after an Attempt is excluded because its assistance is unknown, how the count changes depends on the State Estimator's evidence-counting semantics and cannot be inferred from this branch alone.
 
-### 2.5 DecisionEngineV01 的故障处理流程
+### 2.5 DecisionEngineV01 failure handling
 
 ```text
-已有 DecisionContext
+Existing DecisionContext
   → policy.allowed_actions(context)
   → controller.propose(context, allowed)
-       ├─ 提议对象不是 DecisionProposalV01 → fallback
-       ├─ 提议动作不在 allowed 中          → fallback
-       ├─ controller 抛出 TimeoutError     → fallback
-       └─ 提议合法                          → 保留提议
-  → 再次检查 fallback 结果是否 allowed
+       ├─ proposal is not a DecisionProposalV01 → fallback
+       ├─ proposed action not in allowed         → fallback
+       ├─ controller raises TimeoutError         → fallback
+       └─ proposal valid                         → keep proposal
+  → check again that the fallback result is allowed
   → DecisionResultV01
        [decision_id, selected_action, allowed_actions,
         controller_version, fallback_used, policy_version]
 ```
 
-原始代码**只捕获 `TimeoutError`**。Controller 抛出其他异常时不会自动使用 fallback，而是继续向上抛出；这有利于避免把所有实现错误都伪装成“模型暂时不可用”。它没有实现真实的定时器：所谓“timeout fallback”指 Controller 已经抛出 `TimeoutError` 时的处理，不表示 Engine 本身能强制中断耗时调用。
+The original code **catches only `TimeoutError`**. If the Controller raises any other exception, the fallback is not used automatically; the exception propagates. This avoids disguising every implementation error as "model temporarily unavailable". It does not implement a real timer: "timeout fallback" means handling a `TimeoutError` the Controller has already raised, not that the Engine can forcibly interrupt a slow call.
 
-历史测试为这一设计提供了具体回归点：`test_disallowed_proposal_triggers_fallback`、`test_controller_timeout_triggers_fallback`、`test_unstructured_output_triggers_fallback`、`test_decision_cannot_precede_state_snapshot` 和 `test_decision_does_not_modify_student_state`。这些是**防御性测试**；源码包没有显示它们曾在提交前真实失败过。
+Historical tests give concrete regression points for this design: `test_disallowed_proposal_triggers_fallback`, `test_controller_timeout_triggers_fallback`, `test_unstructured_output_triggers_fallback`, `test_decision_cannot_precede_state_snapshot`, and `test_decision_does_not_modify_student_state`. These are **defensive tests**; the source pack does not show them really failing before the commit.
 
-### 2.6 Controller 以后可以替换，但不能偷偷改变证据系统
+### 2.6 The Controller can be replaced later, but cannot quietly change the evidence system
 
-`LogicalDecisionController(Protocol)` 的最小入口是：
+The minimal entry point of `LogicalDecisionController(Protocol)` is:
 
 ```python
 def propose(
@@ -148,15 +148,15 @@ def propose(
     ...
 ```
 
-原始 `docs/03d_logical_decision_engine.md` 明确提出未来可以换成 NanoJev Controller，但该历史节点**并没有训练或接入 NanoJev/Jev**。这是为可替换 Controller 设计的接口，不是模型已上线的证据。即使以后替换，模型也只能返回候选教学动作，不能直接制造 Evidence、修改 State 或绕过评估条件。
+The original `docs/03d_logical_decision_engine.md` explicitly proposes that it could later be replaced by a NanoJev Controller, but this historical checkpoint **did not train or connect NanoJev/Jev**. This is an interface designed for a replaceable Controller, not evidence that a model went live. Even if replaced later, the model can only return a candidate teaching action; it cannot create Evidence, modify State, or bypass assessment conditions.
 
-## 3. Orchestrator V0.1：一次选择只分发给一个 Agent
+## 3. Orchestrator V0.1: one selection is dispatched to exactly one Agent
 
-### 3.1 三个对象的职责
+### 3.1 Responsibilities of three objects
 
-`DecisionContextBuilderV01.build()` 将已经存在的 State、`decision_id`、`requested_at` 组合成 Contract。它检查传入对象类型与非空 ID；**它没有从 Repository 认证或取得 State**，依赖上游调用方提供可信数据。
+`DecisionContextBuilderV01.build()` combines an existing State, `decision_id`, and `requested_at` into a contract. It checks the types of the passed objects and that IDs are non-empty; **it does not authenticate or fetch State from a Repository** and relies on the upstream caller to supply trusted data.
 
-`TeachingTurnOrchestratorV01.run_turn()` 调用 `DecisionEngineV01.decide()`，检查返回结果的 ID 和 selected action，然后根据集合分发：
+`TeachingTurnOrchestratorV01.run_turn()` calls `DecisionEngineV01.decide()`, checks the returned result's ID and selected action, then dispatches by set:
 
 ```python
 ASSESSMENT_ACTIONS = frozenset({
@@ -172,29 +172,29 @@ PROFESSOR_ACTIONS = frozenset({
 })
 ```
 
-`TeachingAgentPortV01.produce(context=..., decision=...) -> str` 是 **Port / Protocol**。当时的测试使用 `RecordingAgent` 等 Test Double，不存在已接入生产 LLM 的证据。返回的 `TeachingTurnResultV01` 包含 `decision`、`agent_kind`、`content`，并在内容为空、非字符串或 Agent 异常时拒绝成功结果。
+`TeachingAgentPortV01.produce(context=..., decision=...) -> str` is a **Port / Protocol**. The tests at the time used test doubles such as `RecordingAgent`; there is no evidence of a connected production LLM. The returned `TeachingTurnResultV01` contains `decision`, `agent_kind`, and `content`, and a successful result is refused when the content is empty, not a string, or the Agent raises.
 
-### 3.2 原始测试怎样证明路由没有串线？
+### 3.2 How the original tests prove routing does not cross wires
 
-`test_unknown_state_routes_diagnostic_to_assessment_agent`：构造无证据的 UNKNOWN State，期望 `DIAGNOSTIC_ASSESSMENT`，检查 Assessment Agent 调用一次、Professor Agent 调用零次。
+`test_unknown_state_routes_diagnostic_to_assessment_agent`: builds an UNKNOWN State with no evidence, expects `DIAGNOSTIC_ASSESSMENT`, and checks the Assessment Agent is called once and the Professor Agent zero times.
 
-`test_conceptual_review_routes_to_professor_agent`：注入专门提出 `CONCEPTUAL_REVIEW` 的 Controller，检查 Professor Agent 调用一次、Assessment Agent 调用零次。
+`test_conceptual_review_routes_to_professor_agent`: injects a Controller that always proposes `CONCEPTUAL_REVIEW` and checks the Professor Agent is called once and the Assessment Agent zero times.
 
-`test_disallowed_controller_uses_policy_fallback`：非法 Transfer 提议回落为未知状态下允许的 Diagnostic，仍由 Assessment Agent 执行。
+`test_disallowed_controller_uses_policy_fallback`: an illegal Transfer proposal falls back to the Diagnostic allowed in the unknown state, still executed by the Assessment Agent.
 
-`test_agent_failure_is_not_silently_replaced`：Assessment Agent 明确抛异常时，Orchestrator 不伪造另一段教学内容来宣称本轮成功。
+`test_agent_failure_is_not_silently_replaced`: when the Assessment Agent explicitly raises, the Orchestrator does not invent other teaching content to claim the turn succeeded.
 
-`test_teaching_turn_does_not_update_student_state`：比较前后的 `model_dump(mode="json")`，验证正常路径没有改变传入 State。
+`test_teaching_turn_does_not_update_student_state`: compares `model_dump(mode="json")` before and after to verify the normal path did not change the passed State.
 
-### 3.3 不应夸大“无法修改 State”
+### 3.3 Do not overstate "cannot modify State"
 
-原始实现会在 Controller 和 Agent 调用前后保存并比较 State 的 JSON 快照，发现修改则抛错；这是一项**进程内意外修改检查**。它不是认证、不可抵赖证明、数据库权限控制，也不能阻止已经发生的其他外部副作用。`content` 返回代表 Port 已生成内容，并不保证浏览器已呈现、学生已阅读或学习已发生。
+The original implementation saves and compares JSON snapshots of the State before and after the Controller and Agent calls, raising an error if it changed; this is an **in-process check against accidental modification**. It is not authentication, non-repudiation, or database permission control, and cannot prevent other external side effects that already happened. Returned `content` means the Port produced content; it does not guarantee the browser displayed it, the student read it, or learning happened.
 
-## 4. 从单轮教学变成“已选题目—待答题—已存 Attempt”绑定
+## 4. From single teaching turns to "selected item – pending question – stored Attempt" binding
 
-### 4.1 `98f08802` 的初始 NumericTeachingSessionV01
+### 4.1 The initial NumericTeachingSessionV01 in `98f08802`
 
-这个历史版本在内存中维护：
+This historical version maintains in memory:
 
 ```python
 self._state = estimate_objective_state([], ...)
@@ -203,17 +203,17 @@ self._used_decision_ids: set[str] = set()
 self._pending: PendingNumericAssessmentV01 | None = None
 ```
 
-`start_numeric_turn()` 接收服务端所选 `assessment_item_id`、`item_revision`、`decision_id`、`requested_at`，从 Repository 加载指定 Revision，检查 Course/Objective、Objective Alignment 和时间，然后执行一次 Orchestrator。只有当动作属于 Assessment、路由到 Assessment Agent，且 `turn.content == item.prompt`，才记录 Pending。
+`start_numeric_turn()` receives the server-selected `assessment_item_id`, `item_revision`, `decision_id`, and `requested_at`, loads the specified Revision from the Repository, checks Course/Objective, Objective Alignment, and time, then runs the Orchestrator once. A Pending is recorded only if the action is an Assessment, it routes to the Assessment Agent, and `turn.content == item.prompt`.
 
-**为什么要比较 exact prompt？** 这是该历史版本将自由文本 Agent 输出与已经保存的题目对应起来的临时工程约束。如果允许 Agent 临时生成另一道题，但仍把 Attempt 记入既有 Item 的 Rubric，评分对象就会错位。exact prompt 是一个很窄的兼容办法，不是完整交付验证；它既不能证明用户实际看到了问题，也不适合具有渲染格式差异的未来 UI。
+**Why compare the exact prompt?** It is this historical version's temporary engineering constraint for matching free-text Agent output to the stored item. If the Agent were allowed to generate a different question on the fly while the Attempt was still scored against the existing Item's Rubric, the scoring target would be mismatched. The exact prompt is a very narrow compatibility measure, not complete delivery verification; it cannot prove the user actually saw the question and does not suit a future UI with rendering differences.
 
-`accept_stored_attempt(attempt_id, as_of)` 的验证次序包括：必须有 Pending、Attempt 未重复接受、从 Repository 加载 Attempt、Student/Course/Objective/Session 一致、Item ID 与 Revision 等于 Pending、`submitted_at >= pending.requested_at`、`as_of` 不早于本次提交和当前 State。随后它使用已有 PersistedNumericAssessmentService 从 accepted attempt IDs 重新估计 State；**只有重新估计成功后**，才更新内存中的 accepted IDs、State，并清空 Pending。
+`accept_stored_attempt(attempt_id, as_of)` validates in order: a Pending must exist; the Attempt has not already been accepted; the Attempt is loaded from the Repository; Student/Course/Objective/Session match; Item ID and Revision equal the Pending's; `submitted_at >= pending.requested_at`; `as_of` is not earlier than this submission or the current State. It then re-estimates State from the accepted attempt IDs with the existing PersistedNumericAssessmentService; **only after re-estimation succeeds** does it update the in-memory accepted IDs and State and clear the Pending.
 
-这说明 Repository 存储 Attempt 与 Session 维护 Pending 是不同层次：这个历史版本的“Persisted Numeric Assessment”不等于 Session 自身已具备重启恢复能力。原始模块 docstring 直接声明它是 `in-memory session coordination`。
+This shows that the Repository storing Attempts and the Session maintaining a Pending are different layers: in this historical version, "Persisted Numeric Assessment" does not mean the Session itself could recover after a restart. The original module docstring declares directly that it is `in-memory session coordination`.
 
-### 4.2 `99c983b8` 为什么增加结构化 AssessmentDelivery？
+### 4.2 Why `99c983b8` added a structured AssessmentDelivery
 
-历史 Diff 清楚显示新增：
+The historical diff clearly shows the addition:
 
 ```python
 class AssessmentDeliveryV01(BaseModel):
@@ -226,51 +226,51 @@ class AssessmentDeliveryV01(BaseModel):
     assigned_at: datetime
 ```
 
-新的 `start_structured_numeric_turn()` 依旧调用 Agent，但结构化结果的 `prompt` 来自已经保存的 `item.prompt`，**不使用 Agent 自由文本替换题目**。它生成 `token_urlsafe(24)` 作为本次内存 Pending 的 Assignment ID。`accept_stored_attempt(..., assignment_id=...)` 在结构化路径核对该 ID；旧路径仍保持不传 ID 的兼容行为。
+The new `start_structured_numeric_turn()` still calls the Agent, but the structured result's `prompt` comes from the stored `item.prompt`; **the Agent's free text does not replace the question**. It generates `token_urlsafe(24)` as the Assignment ID for this in-memory Pending. `accept_stored_attempt(..., assignment_id=...)` checks that ID on the structured path; the old path keeps its compatible behavior without an ID.
 
 ```text
-旧路径：Agent text == stored prompt → Pending（无 Assignment ID）
-新路径：Agent 被调用 → Delivery.prompt = stored prompt
-        → Pending（带 Assignment ID）
-        → 提交时要求匹配 Assignment ID
+Old path: Agent text == stored prompt → Pending (no Assignment ID)
+New path: Agent called → Delivery.prompt = stored prompt
+        → Pending (with Assignment ID)
+        → submission must match the Assignment ID
 ```
 
-这个版本的 Assignment ID 是**关联本次 Pending 的随机标识**，不是用户身份认证、服务端持久化保证或端到端防作弊证明。历史测试覆盖 `test_structured_delivery_uses_stored_prompt`、`test_structured_submission_requires_assignment_id`、`test_wrong_assignment_does_not_consume_pending_turn`、`test_previous_assignment_cannot_complete_new_turn` 和旧路径兼容。
+In this version the Assignment ID is **a random identifier linked to this Pending**, not user authentication, a server-side persistence guarantee, or end-to-end anti-cheating proof. Historical tests cover `test_structured_delivery_uses_stored_prompt`, `test_structured_submission_requires_assignment_id`, `test_wrong_assignment_does_not_consume_pending_turn`, `test_previous_assignment_cannot_complete_new_turn`, and old-path compatibility.
 
-### 4.3 三种不同的绑定，不要混为一谈
+### 4.3 Three different bindings; do not mix them up
 
-1. **Item 绑定**：提交的 Attempt 必须对应指定 Assessment Item 和原始 Revision。
-2. **Session 绑定**：Student、Course、Objective、Session 必须匹配正在等待的本次任务。
-3. **Assignment 绑定**：在结构化路径中，还要提交正确的当前 Assignment ID。
+1. **Item binding**: the submitted Attempt must correspond to the specified Assessment Item and its original Revision.
+2. **Session binding**: Student, Course, Objective, and Session must match the task currently waiting.
+3. **Assignment binding**: on the structured path, the correct current Assignment ID must also be submitted.
 
-三者缺一会降低对错误记录关联的防护强度，但它们都不等于现实世界的身份验证；Pending 内存变量也不具备自动事务持久化。
+Missing any of these weakens protection against wrongly linked records, but none of them is real-world identity verification; the in-memory Pending variable also has no automatic transactional persistence.
 
-## 5. 13B-1：学生的“请求”不是学习状态
+## 5. 13B-1: a student's "request" is not learning state
 
-`0e9b77b1` 中出现六种 `StudentLearningRequestKindV01`：
+`0e9b77b1` introduces six `StudentLearningRequestKindV01` values:
 
 ```text
 request_explanation / try_independently / request_hint
 request_diagnostic / request_self_explanation / request_transfer
 ```
 
-`StudentLearningRequestV01` 保存 `objective_id`、枚举式 `request_kind`、带时区的 `requested_at`。它不是把自由文本交给模型任意解释，而是一个有限的结构化 Contract。
+`StudentLearningRequestV01` stores `objective_id`, an enum `request_kind`, and a timezone-aware `requested_at`. It does not hand free text to a model for arbitrary interpretation; it is a limited structured contract.
 
-`PersonalizedDecisionContextV01` **组合**一个原有 `DecisionContextV01` 和可选请求，而不是继承旧 Context：这样旧引擎就不会被“看起来是旧 Context 的新对象”静默传入并忽略学生请求。它拒绝 Objective 不一致、请求时间早于 State 或晚于 Decision 的情况。
+`PersonalizedDecisionContextV01` **composes** an existing `DecisionContextV01` and an optional request rather than inheriting from the old Context, so the old engine cannot silently receive "a new object that looks like the old Context" and ignore the student request. It rejects a mismatched Objective, and a request time earlier than the State or later than the Decision.
 
-这一历史阶段只加入 Contracts；没有改变原来的 Action Selection。原始 `docs/07_*` 明确写明学生请求不得解释为掌握证据，且研究引用不验证该项目的具体阈值和策略效果。
+This historical stage only added contracts; it did not change the original Action Selection. The original `docs/07_*` states explicitly that student requests must not be interpreted as mastery evidence, and that cited research does not validate this project's specific thresholds and strategy effects.
 
-## 6. 13B-2：个性化引擎为什么允许扩展基线动作集？
+## 6. 13B-2: why does the personalized engine allow expanding the baseline action set?
 
-### 6.1 无请求分支
+### 6.1 No-request branch
 
-`PersonalizedDecisionEngineV01` 在 `student_request is None` 时，把 `DecisionContextV01` 交给原来的 `DecisionEngineV01(RuleBasedControllerV01())`，并记录 `selection_source=baseline`、`selected_for_request=False`、`request_expanded_allowed_actions=False`。测试 `test_no_request_uses_existing_baseline` 比较两个完整 DecisionResult 是否一致。
+When `student_request is None`, `PersonalizedDecisionEngineV01` passes the `DecisionContextV01` to the original `DecisionEngineV01(RuleBasedControllerV01())` and records `selection_source=baseline`, `selected_for_request=False`, `request_expanded_allowed_actions=False`. The test `test_no_request_uses_existing_baseline` checks that the two complete DecisionResults are identical.
 
-### 6.2 有请求分支：这里确实改变了早期 Policy 的使用方式
+### 6.2 Request branch: this really does change how the early Policy is used
 
-请求映射为：
+The request mapping is:
 
-| 请求 | 对应动作 |
+| Request | Action |
 |---|---|
 | `REQUEST_EXPLANATION` | `CONCEPTUAL_REVIEW` |
 | `TRY_INDEPENDENTLY` | `INDEPENDENT_PRACTICE` |
@@ -279,31 +279,31 @@ request_diagnostic / request_self_explanation / request_transfer
 | `REQUEST_SELF_EXPLANATION` | `SELF_EXPLANATION` |
 | `REQUEST_TRANSFER` | `TRANSFER_ASSESSMENT` |
 
-如果指定动作不在基线 `PedagogicalPolicyV01.allowed_actions` 中，个性化引擎会把该动作**追加到个性化结果的 `allowed_actions`**，同时标记 `request_expanded_allowed_actions=True`，并使用自己的 `policy_version=personalized-request-policy-v0.1`。
+If the requested action is not in the baseline `PedagogicalPolicyV01.allowed_actions`, the personalized engine **appends it to the personalized result's `allowed_actions`**, marks `request_expanded_allowed_actions=True`, and uses its own `policy_version=personalized-request-policy-v0.1`.
 
-这是一个真实且重要的架构演变：**不能再说“任何 Controller 在任何情形下都绝对无法扩展允许动作集”。** 严格说，原始 `DecisionEngineV01` 内部的 Controller 不能扩展其 Policy 候选集；`PersonalizedDecisionEngineV01` 是另一条明确设计过的策略路径，它为了响应学生明确请求，可以扩展**状态依赖的教学活动列表**。它没有能力由此修改证据准入、评分、已有 State、题目对齐、Session 登记或数据库完整性。绝不可把“允许学生请求 Transfer Assessment”写成“学生已证明可以独立迁移”。
+This is a real and important architectural change: **one can no longer say "no Controller can ever expand the allowed action set under any circumstances".** Strictly speaking, the Controller inside the original `DecisionEngineV01` cannot expand its Policy candidate set; `PersonalizedDecisionEngineV01` is a separate, deliberately designed policy path that, to respond to an explicit student request, can expand the **state-dependent list of teaching activities**. It cannot thereby change evidence admission, scoring, existing State, item alignment, Session registration, or database integrity. "Allowing a student to request a Transfer Assessment" must never be written as "the student has proven they can transfer independently".
 
-**源码例子：** 一个合成的 `STRONG` State 请求 `REQUEST_EXPLANATION`，原基线 `STRONG` 动作集中没有 `CONCEPTUAL_REVIEW`；个性化结果追加并选中该动作。历史测试 `test_strong_student_can_request_conceptual_review` 精确验证了这一例子。这个 State 是测试构造的合成对象，绝非真实学生的掌握记录。
+**Source example:** a synthetic `STRONG` State requests `REQUEST_EXPLANATION`; the baseline `STRONG` action set has no `CONCEPTUAL_REVIEW`; the personalized result appends and selects it. The historical test `test_strong_student_can_request_conceptual_review` verifies this exact example. That State is a synthetic object built by the test, never a real student's mastery record.
 
-### 6.3 为什么要记录来源？
+### 6.3 Why record the source?
 
-结果包含 `selection_source`、`selected_for_request`、`request_expanded_allowed_actions`、`selection_reason`。这些字段只说明**为什么选中动作**，并且 `selection_reason` 明确指出 `Action execution has not yet occurred`。它们不是教学内容已经成功送达的证明，也没有被这个组件自动写入持久化数据库。
+The result includes `selection_source`, `selected_for_request`, `request_expanded_allowed_actions`, and `selection_reason`. These fields only explain **why the action was selected**, and `selection_reason` states explicitly `Action execution has not yet occurred`. They are not proof that teaching content was delivered, and this component does not automatically write them to a persistent database.
 
-## 7. 13C-1：个性化 Orchestrator 不能调用旧 Orchestrator 再决定一次
+## 7. 13C-1: the personalized Orchestrator must not call the old Orchestrator to decide again
 
-`PersonalizedTeachingTurnOrchestratorV01` 使用原有的 `DecisionContextBuilderV01` 构造基础 Context，再用 `PersonalizedDecisionContextV01` 合并请求，**仅调用一次** `PersonalizedDecisionEngineV01.decide()`，随后选择相应 Agent。Agent 收到的是完整的个性化 Context 和带来源的决策结果，而不是只收到 `selected_action`。
+`PersonalizedTeachingTurnOrchestratorV01` uses the existing `DecisionContextBuilderV01` to build the base Context, merges the request with `PersonalizedDecisionContextV01`, calls `PersonalizedDecisionEngineV01.decide()` **exactly once**, and then selects the matching Agent. The Agent receives the full personalized Context and the decision result with its source, not just `selected_action`.
 
-为什么不调用旧 `TeachingTurnOrchestratorV01`？因为旧 Orchestrator 内部会再调用一次原始 DecisionEngine，可能把学生请求在第二次决策中丢掉，导致选中动作和执行动作不一致。这个设计理由在 `docs/09_personalized_teaching_turn_v0.1.md` 和源码注释中都有明确说明。
+Why not call the old `TeachingTurnOrchestratorV01`? Because the old Orchestrator would internally call the original DecisionEngine again, possibly dropping the student request in the second decision so that the selected action and the executed action disagree. This design reason is stated explicitly in `docs/09_personalized_teaching_turn_v0.1.md` and in the source comments.
 
-新版与旧版 Port 不是自动兼容的：新版 `PersonalizedTeachingAgentPortV01.produce()` 接收 `PersonalizedDecisionContextV01` 和 `PersonalizedDecisionResultV01`；旧版 Port 接收原始 Context/DecisionResult。
+The new and old Ports are not automatically compatible: the new `PersonalizedTeachingAgentPortV01.produce()` receives `PersonalizedDecisionContextV01` and `PersonalizedDecisionResultV01`; the old Port receives the original Context/DecisionResult.
 
-历史测试包括：无请求时保留基线 Assessment 路由、`STRONG` 状态请求解释时路由到 Professor、独立练习请求路由到 Assessment、错 Objective 在 Agent 调用前被拒绝、空内容和 Agent 异常不被替换、State 不应被改写。
+Historical tests include: baseline Assessment routing kept when there is no request; a `STRONG` state requesting explanation routed to the Professor; an independent-practice request routed to Assessment; a wrong Objective rejected before calling the Agent; empty content and Agent exceptions not replaced; State not rewritten.
 
-**边界：** 这里仍是单次内容调用，不产生新的 Numeric Assignment、Attempt 或 Evidence。执行 `REQUEST_HINT` 不自动创建可信 Assistance Log；那是后续阶段另行实现的功能。
+**Boundary:** this is still a single content call and produces no new Numeric Assignment, Attempt, or Evidence. Executing `REQUEST_HINT` does not automatically create a trusted Assistance Log; that was implemented separately in a later stage.
 
-## 8. 13C-2A：Adapter 如何复用已有 Recoverable Numeric Session？
+## 8. 13C-2A: how the Adapter reuses the existing Recoverable Numeric Session
 
-后期系统已经拥有 `RecoverableNumericSessionServiceV01`。与其复制一套持久化发题、提交和状态估计逻辑，新 Adapter 实现旧会话期待的接口：
+The later system already had `RecoverableNumericSessionServiceV01`. Instead of copying another set of persistent delivery, submission, and state-estimation logic, the new Adapter implements the interface the old session expects:
 
 ```python
 def run_turn(
@@ -316,91 +316,91 @@ def run_turn(
     ...
 ```
 
-Adapter 的实例绑定一个可选的 `StudentLearningRequestV01`。如果存在显式请求，初始化阶段就从 `REQUEST_ACTION_MAP` 求得动作；若不属于 `ASSESSMENT_ACTIONS`（例如请求概念解释或 Hint），立即拒绝用于**Numeric Assignment Delivery**。这不代表整个教授系统不能提供 Hint，而是说**不能把 Hint 路径误包装成需要提交数字答案的 Assignment 路径**。
+An Adapter instance binds one optional `StudentLearningRequestV01`. If there is an explicit request, the action is derived from `REQUEST_ACTION_MAP` at initialization; if it is not in `ASSESSMENT_ACTIONS` (for example a request for a concept explanation or a hint), it is immediately rejected for **Numeric Assignment Delivery**. This does not mean the whole Professor system cannot give hints; it means **a hint path must not be disguised as an Assignment path that requires submitting a numeric answer**.
 
-合法请求进入时，Adapter 继续检查 Objective 和请求时间是否与当前决策时间完全相等，调用个性化 Orchestrator 一次，要求最终动作属于 Assessment 且实际路由是 Assessment Agent。然后把新结果收窄为旧版 `TeachingTurnResultV01`，交回 Recoverable Session 的既有流程。
+When a valid request comes in, the Adapter also checks that the Objective and request time exactly equal the current decision time, calls the personalized Orchestrator once, and requires the final action to be an Assessment actually routed to the Assessment Agent. It then narrows the new result to the old `TeachingTurnResultV01` and hands it back to the Recoverable Session's existing flow.
 
 ```text
-绑定的 Student Request（可选）
+Bound Student Request (optional)
   → PersonalizedNumericSessionTurnAdapterV01
-  → PersonalizedTeachingTurnOrchestratorV01（一次 Decision + 一次 Agent）
+  → PersonalizedTeachingTurnOrchestratorV01 (one Decision + one Agent)
   → PersonalizedTeachingTurnResultV01
-  → Adapter 验证 Assessment-only
-  → TeachingTurnResultV01（旧接口形状）
-  → RecoverableNumericSessionServiceV01（后续发题、存储、答题职责）
+  → Adapter verifies Assessment-only
+  → TeachingTurnResultV01 (old interface shape)
+  → RecoverableNumericSessionServiceV01 (later delivery, storage, answering)
 ```
 
-**真实能力与限制：** Adapter 不另外发题、不自行持久化 Session、不自己修改 Student State，也不认证学生；转换成旧版结果时，会丢失 `selection_source`、`request_expanded_allowed_actions` 等个性化来源字段，源码直接声明此来源只保存在个性化 Turn 的内存结果中，旧版 Assignment Schema 不因此获得持久化溯源能力。
+**Real capabilities and limits:** the Adapter does not deliver items separately, does not persist the Session itself, does not modify Student State, and does not authenticate the student. When converting to the old result it loses personalized source fields such as `selection_source` and `request_expanded_allowed_actions`; the source states directly that this source information is kept only in the personalized turn's in-memory result, and the old Assignment schema does not gain persistent provenance from it.
 
-显式请求只能由同一个 Adapter 使用一次；尝试重复使用会抛 `RuntimeError`。这里使用 `self._explicit_request_used=True` 的时机在调用 Orchestrator **之前**，意味着一次调用如果在下游失败，原 Adapter 仍可能把请求视为已使用；源码文档建议新请求构造新 Adapter/Service，并由上层复用已有持久化 Repository 和 Session Identity。这是代码可见的约束，不代表我们已经观察到某个真实用户因它丢失请求。
+An explicit request can be used only once by the same Adapter; trying to reuse it raises `RuntimeError`. `self._explicit_request_used=True` is set **before** the Orchestrator is called, which means that if a call fails downstream, the Adapter may still treat the request as used; the source docs recommend building a new Adapter/Service for a new request and having the upper layer reuse the existing persistent Repository and Session identity. This is a constraint visible in the code; it does not mean we observed a real user losing a request because of it.
 
-## 9. Debugging Casebook：一个真实失败 + 多个不能冒充事故的 Guard
+## 9. Debugging Casebook: one real failure + several Guards that must not pose as incidents
 
-### BUG-13C-2B-001：错误的测试断言，将对象存在误当成 Agent 实际执行
+### BUG-13C-2B-001: a wrong test assertion that treated an object's existence as the Agent actually running
 
-**来源类型：先前保存的 13C-2B 用户 Terminal 原始测试日志，而不是本轮 ZIP 中的测试文件。** 原始输出：`1 failed, 25 passed`。失败测试名为 `test_explanation_request_cannot_issue_numeric_assignment`；测试在预期拒绝解释请求之后执行：
+**Source type: the previously saved original 13C-2B user terminal test log, not a test file in this round's ZIP.** Original output: `1 failed, 25 passed`. The failing test was `test_explanation_request_cannot_issue_numeric_assignment`; after the expected rejection of an explanation request, the test executed:
 
 ```python
 assert not stack.last_assessment_agent
 ```
 
-实际 `stack.last_assessment_agent` 已经引用一个 `RecordingAgent`，于是断言失败。**对象被构造并不等于该 Agent 被调用，更不等于 Numeric Assignment 被发放。** 原始后续修复记录显示只调整新测试文件里的两个错误断言，没有修改生产代码；重新运行专项测试 `26 passed`，全 Backend `324 passed`，并提交 `e52095f`。因此归类为 **test-oracle bug（测试断言选择错误）**，不能写成“生产系统错误地发出了 Numeric Assignment”。
+In fact `stack.last_assessment_agent` already referenced a `RecordingAgent`, so the assertion failed. **An object being constructed does not mean that Agent was called, let alone that a Numeric Assignment was issued.** The original follow-up fix record shows that only the two wrong assertions in the new test file were adjusted, with no production code change; re-running the focused tests gave `26 passed`, the full backend `324 passed`, and `e52095f` was committed. It is therefore classified as a **test-oracle bug (wrong choice of test assertion)** and must not be written as "the production system wrongly issued a Numeric Assignment".
 
-经验：测试要检查 `agent.calls`、真实 Assignment 存在性及实际执行路径，不能仅靠 `last_assessment_agent` 是否为 `None` 来证明业务行为。精确的两条新断言前后 Diff 没在本轮 ZIP 中，后续找到原始 Commit 历史代码后再补齐。
+Lesson: tests should check `agent.calls`, whether a real Assignment exists, and the actual execution path, rather than relying on whether `last_assessment_agent` is `None` to prove business behavior. The exact before/after diff of the two new assertions is not in this round's ZIP; it will be added once the original commit's historical code is found.
 
-### GUARD-01D-001：非法的 Transfer 提议
+### GUARD-01D-001: an illegal Transfer proposal
 
-`test_disallowed_proposal_triggers_fallback` 构造 UNKNOWN State，让 Controller 提出 `TRANSFER_ASSESSMENT`。原 Engine 会使用规则式 fallback，返回允许的 Diagnostic。**这是一项防御性测试，不是实际教学误判事故。**
+`test_disallowed_proposal_triggers_fallback` builds an UNKNOWN State and has the Controller propose `TRANSFER_ASSESSMENT`. The original Engine uses the rule-based fallback and returns the allowed Diagnostic. **This is a defensive test, not a real teaching misjudgment incident.**
 
-### GUARD-01D-002：模型输出不是 Contract、调用超时
+### GUARD-01D-002: model output not a contract; call timeout
 
-`test_unstructured_output_triggers_fallback`、`test_controller_timeout_triggers_fallback` 验证输入是普通字典或 Controller 抛出 `TimeoutError` 时，不把非法提议送到 Agent。源码没有实际外部模型调用，也未测量真实超时。
+`test_unstructured_output_triggers_fallback` and `test_controller_timeout_triggers_fallback` verify that when the input is a plain dict or the Controller raises `TimeoutError`, no illegal proposal is sent to the Agent. The source has no real external model call and measured no real timeout.
 
-### GUARD-01D-003：自由文本替代存储题目
+### GUARD-01D-003: free text replacing the stored item
 
-早期 `test_unmatched_agent_prompt_is_rejected` 拒绝 Agent 文本与存储 Prompt 不同的交付；后期 `test_structured_delivery_uses_stored_prompt` 验证结构化 Delivery 直接采用 `item.prompt`。这两条测试记录了设计升级，却不能证明曾真实发生“学生答了一道题，数据库却批改另一道题”的事故。
+The early `test_unmatched_agent_prompt_is_rejected` rejects a delivery whose Agent text differs from the stored prompt; the later `test_structured_delivery_uses_stored_prompt` verifies that the structured Delivery uses `item.prompt` directly. These two tests record a design upgrade but cannot prove an incident where "the student answered one question and the database graded another" ever happened.
 
-### GUARD-13B-001：请求先于 State / 晚于 Decision / 错 Objective
+### GUARD-13B-001: request before State / after Decision / wrong Objective
 
-相关验证位于 `test_student_request_v01.py`。这里既保护时间语义，也防止把其他 Objective 的学习偏好关联到当前决策；不构成真实账户授权校验。
+The related checks are in `test_student_request_v01.py`. They protect time semantics and prevent learning preferences for another Objective from being linked to the current decision; they are not real account authorization checks.
 
-### GUARD-13C-001：双重决策造成请求丢失
+### GUARD-13C-001: a double decision losing the request
 
-`docs/09_*` 明确解释为什么新 Orchestrator 不调用旧 Orchestrator 再决策。此为记录在设计文档中的**预防性架构理由**，而非已观测两次决策引发的真实事故。
+`docs/09_*` explains explicitly why the new Orchestrator does not call the old Orchestrator to decide again. This is a **preventive architectural reason** recorded in the design document, not a real incident caused by an observed double decision.
 
-### GUARD-13C-002：Professor 请求误入 Numeric Assignment
+### GUARD-13C-002: a Professor request entering a Numeric Assignment
 
-`test_explanation_request_cannot_become_numeric_assignment`、`test_hint_request_cannot_become_numeric_assignment` 由 13C-2A Adapter 测试直接覆盖。历史 13C-2B 的真实断言 Bug 另按 BUG-13C-2B-001 记录；不要把两者合并为“生产路由错误”。
+`test_explanation_request_cannot_become_numeric_assignment` and `test_hint_request_cannot_become_numeric_assignment` are covered directly by the 13C-2A Adapter tests. The real 13C-2B assertion bug is recorded separately as BUG-13C-2B-001; do not merge the two into a "production routing error".
 
-## 10. 接口与字段的边界表：未来改代码前先看这里
+## 10. Boundary table of interfaces and fields: read this before changing code
 
-| 对象 / 边界 | 可以做什么 | 不应该宣称它能做什么 |
+| Object / boundary | What it can do | What it must not be claimed to do |
 |---|---|---|
-| `ObjectiveStateV02` | 保存状态估计与已知证据统计 | 不由 Decision Model 自行创建真实学生掌握结论 |
-| `DecisionContextV01` | 组合 State、decision_id、时点 | 不认证 State 或学生身份 |
-| `PedagogicalPolicyV01` | 给原始 Controller 返回基线候选集 | 不是全系统永久不可扩展的动作权限体系 |
-| `DecisionProposalV01` | 提出一个教学动作 | 不证明动作已执行 |
-| `DecisionResultV01` | 记录最终动作、候选集、fallback、策略版本 | 不生成 Evidence，不保证 Assignment 已存在 |
-| `TeachingTurnResultV01` | 说明一次 Port 返回了内容 | 不证明用户看见、理解或掌握内容 |
-| `PendingNumericAssessmentV01` | 绑定内存中的当前待答题 | 不是永久持久化 Assignment 或登录凭据 |
-| `AssessmentDeliveryV01` | 用存储题目和随机 ID 结构化表示本次发题 | 不证明浏览器已经呈现或学生本人答题 |
-| `StudentLearningRequestV01` | 表达结构化的学生学习偏好 | 不构成正确性、独立性或 Mastery 证据 |
-| `PersonalizedDecisionResultV01` | 标注是否根据请求选择、是否扩展基线集合 | 不承诺 Agent 已成功执行、教学有效 |
-| `PersonalizedNumericSessionTurnAdapterV01` | 将一次个性化 Assessment Turn 适配到旧会话接口 | 不持久化完整请求溯源或取代现有 Session 逻辑 |
+| `ObjectiveStateV02` | Stores a state estimate and known evidence statistics | Not created by the Decision Model as a real student mastery conclusion |
+| `DecisionContextV01` | Combines State, decision_id, and time | Does not authenticate the State or student identity |
+| `PedagogicalPolicyV01` | Returns the baseline candidate set to the original Controller | Not a system-wide, permanently non-extensible action permission system |
+| `DecisionProposalV01` | Proposes one teaching action | Does not prove the action was executed |
+| `DecisionResultV01` | Records the final action, candidate set, fallback, policy version | Produces no Evidence and does not guarantee an Assignment exists |
+| `TeachingTurnResultV01` | Says a Port returned content once | Does not prove the user saw, understood, or mastered the content |
+| `PendingNumericAssessmentV01` | Binds the current pending question in memory | Not a permanently persisted Assignment or a login credential |
+| `AssessmentDeliveryV01` | Structurally represents this delivery with the stored item and a random ID | Does not prove the browser displayed it or that the student personally answered |
+| `StudentLearningRequestV01` | Expresses a structured student learning preference | Is not evidence of correctness, independence, or Mastery |
+| `PersonalizedDecisionResultV01` | Marks whether the selection followed a request and whether the baseline set was expanded | Does not promise the Agent ran successfully or that teaching was effective |
+| `PersonalizedNumericSessionTurnAdapterV01` | Adapts one personalized Assessment turn to the old session interface | Does not persist full request provenance or replace existing Session logic |
 
-## 11. 新旧设计的矛盾如何解释，而不是“强行调和”？
+## 11. How to explain contradictions between old and new designs, without forcing them to agree
 
-**表面矛盾 A：** `1b26d215` 写着 Controller 不得扩大 allowed set；`5aec0609` 却把学生指定动作加入了 allowed set。**解释：** 前者描述的是**旧 DecisionEngine 内的可替换 Controller**，后者是一条独立定义的**个性化策略路径**。需要清楚标记两个 Policy Version；未来如果整合为统一 Policy Gateway，应把“学生请求可扩展哪些教学活动”和“哪些安全、评估、授权条件绝不能扩展”写成不同规则，而不是假装从来没有改变。
+**Apparent contradiction A:** `1b26d215` says the Controller must not enlarge the allowed set; `5aec0609` adds the student-specified action to the allowed set. **Explanation:** the former describes **the replaceable Controller inside the old DecisionEngine**; the latter is a separately defined **personalized policy path**. The two Policy Versions must be clearly marked; if they are later unified into one Policy Gateway, "which teaching activities a student request may expand" and "which safety, assessment, and authorization conditions must never be expanded" should be written as different rules, rather than pretending nothing ever changed.
 
-**表面矛盾 B：** `INDEPENDENT_PRACTICE` 可以被选中，但 Assistance Level 仍可能 Unknown。**解释：** TeachingAction 只是所选择的教学活动，不会自动生成已验证的独立条件。具体作答来源由后续 Attempt、Assistance 记录和 Evidence Eligibility 决定。
+**Apparent contradiction B:** `INDEPENDENT_PRACTICE` can be selected, while the Assistance Level may still be unknown. **Explanation:** a TeachingAction is only the selected teaching activity and does not automatically produce verified independence conditions. The actual answer provenance is decided by the later Attempt, Assistance records, and Evidence Eligibility.
 
-**表面矛盾 C：** Session 名为 Numeric *Teaching*，但早期仅支持 Assessment Turn。**解释：** 这个历史版本的 `start_numeric_turn()` 要求选中 Assessment Action；Professor-only Turn 明确在范围外。以后出现 Professor Agent 路径，并不意味着它在早期 Numeric Session 已经贯通。
+**Apparent contradiction C:** the Session is called Numeric *Teaching*, but early on it only supported Assessment turns. **Explanation:** this historical version of `start_numeric_turn()` requires a selected Assessment Action; Professor-only turns are explicitly out of scope. A later Professor Agent path does not mean it was already connected through the early Numeric Session.
 
-**表面矛盾 D：** 13C-2A 接入“Recoverable Session”，本轮 ZIP 内却没有该 Service 的代码。**解释：** Adapter 源码仅可证实调用了所引用的 Service 接口；持久化、恢复和事务的具体实现属于其他 Commit 的历史源文件，需要在后续资料包中单独核查。
+**Apparent contradiction D:** 13C-2A connects to a "Recoverable Session", but this round's ZIP has no code for that Service. **Explanation:** the Adapter source can only confirm that it calls the referenced Service interface; the concrete persistence, recovery, and transaction implementation belongs to historical source files in other commits and must be checked separately in a later source pack.
 
-## 12. 资料索引、可复现检查与未恢复事实
+## 12. Source index, reproducible checks, and unrecovered facts
 
-本章的**一手源码**来自上传资料包中的精确路径：
+The **primary source code** for this chapter comes from these exact paths in the uploaded source pack:
 
 ```text
 1b26d215/backend/app/services/decision/{models_v01,policy_v01,engine_v01}.py
@@ -422,18 +422,18 @@ ad0f9a51/docs/09_personalized_teaching_turn_v0.1.md
 9ea307b7/docs/10_personalized_numeric_session_adapter_v0.1.md
 ```
 
-还原代码建议使用 `git show <full-hash>:<file>`，核对历史版本时不要把目前 HEAD 的同名模块直接代替过去的实现。Commit 前缀可在本地仓库用 `git rev-parse --verify <prefix>^{commit}` 解析为完整哈希。
+To restore code, use `git show <full-hash>:<file>`; when checking historical versions, do not substitute the same-named module at the current HEAD for the past implementation. A commit prefix can be resolved to the full hash in the local repository with `git rev-parse --verify <prefix>^{commit}`.
 
-**尚缺失且必须如实标记：** 八个节点在实际开发中是否出现过更多失败测试、原始失败命令及完整修复步骤；13C-2B 两条断言修改的精确前后 Diff；`RecoverableNumericSessionServiceV01`、SQLite Assignment Repository 的历史实现全文；原始 Implementation 0–13 总 Roadmap 中这些阶段的上级对应关系；真实外部 Jev/NanoJev 的使用与效果实验。以上缺口不应被自动填补成“当时发生的历史”。
+**Still missing and must be marked honestly:** whether more tests failed at these eight checkpoints during real development, the original failing commands, and complete fix steps; the exact before/after diff of the two 13C-2B assertion changes; the full historical implementations of `RecoverableNumericSessionServiceV01` and the SQLite Assignment Repository; how these stages map onto the original overall Implementation 0–13 roadmap; and real experiments on the use and effect of external Jev/NanoJev. These gaps must not be filled in automatically as "what happened at the time".
 
-## 13. 进入后续章节之前，应当记住的五个结论
+## 13. Five conclusions to remember before the next chapters
 
-1. **State Estimator 决定已有证据支持什么；Decision Engine 决定下一步教学动作。** 两者不能相互代替。
-2. **“动作被选中”不是“动作被执行”，更不是“学生已经学会”。** 必须沿着 Agent、Delivery、Attempt、Scoring 逐层区分。
-3. **早期基线限制的是 Controller 的动作提议；13B 的显式学生请求引入了可审计的个性化扩展。** 这一变化没有授权修改 Mastery 证据。
-4. **13C 的 Adapter 复用了旧会话的持久化边界，没有偷偷复制另一套数据库逻辑。** 但它收窄结果时不保存完整个性化来源，这是源码明确承认的限制。
-5. **归档必须忠实区分历史故障和预防性 Guard。** 唯一在本章辅以先前原始终端日志重建的真实失败是 13C-2B 的错误测试断言；其余列出的防御项不应写成已经发生的系统事故。
+1. **The State Estimator decides what existing evidence supports; the Decision Engine decides the next teaching action.** Neither can replace the other.
+2. **"Action selected" is not "action executed", let alone "the student has learned it".** Distinguish layer by layer along Agent, Delivery, Attempt, and Scoring.
+3. **The early baseline restricts the Controller's action proposals; 13B's explicit student requests introduced an auditable personalized expansion.** This change did not authorize modifying Mastery evidence.
+4. **13C's Adapter reuses the old session's persistence boundary instead of quietly copying another set of database logic.** But it does not keep the full personalized source when narrowing the result, a limitation the source admits explicitly.
+5. **The archive must faithfully separate historical failures from preventive Guards.** The only real failure reconstructed in this chapter, with the help of earlier original terminal logs, is 13C-2B's wrong test assertion; the other defensive items listed must not be written as system incidents that happened.
 
 ---
 
-**本章交付状态：** 已完成八个历史节点的 Decision/Orchestration 技术章节和版本差异分析；历史 Bug 覆盖率受原始失败日志可获得性限制。下一章节将继续恢复持久化 Session、Assignment 及端到端恢复机制，不预先将其归入尚未核准的 Implementation 编号。
+**Chapter delivery status:** the Decision/Orchestration technical chapter and version-difference analysis for the eight historical checkpoints are complete; coverage of historical bugs is limited by the availability of original failure logs. The next chapter continues recovering the persistent Session, Assignment, and end-to-end recovery mechanisms, without assigning them in advance to Implementation numbers that have not been confirmed.
