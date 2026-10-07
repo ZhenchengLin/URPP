@@ -162,3 +162,7 @@ URPP is a **single-developer research prototype**, not a product.
 ## Author
 
 **Zhencheng Lin**, M.S. Electrical and Computer Engineering, UC Santa Cruz. If you work on intelligent tutoring, learning analytics, or AI in education and would like to discuss the project, please open an issue or reach out through GitHub.
+
+## License
+
+Copyright © 2026 Zhencheng Lin. All rights reserved; see [LICENSE](LICENSE). The code is public for reference. To use, copy, or build on it (including for research collaboration), please ask for permission first.
