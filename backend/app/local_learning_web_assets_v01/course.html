@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>URPP · Course Workspace</title>
+  <link rel="stylesheet" href="/assets/local-learning.css">
+  <script src="/assets/local-learning-math.js" defer></script>
+  <script src="/assets/vendor/mathjax-3.2.2-tex-svg.js" defer></script>
+  <script src="/assets/local-learning-markdown.js" defer></script>
+  <script src="/assets/course.js" defer></script>
+</head>
+<body>
+<header>
+  <h1>URPP <span>Personal Professor</span></h1>
+  <p>Course workspace · course path, lessons, practice, and your next step
+    <span class="nav-links"><a href="/course" aria-current="page">Course workspace</a><a href="/">Chat with material</a></span></p>
+</header>
+<main>
+  <section aria-labelledby="courses-title">
+    <h2 id="courses-title">Your course</h2>
+    <label>Open a course
+      <select id="course-select"><option value="">— Choose a course —</option></select>
+    </label>
+    <label>Or create a new course
+      <input id="course-title" type="text" maxlength="120" placeholder="e.g. Linear Algebra (MATH 21)">
+    </label>
+    <button id="create-course" type="button">Create course</button>
+    <hr>
+    <h2>Course materials</h2>
+    <div id="documents" class="doc-list"><p class="hint">Create or open a course first.</p></div>
+    <label>Add a TXT / Markdown / text-based PDF file
+      <input id="material" type="file" accept=".txt,.md,.markdown,.pdf">
+    </label>
+    <label class="permission"><input id="permission" type="checkbox">
+      I confirm I have the right to use this material for my own local learning.</label>
+    <button id="add-document" type="button" disabled>Add to course</button>
+    <hr>
+    <button id="build-path" type="button" disabled>Build course path</button>
+    <p class="hint">The local model proposes topics from all materials; URPP checks every source reference. Rebuilding creates a new path revision.</p>
+    <p id="status" class="meta" role="status"></p>
+  </section>
+  <section aria-labelledby="path-title">
+    <h2 id="path-title">Course path</h2>
+    <div id="path"><p class="hint">Add materials, then build the course path.</p></div>
+  </section>
+</main>
+<section id="topic" class="topic-panel" aria-labelledby="topic-title" hidden>
+  <div class="topic-heading">
+    <div>
+      <p class="eyebrow" id="topic-eyebrow"></p>
+      <h2 id="topic-title"></h2>
+      <p id="topic-meta" class="hint"></p>
+    </div>
+    <div id="topic-progress" class="progress-box"></div>
+  </div>
+  <div id="next-step" class="next-step" aria-live="polite"></div>
+  <div class="topic-grid">
+    <div>
+      <h3>Lesson</h3>
+      <div id="lesson"></div>
+    </div>
+    <div>
+      <h3>Check questions</h3>
+      <div id="questions"></div>
+      <button id="more-questions" type="button" class="secondary">Generate check questions</button>
+      <p class="hint">Questions are kept only if the model reaches the same answer when it re-solves them without the key (a consistency check, not human verification).</p>
+    </div>
+  </div>
+</section>
+</body>
+</html>

@@ -14,7 +14,10 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse
 
 from app.llm.local_ollama_professor_gateway_v01 import LocalOllamaProfessorGatewayV01
+from app.course_workspace_api_v01 import register_course_workspace_routes_v01
 from app.local_learning_api_v01 import create_local_learning_api_v01
+from app.services.course_workspace.llm_json_v01 import LocalJsonModelV01
+from app.services.course_workspace.service_v01 import CourseWorkspaceServiceV01
 from app.services.course_knowledge.local_learning_workspace_v01 import (
     LocalLearningWorkspaceV01,
 )
@@ -25,13 +28,42 @@ DEFAULT_DATA_ROOT = (
 )
 
 
+_PAGE_HEADERS = {
+    "Cache-Control": "no-store",
+    "X-Frame-Options": "DENY",
+    "Referrer-Policy": "no-referrer",
+    "Content-Security-Policy": (
+        "default-src 'none'; script-src 'self'; style-src 'self'; "
+        "connect-src 'self'; base-uri 'none'; "
+        "form-action 'none'; frame-ancestors 'none'"
+    ),
+}
+
+
 def create_local_learning_web_v01(
-    *, workspace: LocalLearningWorkspaceV01, allow_test_host: bool = False
+    *, workspace: LocalLearningWorkspaceV01, allow_test_host: bool = False,
+    course_service: CourseWorkspaceServiceV01 | None = None,
 ) -> FastAPI:
     """Attach fixed local UI assets to the existing, guarded local API."""
     app = create_local_learning_api_v01(
         workspace=workspace, allow_test_host=allow_test_host
     )
+    if course_service is not None:
+        register_course_workspace_routes_v01(app, course_service)
+
+        @app.get("/course", include_in_schema=False)
+        def course_page():
+            return FileResponse(
+                ASSETS / "course.html", media_type="text/html; charset=utf-8",
+                headers=_PAGE_HEADERS,
+            )
+
+        @app.get("/assets/course.js", include_in_schema=False)
+        def course_javascript():
+            return FileResponse(
+                ASSETS / "course.js", media_type="text/javascript; charset=utf-8",
+                headers={"Cache-Control": "no-store"},
+            )
 
     @app.get("/", include_in_schema=False)
     def homepage():
@@ -102,11 +134,15 @@ def main() -> None:
         data_root=args.data_root,
         gateway_factory=lambda: LocalOllamaProfessorGatewayV01(model="qwen3.5:4b"),
     )
-    app = create_local_learning_web_v01(workspace=workspace)
+    course_service = CourseWorkspaceServiceV01(
+        data_root=args.data_root, model=LocalJsonModelV01(model="qwen3.5:4b"),
+    )
+    app = create_local_learning_web_v01(workspace=workspace, course_service=course_service)
 
     import uvicorn
 
     print(f"URPP local learning: http://127.0.0.1:{args.port}")
+    print(f"URPP course workspace: http://127.0.0.1:{args.port}/course")
     print("Developer-only: do not expose this server to the LAN or Internet.")
     uvicorn.run(
         app, host="127.0.0.1", port=args.port,

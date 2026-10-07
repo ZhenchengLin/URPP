@@ -35,3 +35,6 @@ data/*
 # Evaluation reports
 evaluation/reports/*
 !evaluation/reports/.gitkeep
+
+# Packaging
+*.egg-info/
