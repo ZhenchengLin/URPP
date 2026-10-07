@@ -31,7 +31,7 @@ def test_html_csp_and_local_assets(tmp_path):
     client = client_for(tmp_path)
     page = client.get("/")
     assert page.status_code == 200
-    assert "导入学习资料" in page.text
+    assert "Import learning material" in page.text
     assert "script-src 'self'" in page.headers["content-security-policy"]
     assert page.headers["x-frame-options"] == "DENY"
     assert page.headers["cache-control"] == "no-store"
@@ -84,8 +84,8 @@ def test_inspector_ui_uses_saved_pack_and_safe_text_rendering(tmp_path):
     client = client_for(tmp_path)
     page = client.get("/").text
     script = client.get("/assets/local-learning.js").text
-    assert "Course Pack · 建立过程与内容" in page
-    assert "Professor 生成的回答与系统提示" in page
+    assert "Course Pack · how it was built and what it contains" in page
+    assert "Professor answers and system notices" in page
     assert "/course-pack?" in script
     assert 'detail.append(node("pre", source.excerpt_text))' in script
     assert 'window.URPPMarkdownV01.renderInto(detail, message.text)' in script

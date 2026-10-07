@@ -109,6 +109,8 @@ class LocalOllamaProfessorGatewayV01:
         "messages only for continuity; do not restart a previous "
         "lesson or reproduce entire source excerpts unless asked. "
         "Explain one small learning concept at a time. "
+        "Always write the content in English, even when the "
+        "student or the course excerpts use another language. "
         "Use only supplied excerpts for course-specific claims. "
         "If the excerpts do not support the current question, "
         "say that the uploaded material does not establish an "

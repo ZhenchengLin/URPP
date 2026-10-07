@@ -390,23 +390,23 @@ def render_verified_lu_pilot_v01(
 
     calculation_block = (
 
-        "【LU Factorization：计算过程】\n\n"
+        "[LU Factorization: Calculation]\n\n"
 
-        f"原始矩阵 A = {A}。\n\n"
+        f"Original matrix A = {A}.\n\n"
 
-        f"Elimination Multiplier：\n"
-        f"m = {c} / ({a}) = {m}。\n\n"
+        f"Elimination Multiplier:\n"
+        f"m = {c} / ({a}) = {m}.\n\n"
 
-        f"Row Operation：\n"
-        f"R2 ← R2 - ({m}) × R1。\n\n"
+        f"Row Operation:\n"
+        f"R2 ← R2 - ({m}) × R1.\n\n"
 
-        f"第二行第一个元素：\n"
-        f"{c} - ({m}) × ({a}) = {U[1][0]}。\n\n"
+        f"Row 2, entry 1:\n"
+        f"{c} - ({m}) × ({a}) = {U[1][0]}.\n\n"
 
-        f"第二行第二个元素：\n"
-        f"{d} - ({m}) × ({b}) = {U[1][1]}。\n\n"
+        f"Row 2, entry 2:\n"
+        f"{d} - ({m}) × ({b}) = {U[1][1]}.\n\n"
 
-        f"因此，U = {U}。"
+        f"Therefore, U = {U}."
 
     )
 
@@ -416,28 +416,28 @@ def render_verified_lu_pilot_v01(
 
     sign_block = (
 
-        "【为什么 E 和 L 的符号相反？】\n\n"
+        "[Why do E and L have opposite signs?]\n\n"
 
-        f"消元乘子 m = {m}。\n\n"
+        f"Elimination multiplier m = {m}.\n\n"
 
-        f"Elimination Matrix：\n"
-        f"E = {E}。\n\n"
+        f"Elimination Matrix:\n"
+        f"E = {E}.\n\n"
 
-        f"E 的 (2,1) 元素为 {-m}。\n"
+        f"The (2,1) entry of E is {-m}.\n"
 
-        "左乘 E 相当于从第二行减去 "
-        "m 倍第一行。\n\n"
+        "Multiplying by E on the left subtracts "
+        "m times row 1 from row 2.\n\n"
 
-        f"Lower Triangular Matrix：\n"
-        f"L = {L}。\n\n"
+        f"Lower Triangular Matrix:\n"
+        f"L = {L}.\n\n"
 
-        f"L 的 (2,1) 元素为 {m}。\n\n"
+        f"The (2,1) entry of L is {m}.\n\n"
 
-        "在当前二阶单位下三角矩阵中，"
-        "L 是 E 的逆矩阵。\n\n"
+        "For this 2x2 unit lower-triangular matrix, "
+        "L is the inverse of E.\n\n"
 
-        "可以通过 E × A = U 和 L × U = A "
-        "检查这一关系。"
+        "You can check this relationship with "
+        "E × A = U and L × U = A."
 
     )
 
@@ -475,10 +475,10 @@ def render_verified_lu_pilot_v01(
 
         follow_up = (
 
-            "理解检查：请解释为什么当前例子中 "
-            f"E 的 (2,1) 元素为 {-m}，"
-            f"而 L 的对应元素为 {m}。"
-            "两个矩阵之间有什么关系？"
+            "Check your understanding: explain why, in this example, "
+            f"the (2,1) entry of E is {-m} "
+            f"while the matching entry of L is {m}. "
+            "How are the two matrices related?"
 
         )
 
@@ -486,8 +486,8 @@ def render_verified_lu_pilot_v01(
 
         follow_up = (
 
-            "请独立写出当前矩阵的 Row Operation，"
-            "并计算 U 的第二行。"
+            "On your own, write the Row Operation for this matrix "
+            "and compute the second row of U."
 
         )
 

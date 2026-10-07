@@ -414,7 +414,7 @@ def run_interactive_chat(
     print(session_id)
 
     print(
-        "\n保存上面的 Session ID。退出后可以用它恢复对话。"
+        "\nSave the Session ID above. You can use it to resume this conversation after exiting."
     )
 
     print(
@@ -423,7 +423,7 @@ def run_interactive_chat(
     )
 
     print(
-        "当前版本只执行 explanation，不进行测验或 Mastery 更新。"
+        "This version only gives explanations; it does not run quizzes or update Mastery."
     )
 
     if snapshot.messages:

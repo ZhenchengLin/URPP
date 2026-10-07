@@ -284,16 +284,16 @@ def test_sign_first_rendering():
     assert result.pack_sha256 == tool_result.pack_sha256
 
     assert (
-        result.teaching_text.index("为什么 E 和 L")
+        result.teaching_text.index("Why do E and L")
         <
-        result.teaching_text.index("LU Factorization：计算过程")
+        result.teaching_text.index("LU Factorization: Calculation")
     )
 
     assert "11 - (3) × (2) = 5" in result.teaching_text
 
-    assert "E 的 (2,1) 元素为 -3" in result.teaching_text
+    assert "The (2,1) entry of E is -3" in result.teaching_text
 
-    assert "L 的 (2,1) 元素为 3" in result.teaching_text
+    assert "The (2,1) entry of L is 3" in result.teaching_text
 
 
 def test_calculation_first_rendering():
@@ -309,9 +309,9 @@ def test_calculation_first_rendering():
     )
 
     assert (
-        result.teaching_text.index("LU Factorization：计算过程")
+        result.teaching_text.index("LU Factorization: Calculation")
         <
-        result.teaching_text.index("为什么 E 和 L")
+        result.teaching_text.index("Why do E and L")
     )
 
     assert "Row Operation" in result.follow_up_question
@@ -401,9 +401,9 @@ def test_negative_multiplier_rendering():
 
     assert "m = 8 / (-2) = -4" in result.teaching_text
 
-    assert "E 的 (2,1) 元素为 4" in result.teaching_text
+    assert "The (2,1) entry of E is 4" in result.teaching_text
 
-    assert "L 的 (2,1) 元素为 -4" in result.teaching_text
+    assert "The (2,1) entry of L is -4" in result.teaching_text
 
     assert "7 - (-4) × (1) = 11" in result.teaching_text
 

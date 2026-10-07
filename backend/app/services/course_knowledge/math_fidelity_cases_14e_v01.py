@@ -1,4 +1,4 @@
-"""URPP 14E — Frozen math-fidelity benchmark cases v0.1. Gold source: docs/URPP_14D-4B4D2A_source_verified_equations_v01.md (source-image review by assistant; project-owner sign-off pending). Cases were frozen before any new candidate output was viewed."""
+"""URPP 14E — Frozen math-fidelity benchmark cases v0.2. Gold source: docs/URPP_14D-4B4D2A_source_verified_equations_v01.md (source-image review by assistant; project-owner sign-off pending). v0.1 cases were frozen before any candidate output was viewed. v0.2 (2026-10-06, owner request) translates the questions to English; gold, scope, and expected outcomes are unchanged. v0.1 and v0.2 results are not directly comparable."""
 
 from app.services.course_knowledge.models_v01 import CourseSourceRefV01
 from app.services.course_knowledge.source_grounded_benchmark_v01 import (
@@ -7,7 +7,7 @@ from app.services.course_knowledge.source_grounded_benchmark_v01 import (
     BenchmarkConversationTurnV01, benchmark_case_digest_v01,
 )
 
-BENCHMARK_VERSION_14E_V01 = "14e-math-fidelity-v0.1"
+BENCHMARK_VERSION_14E_V01 = "14e-math-fidelity-v0.2"
 PINNED_PACK_SHA256_14E_V01 = "fbf19109e86539e119afe8cee3acd3e9a8d812e2c334217c911263ba56dbeeb2"
 OBJECTIVE_ID_14E_V01 = "uploaded-material"
 GOLD_REVIEW_STATUS_14E_V01 = "assistant_source_image_review_owner_signoff_pending"
@@ -54,7 +54,7 @@ def _eq(label, latex):
     )
 
 def _case(case_id, qtype, question, scope, evidence, facts, equations,
-          errors, categories, outcome="answer", language="zh", prior=()):
+          errors, categories, outcome="answer", language="en", prior=()):
     return SourceGroundedBenchmarkCaseV01(
         case_id=case_id, benchmark_version=BENCHMARK_VERSION_14E_V01,
         split="development", language=language, question_type=qtype,
@@ -71,7 +71,7 @@ def _case(case_id, qtype, question, scope, evidence, facts, equations,
 def build_math_fidelity_cases_14e_v01() -> tuple[SourceGroundedBenchmarkCaseV01, ...]:
     return (
         _case("14e-M07-COPY","equation_transcription",
-            "请完整写出论文公式 (7)，保留所有乘除位置和求和符号。",(_EXCERPT_4,),
+            "Write out the paper's Equation (7) in full, keeping every multiplication and division in place and the summation sign.",(_EXCERPT_4,),
             (_ev(_EXCERPT_4,"PDF page 4, equation (7)","Frozen equation (7) source."),),
             ("The three angular factors |sin alpha_i|, gamma_(phi,i), gamma_(varphi,i) are in the denominator of the external normalization factor.",
              "The sum runs over n in Omega_SBP.",
@@ -84,7 +84,7 @@ def build_math_fidelity_cases_14e_v01() -> tuple[SourceGroundedBenchmarkCaseV01,
              "Omitting the requested equation."),
             ("source_selection","formula_structure","formula_transcription","answer_omission")),
         _case("14e-M07-EXPLAIN","relationship",
-            "请解释公式 (7) 中交集体积、距离平方与角度归一化各在什么位置。",(_EXCERPT_4,),
+            "Explain where the intersection volume, the squared distance, and the angular normalization each appear in Equation (7).",(_EXCERPT_4,),
             (_ev(_EXCERPT_4,"PDF page 4, equation (7)","Frozen equation (7) source."),),
             ("d_n is the ray-voxel intersection volume and weights each voxel value f[n].",
              "The squared distance ||v_n - v_src||^2 is in the denominator of each voxel contribution.",
@@ -95,7 +95,7 @@ def build_math_fidelity_cases_14e_v01() -> tuple[SourceGroundedBenchmarkCaseV01,
              "Claiming the main text contains the full derivation."),
             ("formula_structure","variable_definition","unsupported_claim")),
         _case("14e-M10-COPY","multi_step",
-            "写出公式 (10)，并解释两个平面高度如何得到 h_eff。",(_EXCERPT_5,),
+            "Write out Equation (10), and explain how the two plane heights give h_eff.",(_EXCERPT_5,),
             (_ev(_EXCERPT_5,"PDF page 5, equation (10)","Frozen equation (10) source."),),
             ("Equation (10) computes the top-plane height from the top-plane volume divided by Delta x Delta y.",
              "An analogous height is computed for the bottom plane.",
@@ -107,7 +107,7 @@ def build_math_fidelity_cases_14e_v01() -> tuple[SourceGroundedBenchmarkCaseV01,
              "Confusing Delta x Delta y with S_base."),
             ("formula_transcription","formula_structure","applicability_condition","answer_omission")),
         _case("14e-M15-COPY","equation_transcription",
-            "请写出式 (15) 的完整分段公式、阈值和方法名称。",(_EXCERPT_6,),
+            "Write out the complete piecewise Equation (15), including its threshold and the name of the method.",(_EXCERPT_6,),
             (_ev(_EXCERPT_6,"PDF page 6, equation (15)","Frozen equation (15) source."),),
             ("Equation (15) is labelled Regression Method.",
              "The nonzero branch is Delta z / 2 minus D_pl when 0 <= D_pl <= Delta z / 2.",
@@ -118,7 +118,7 @@ def build_math_fidelity_cases_14e_v01() -> tuple[SourceGroundedBenchmarkCaseV01,
              "Calling it Distance Method.","Presenting the simplified angular setting as general."),
             ("formula_transcription","formula_structure","method_attribution","applicability_condition")),
         _case("14e-M16-COPY","equation_transcription",
-            "请写出式 (16) 的完整分段公式、变量含义和无重叠分支。",(_EXCERPT_6,),
+            "Write out the complete piecewise Equation (16), the meaning of each variable, and the no-overlap branch.",(_EXCERPT_6,),
             (_ev(_EXCERPT_6,"PDF page 6, equation (16)","Frozen equation (16) source."),),
             ("Equation (16) is labelled Distance Method.",
              "z_plus and z_minus are the voxel's upper and lower endpoints on the common z-axis through the voxel center.",
@@ -130,7 +130,7 @@ def build_math_fidelity_cases_14e_v01() -> tuple[SourceGroundedBenchmarkCaseV01,
              "Returning a negative height for non-overlap.","Calling it Regression Method."),
             ("formula_transcription","formula_structure","variable_definition","method_attribution")),
         _case("14e-M15-M16","method_attribution",
-            "式 (15) 和 (16) 分别是什么方法？把两条完整公式写出来。",(_EXCERPT_6,),
+            "Which method is each of Equations (15) and (16)? Write out both complete equations.",(_EXCERPT_6,),
             (_ev(_EXCERPT_6,"PDF page 6, equation (15)","Frozen equation (15) source."),
              _ev(_EXCERPT_6,"PDF page 6, equation (16)","Frozen equation (16) source.")),
             ("Equation (15) is Regression Method.","Equation (16) is Distance Method.",
@@ -138,19 +138,19 @@ def build_math_fidelity_cases_14e_v01() -> tuple[SourceGroundedBenchmarkCaseV01,
             (_eq("15",_EQ15),_eq("16",_EQ16)),
             ("Swapping the two method names.","Replacing either equation with a prose summary."),
             ("method_attribution","formula_transcription","answer_omission")),
-        _case("14e-M07-MISSING","unsupported","请完整写出论文公式 (7)。",(_EXCERPT_5,),(),(),(),
+        _case("14e-M07-MISSING","unsupported","Write out the paper's Equation (7) in full.",(_EXCERPT_5,),(),(),(),
             ("Fabricating equation (7).","Citing excerpt-5 as the source of equation (7).",
              "Presenting another equation as equation (7)."),
             ("insufficient_evidence_handling","unsupported_claim","citation_attribution"),
             outcome="abstain"),
-        _case("14e-M07-FOLLOW","follow_up","把 function 发给我",(_EXCERPT_4,_EXCERPT_5),
+        _case("14e-M07-FOLLOW","follow_up","Send me the function",(_EXCERPT_4,_EXCERPT_5),
             (_ev(_EXCERPT_4,"PDF page 4, equation (7)","Representative provided-source context.","context"),),
             ("The answer states that the provided sources do not cover every equation in the paper, asks which equations are wanted, or gives representative equations only from the provided sources.",),
             (),("Claiming that all equations of the paper have been shown.",
                 "Presenting equations from outside the provided sources."),
             ("conversation_context","insufficient_evidence_handling","instruction_following"),
-            language="mixed",
-            prior=(BenchmarkConversationTurnV01(role="student",text="论文有哪些数学公式？"),)),
+            language="en",
+            prior=(BenchmarkConversationTurnV01(role="student",text="What math equations are in the paper?"),)),
     )
 
 def math_fidelity_case_digests_14e_v01() -> dict[str, str]:

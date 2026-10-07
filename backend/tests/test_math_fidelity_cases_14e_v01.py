@@ -12,7 +12,8 @@ from app.services.course_knowledge.source_grounded_benchmark_v01 import (
 IDS=("14e-M07-COPY","14e-M07-EXPLAIN","14e-M10-COPY","14e-M15-COPY",
      "14e-M16-COPY","14e-M15-M16","14e-M07-MISSING","14e-M07-FOLLOW")
 REV="20654a6a6f607efe7d51fde54f29819957b34ec2212e09af1f2cf3b0f874179f"
-FROZEN_DIGESTS={'14e-M07-COPY': '7259465621e9b22fecb32cf2ef228a74ad2420fdc25809b79f74fd5d27545357',
+# v0.1 (Chinese questions) digests, kept for reference to runs before 2026-10-06.
+FROZEN_DIGESTS_V01={'14e-M07-COPY': '7259465621e9b22fecb32cf2ef228a74ad2420fdc25809b79f74fd5d27545357',
  '14e-M07-EXPLAIN': '0459bd1068c1679fb92e726bc888bcc24495c7883c4fc4fed5b6d5c09657aac2',
  '14e-M07-FOLLOW': 'e0e11559f612b7925891af4c1e01bba0ec84c8d3327ff78e6ae242c24dc14836',
  '14e-M07-MISSING': '15d50fccf80ce43ab7d8ce224dd81d8a54d1863164c8ddbb021c2d7e5ab5a5e2',
@@ -20,6 +21,15 @@ FROZEN_DIGESTS={'14e-M07-COPY': '7259465621e9b22fecb32cf2ef228a74ad2420fdc25809b
  '14e-M15-COPY': '3b010ac72e0be6a1c3e489b57915845e70f1f4f8ba0059fb13cc2806f2843940',
  '14e-M15-M16': '9a6f0e9f0d7e4ce1e8a2e1a3baa168957297b6a138e98d50c43800fce4bfc7f2',
  '14e-M16-COPY': '15a010b233ede9ba94e3affccb5f2f5283814d146393986b14fec21a94f9d8e4'}
+# v0.2: English questions; gold, scope and outcomes unchanged.
+FROZEN_DIGESTS={'14e-M07-COPY': '3a1bd11e5fbbcc01df0540a18f858a08b9039f5dd3d22be090f96bc36b656f85',
+ '14e-M07-EXPLAIN': 'ca3e7db9c74e8c014000c32d4429722cdea6149eb21b65e5e64698fff91e1e2d',
+ '14e-M07-FOLLOW': 'c5b83a3760b03d721878bcb04ef1c32fc8241b51c424ff27b9910d632905c3f3',
+ '14e-M07-MISSING': '0e790faf3db3bd5e03cccdd98f34e7d15ad802c1659ae41a4445663351fb3867',
+ '14e-M10-COPY': 'cba2cad2cc802a2a3c37661f5fd56ef03b8558a80eeadee357cce11f3dfe56f9',
+ '14e-M15-COPY': '7e637a0fbc4fe2a9eaf98c4fac1c5cbb2c14c2fd8c26f67fcbae85f5d5d7a5d7',
+ '14e-M15-M16': '595e3f8e56bd438100e8a608e1eb37e9c1991681887f60e0d8f0fba3a413c781',
+ '14e-M16-COPY': '968b29239952836b21339eb67d29884a1c8574b6214d5d15146f4ac24c5ccb4b'}
 PACK=Path.home()/"Library"/"Application Support"/"URPP"/"local-learning-demo-v01"/"packs"/f"{PINNED_PACK_SHA256_14E_V01}.json"
 
 def test_case_count_and_order():
