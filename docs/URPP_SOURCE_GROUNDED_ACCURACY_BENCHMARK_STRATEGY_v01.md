@@ -217,8 +217,8 @@ The same underlying source fact should sometimes be asked in:
 
 Examples:
 
-- "请解释公式 (15)"
-- "请解释式 (15)"
+- "Explain formula (15)" (asked in Chinese, full-form word for "formula")
+- "Explain eq. (15)" (asked in Chinese, short-form word for "equation")
 - "Explain equation (15)"
 - "What does Eq. 15 mean?"
 
@@ -237,7 +237,7 @@ Student:
 What are the important equations in this section?
 
 Student:
-把第二个完整写出来。
+Write out the second one in full.
 
 Purpose:
 
@@ -537,7 +537,7 @@ Examples already discovered include:
 - equation (15) Regression Method attribution;
 - equation (16) overlapped-distance structure;
 - PDF extraction corruption;
-- Chinese "式" versus "公式" source-selection behavior;
+- Chinese short-form versus full-form equation references ("eq." vs. "formula") in source selection;
 - answer omission;
 - malformed mathematical rendering;
 - correct citation with incorrect mathematical explanation.

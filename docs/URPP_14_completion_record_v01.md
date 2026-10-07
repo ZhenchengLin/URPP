@@ -109,3 +109,7 @@ The owner provided blanket approval via Relay on 2026-10-01: “Go ahead and do 
 - Professor math-fidelity remediation (14F) is approved and will precede Implementation 15 execution.
 - `docs/URPP_15_course_timeline_syllabus_taskbook_v01.md` is frozen as v0.1.
 - Untracked-file outcome: `scripts/run_local_professor_chat_v01.py` passed the no-absolute-path, pinned-pack leak, `py_compile`, and side-effect-free `--help` checks and was committed separately as `984955a`; `scripts/audit_v4_gate1c_feature_artifact.py` and `engineering-archive/` were not committed or deleted and are locally excluded through `.git/info/exclude`.
+
+## 11. 14F revision (2026-10-06)
+
+The first 14F run did not exercise the verified-equation route (English-only intent matching against Chinese questions). The repair, the LaTeX registry snapshot v02, the L1 v0.2 marker fix, and the re-run `14e-14f-r2-20261006T231039Z` (`PASS=63, FAIL=0, NOT_APPLICABLE=2, NOT_RUN=7`) are recorded in `docs/URPP_14F_revision_record_v01.md`. L1 now passes on all equation markers, but generated explanations still contain mathematical errors; L2 human review remains the gate.
