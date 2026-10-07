@@ -346,6 +346,16 @@ def run_math_fidelity_14e_v01(
         "gold_review_status": (
             GOLD_REVIEW_STATUS_14E_V01
         ),
+        # Records whether the 14F deterministic route was reachable, so
+        # a run can never silently look like a registry run (or not).
+        "verified_equation_registry_records": (
+            None
+            if verified_equation_registry is None
+            else [
+                [record.record_id, record.record_revision]
+                for record in verified_equation_registry.records
+            ]
+        ),
         "case_ids": case_ids,
         "case_digests": case_digests,
         "record_kinds": record_kinds,

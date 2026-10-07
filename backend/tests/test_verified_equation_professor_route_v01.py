@@ -1,3 +1,4 @@
+import pytest
 from datetime import datetime, timezone
 
 from app.services.course_knowledge.models_v01 import (
@@ -87,7 +88,7 @@ def test_transcription_uses_exact_verified_latex():
     assert r"x = y + z" in route.rendered_markdown
     assert route.source_ids == (source.source_id,)
 
-def test_missing_registry_fails_closed():
+def test_missing_registry_keeps_professor_path():
     source = _source()
     route = resolve_verified_equation_professor_route_v01(
         registry=None,
@@ -95,7 +96,7 @@ def test_missing_registry_fails_closed():
         sources=(source,),
         question="Please copy Eq. (7).",
     )
-    assert route.status == "incomplete"
+    assert route.status == "not_applicable"
     assert route.rendered_markdown is None
 
 def test_wrong_source_revision_fails_closed():
@@ -141,7 +142,7 @@ def test_source_outside_objective_scope_fails_closed():
     )
     assert route.status == "incomplete"
 
-def test_non_transcription_request_stays_on_professor_path():
+def test_explanation_request_shows_verified_equation_for_professor():
     source = _source()
     route = resolve_verified_equation_professor_route_v01(
         registry=_registry(source),
@@ -149,10 +150,76 @@ def test_non_transcription_request_stays_on_professor_path():
         sources=(source,),
         question="Explain Eq. (7).",
     )
+    assert route.status == "complete_with_explanation"
+    assert r"x = y + z" in route.rendered_markdown
+
+
+def test_unresolved_explanation_request_stays_on_professor_path():
+    source = _source()
+    route = resolve_verified_equation_professor_route_v01(
+        registry=_registry(source, label="10"),
+        objective=_objective(source),
+        sources=(source,),
+        question="Explain Eq. (7).",
+    )
+    assert route.status == "not_applicable"
+    assert route.rendered_markdown is None
+
+
+def test_question_without_equation_label_is_not_applicable():
+    source = _source()
+    route = resolve_verified_equation_professor_route_v01(
+        registry=_registry(source),
+        objective=_objective(source),
+        sources=(source,),
+        question="把 function 发给我",
+    )
     assert route.status == "not_applicable"
 
 
-import pytest
+def test_chinese_transcription_uses_exact_verified_latex():
+    source = _source()
+    route = resolve_verified_equation_professor_route_v01(
+        registry=_registry(source),
+        objective=_objective(source),
+        sources=(source,),
+        question="请完整写出论文公式 (7)，保留所有乘除位置和求和符号。",
+    )
+    assert route.status == "complete"
+    assert r"x = y + z" in route.rendered_markdown
+
+
+def test_chinese_missing_transcription_fails_closed():
+    source = _source()
+    route = resolve_verified_equation_professor_route_v01(
+        registry=_registry(source, label="10"),
+        objective=_objective(source),
+        sources=(source,),
+        question="请完整写出论文公式 (7)。",
+    )
+    assert route.status == "incomplete"
+    assert route.rendered_markdown is None
+
+
+@pytest.mark.parametrize(
+    "question",
+    (
+        "请解释公式 (7) 中交集体积、距离平方与角度归一化各在什么位置。",
+        "请写出式 (7) 的完整分段公式、阈值和方法名称。",
+        "请写出式 (7) 的完整分段公式、变量含义和无重叠分支。",
+    ),
+)
+def test_chinese_semantic_requests_add_professor_explanation(question):
+    source = _source()
+    route = resolve_verified_equation_professor_route_v01(
+        registry=_registry(source),
+        objective=_objective(source),
+        sources=(source,),
+        question=question,
+    )
+    assert route.status == "complete_with_explanation"
+    assert r"x = y + z" in route.rendered_markdown
+
 
 @pytest.mark.parametrize("label", ("7", "10", "15", "16"))
 def test_required_labels_use_exact_verified_latex(label):

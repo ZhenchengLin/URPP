@@ -113,6 +113,39 @@ class _DeterministicProfessorV01:
     def produce(self, *, context, decision, course_knowledge) -> str:
         return self._content
 
+
+class _VerifiedEquationExplainingProfessorV01:
+    """Show verified equations verbatim, then a generated explanation.
+
+    The model never reproduces the verified equations; its output is
+    appended under an explicit "generated, not verified" heading so the
+    student can tell reviewed mathematics from model teaching.
+    """
+
+    EXPLANATION_HEADING = "**Explanation (generated, not verified):**"
+
+    def __init__(self, *, verified_markdown: str, professor) -> None:
+        self._verified_markdown = verified_markdown
+        self._professor = professor
+
+    @property
+    def answer_status(self):
+        return self._professor.answer_status
+
+    def produce(self, *, context, decision, course_knowledge) -> str:
+        explanation = self._professor.produce(
+            context=context,
+            decision=decision,
+            course_knowledge=course_knowledge,
+        )
+        return (
+            self._verified_markdown
+            + "\n\n"
+            + self.EXPLANATION_HEADING
+            + "\n\n"
+            + explanation
+        )
+
 class LocalProfessorChatServiceV01:
     """
     Compose one local Professor with an exact Course Pack.
@@ -392,6 +425,11 @@ class LocalProfessorChatServiceV01:
                     history=chat_context.history,
                 ),
             )
+            if verified_route.status == "complete_with_explanation":
+                professor = _VerifiedEquationExplainingProfessorV01(
+                    verified_markdown=verified_route.rendered_markdown,
+                    professor=professor,
+                )
 
         harness = CourseGroundedTeachingHarnessV01(
             decision_engine=PersonalizedDecisionEngineV01(),
@@ -494,7 +532,10 @@ class LocalProfessorChatServiceV01:
                 for record_id, record_revision
                 in verified_route.record_provenance
             )
-            if verified_route.status == "complete"
+            if verified_route.status in (
+                "complete",
+                "complete_with_explanation",
+            )
             else None
         )
 

@@ -557,3 +557,22 @@ def test_evaluation_does_not_modify_manifest_or_case_records(
     assert report.is_file()
     assert manifest.read_bytes() == before_manifest
     assert record.read_bytes() == before_record
+
+
+@pytest.mark.parametrize("label", ("7", "10", "15", "16"))
+def test_gold_equation_passes_its_own_markers(label):
+    from app.services.course_knowledge import (
+        math_fidelity_cases_14e_v01 as cases,
+    )
+
+    gold = {
+        "7": cases._EQ7,
+        "10": cases._EQ10,
+        "15": cases._EQ15,
+        "16": cases._EQ16,
+    }[label]
+    passed, missing = check_equation_markers_14e_v01(
+        equation_label=label,
+        final_answer=f"$$\n{gold}\n$$",
+    )
+    assert passed, missing

@@ -199,6 +199,70 @@ def test_explain_request_keeps_existing_transport_path():
     assert with_registry.system_answer_status == without_registry.system_answer_status
     assert with_registry.final_status == without_registry.final_status
 
+
+def _grounded_transport(calls, source_id):
+    def transport(payload):
+        calls.append(payload)
+        return {
+            "done": True,
+            "done_reason": "stop",
+            "message": {
+                "role": "assistant",
+                "content": json.dumps({
+                    "content": "Generated explanation of the equation.",
+                    "source_ids": [source_id],
+                    "answer_status": "course_grounded",
+                }),
+            }
+        }
+    return transport
+
+
+def test_explain_request_shows_verified_equation_before_generated_text():
+    pack = _pack()
+    calls = []
+    case = _case("请解释公式 (7) 的含义。", "synthetic-explain-zh-7")
+    scoped_ref = pack.objectives[0].source_refs[0]
+    trace = run_local_professor_benchmark_case_v01(
+        case=case.model_copy(
+            update={
+                "source_scope_refs": pack.objectives[0].source_refs,
+                "required_evidence": tuple(
+                    item.model_copy(update={"source_ref": scoped_ref})
+                    for item in case.required_evidence
+                ),
+            }
+        ),
+        pack=pack,
+        objective_id=pack.objectives[0].objective_id,
+        candidate_version="synthetic-14f",
+        run_id="synthetic-explain-zh",
+        run_started_at=datetime(2026, 1, 1, tzinfo=timezone.utc),
+        transport=_grounded_transport(calls, scoped_ref.source_id),
+        verified_equation_registry=_registry(pack),
+    )
+    assert trace.final_status == "answered"
+    assert len(calls) == 1
+    answer = trace.final_answer
+    assert answer.index(r"verified_{7} = exact") < answer.index(
+        "Explanation (generated, not verified)"
+    )
+
+
+def test_chinese_transcription_makes_zero_transport_calls():
+    pack = _pack()
+    calls = []
+    trace = _run(
+        pack,
+        _case("请完整写出论文公式 (7)。", "synthetic-copy-zh-7"),
+        _registry(pack),
+        calls,
+        "copy-zh",
+    )
+    assert calls == []
+    assert trace.final_status == "answered"
+    assert r"verified_{7} = exact" in trace.final_answer
+
 def test_turn_provenance_field_is_strictly_optional():
     field = LocalProfessorChatTurnV01.__dataclass_fields__[
         "verified_equation_provenance"

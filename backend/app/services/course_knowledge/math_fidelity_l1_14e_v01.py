@@ -20,7 +20,7 @@ from app.services.course_knowledge.source_grounded_benchmark_v01 import (
     validate_source_grounded_benchmark_case_v01,
 )
 
-L1_REPORT_VERSION_14E_V01 = "14e-l1-v0.1"
+L1_REPORT_VERSION_14E_V01 = "14e-l1-v0.2"
 L1_STATUSES_14E_V01 = (
     "PASS",
     "FAIL",
@@ -180,6 +180,9 @@ def _eq15_marker_results(text: str) -> dict[str, bool]:
                 "=0",
                 "&0",
                 "\\0&",
+                # LaTeX cases row "\\ 0, & \text{otherwise}" (v0.2 fix:
+                # the gold equation (16) failed its own marker in v0.1).
+                "\\0,",
                 "{0,",
                 ",0",
             ),
@@ -232,6 +235,9 @@ def _eq16_marker_results(text: str) -> dict[str, bool]:
                 "=0",
                 "&0",
                 "\\0&",
+                # LaTeX cases row "\\ 0, & \text{otherwise}" (v0.2 fix:
+                # the gold equation (16) failed its own marker in v0.1).
+                "\\0,",
                 "{0,",
                 ",0",
             ),
