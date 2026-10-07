@@ -2,16 +2,16 @@
 
 **An evidence-based AI tutor for university STEM courses: it decides what to teach next from what a student has actually shown, not from what a language model guesses.**
 
-![tests](https://img.shields.io/badge/backend%20tests-1400%20passing-2ea44f)
+![tests](https://img.shields.io/badge/backend%20tests-1424%20passing-2ea44f)
 ![python](https://img.shields.io/badge/python-3.11%2B-3776ab)
 ![local-first](https://img.shields.io/badge/runs-local--first%20(Ollama)-555)
 ![status](https://img.shields.io/badge/status-research%20prototype-orange)
 
 <p align="center">
-  <img src="docs/assets/professor-grounded-answer.jpg" width="49%" alt="The Professor answers from the uploaded course material">
-  <img src="docs/assets/professor-refuses-without-evidence.jpg" width="49%" alt="The Professor declines when the material does not cover the question">
+  <img src="docs/assets/course-path.jpg" width="49%" alt="A course path built from two uploaded documents, with prerequisites, key concepts, and sources">
+  <img src="docs/assets/topic-adaptive-next-step.jpg" width="49%" alt="A topic page: grounded lesson, check questions, and the next step with its reason">
 </p>
-<p align="center"><sub>Left: an answer grounded in the uploaded notes. Right: the same Professor declining a question the notes don't cover, instead of guessing. Both run on a local 4B model.</sub></p>
+<p align="center"><sub>Left: a course path the local model built from two uploaded notes, checked against the sources. Right: after a correct answer <i>with a hint</i>, URPP asks for a new question <i>without</i> help, and says why.</sub></p>
 
 ---
 
@@ -31,6 +31,23 @@ To make that question testable, URPP separates three jobs that a chatbot mixes t
 | **Teaching policy** | Choose the next teaching action (diagnose, review, hint, practice, self-explain, transfer) | An explicit, versioned rule policy, with a reason code for every choice |
 | **Professor** | Explain, using only the student's course material | A language model, which is **not allowed** to change the student's record |
 
+## Progress against the user stories
+
+URPP is built against a list of student user stories. The first tier now runs end to end on the local website ([design record](docs/33_course_workspace_tier1_v0.1.md)):
+
+| Story | Status | What works |
+|---|---|---|
+| Understands the course from my materials | ✅ Tier 1 | Several documents (TXT, Markdown, PDF) in one course |
+| Shows the full course path | ✅ Tier 1 | Ordered topics with prerequisites, key concepts, and sources; model-proposed, checked against the sources, with a deterministic fallback |
+| Turns material into lessons and practice | ✅ Tier 1 | Grounded lesson and worked example per topic; numeric and multiple-choice check questions, kept only if the model re-solves them to the same answer |
+| Adapts to my real performance | ✅ Tier 1 | The next step and its reason come from observed practice (correct, with or without a hint) and prerequisites |
+| Shows why it decided | ✅ | Every next step shows its reason code and policy version |
+| Remembers my learning | ✅ | Courses, lessons, questions, attempts, and progress survive restarts |
+| Reliable formulas | 🟡 | Verified equations are shown exactly; explanations are labelled as not verified |
+| Knows my level and prerequisites | 🟡 | Prerequisite order is enforced; no diagnostic of background knowledge yet |
+| Daily plan, review schedule, re-planning | ⬜ Next | Tier 3 |
+| How this course is graded, professor style | ⬜ Later | Tier 3–4 |
+
 ## Design principles
 
 1. **Evidence history is the source of truth.** Student state is always *recomputed* from stored evidence, never edited directly.
@@ -39,6 +56,19 @@ To make that question testable, URPP separates three jobs that a chatbot mixes t
 4. **Every claim is traceable.** Source hashes, versioned rubrics and policies, frozen benchmark runs, and a written design record for each stage.
 
 ## See it work
+
+**The course workspace** (`/course` on the local website):
+1. Create a course and add your notes.
+2. Build the course path.
+3. Open a topic: the lesson is written from that topic's sources.
+4. Answer check questions, with a hint if you want one.
+
+URPP then tells you the next step and why:
+- **Correct after a hint:** try a new question without help.
+- **Two different questions correct without help:** the topic is marked practiced, and you move on.
+- **Topic built on an unpracticed one:** URPP sends you there first.
+
+Progress is labelled "practice observed in URPP, not verified mastery", because a correct answer can't rule out help from outside the app.
 
 **The evidence loop** (local numeric lesson, `scripts/run_local_numeric_lesson_v01.py`): the student asks for a hint, then answers correctly. URPP records both, keeps mastery `unknown` because the answer was assisted, and changes the next action to a conceptual review.
 
@@ -62,7 +92,12 @@ Application-reported Assistance Events: 1
 Next Action: conceptual_review
 ```
 
-**The course-grounded Professor** (screenshots above): import a TXT, Markdown, or PDF; ask questions; the Professor cites the material or explicitly declines. Requested equations from a paper are shown from a human-verified record instead of being re-typed by the model.
+**The course-grounded Professor** (chat page): import a TXT, Markdown, or PDF; ask questions; the Professor cites the material or explicitly declines. Requested equations from a paper are shown from a human-verified record instead of being re-typed by the model.
+
+<p align="center">
+  <img src="docs/assets/professor-grounded-answer.jpg" width="49%" alt="The Professor answers from the uploaded course material">
+  <img src="docs/assets/professor-refuses-without-evidence.jpg" width="49%" alt="The Professor declines when the material does not cover the question">
+</p>
 
 ## How it works
 
@@ -83,6 +118,7 @@ flowchart LR
 | Student model | [`backend/app/services/student_model/`](backend/app/services/student_model) | Recomputes per-objective state from evidence; eligibility filters out assisted, misaligned, or invalid attempts |
 | Assessment | [`backend/app/services/assessment/`](backend/app/services/assessment) | Numeric scoring, open-response review with signed approval, transfer-assessment review |
 | Teaching policy | [`backend/app/services/decision/`](backend/app/services/decision) | Rule-based and evidence-driven action selection, student requests, recoverable sessions, shadow policies |
+| Course workspace | [`backend/app/services/course_workspace/`](backend/app/services/course_workspace) | Course path, grounded lessons, check questions with a re-solve filter, next-step policy |
 | Professor | [`backend/app/services/course_knowledge/`](backend/app/services/course_knowledge) | Material import, source selection, grounded chat, verified-equation route, math-fidelity benchmark |
 | Persistence | [`backend/app/repositories/`](backend/app/repositories) | SQLite with atomic submissions, versioned items, guarded migrations |
 | Models | [`backend/app/llm/`](backend/app/llm) | Local Ollama gateway (default `qwen3.5:4b`) and an OpenAI structured gateway |
@@ -99,7 +135,7 @@ flowchart LR
 
 The honest reading: **showing verified equations fixes transcription, but the 4B model's *explanations* still contain math errors** (for example, putting a factor in the numerator instead of the denominator). L1 cannot catch this; human L2 review is pending. In the English run, all four failures come from one malformed model response. Details: [`docs/URPP_14F_revision_record_v01.md`](docs/URPP_14F_revision_record_v01.md).
 
-**Engineering.** 1,400 backend tests; a recoverable session that survives restarts without double-submitting; and a full design record for each stage.
+**Engineering.** 1,424 backend tests; a recoverable session that survives restarts without double-submitting; and a full design record for each stage.
 
 ## Try it
 
@@ -113,7 +149,7 @@ pip install -e ".[pdf,dev]"
 ollama pull qwen3.5:4b
 ```
 
-Run the Professor web app (local only, http://127.0.0.1:8765):
+Run the web app (local only): the course workspace is at http://127.0.0.1:8765/course and the Professor chat at http://127.0.0.1:8765:
 
 ```bash
 python -m app.local_learning_web_v01 --port 8765 --data-root ~/urpp-demo
@@ -137,15 +173,22 @@ python -m pytest -q
 
 URPP is a **single-developer research prototype**, not a product.
 
-- **Two halves not yet joined.** The evidence loop runs on numeric assignments, while the course-grounded Professor runs chat on a synthetic student state. Connecting them, so that chat produces evidence, is the next milestone.
+- **Practice is observed, not certified.** The course workspace adapts to practice observed in the app. The strict mastery model still reports `unknown` for that practice, because outside help can't be ruled out (by design, `docs/27`).
+- **Generated content is checked, not verified.** Course paths are validated against sources, and check questions must survive an independent re-solve. Both are consistency checks, not human review; lessons can still contain errors.
 - **No learning-outcome data yet.** No study with real students has been run, and no claim is made that URPP improves learning.
 - **Local, single-user, no authentication.** Course materials never leave the machine.
 - **Explanation quality depends on model size.** Larger local models are being evaluated.
 
 ## Roadmap and open research questions
 
-- **Connect chat to evidence.** End each topic with a short check whose result enters the student model.
-- **Course intelligence (Implementation 15).** Derive objectives, requirements, and a timeline from the syllabus instead of one generic objective.
+- **Tier 2: trust and integration.**
+  - Check explanations, not just formulas.
+  - Bring the chat Professor into the course workspace.
+  - Add a background-knowledge diagnostic.
+- **Tier 3: planning.**
+  - A daily plan from the syllabus and your weekly schedule.
+  - Spaced review.
+  - Re-planning when things change.
 - **Evaluation design.** Compare a standard chatbot, a single tutor with a student model, and the separated-roles design on understanding, retention, and independent study.
 - **Open questions:**
   - How should assisted success be weighted?

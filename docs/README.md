@@ -54,6 +54,12 @@ Each stage of URPP was written up as a design record before or alongside its cod
 | [Math-fidelity protocol](URPP_14D-4B4D2_math_fidelity_protocol_v01.md) · [Verified equations](URPP_14D-4B4D2A_source_verified_equations_v01.md) | 14D: protocol and source-verified equation records |
 | [Completion record](URPP_14_completion_record_v01.md) · [14F revision](URPP_14F_revision_record_v01.md) | 14E benchmark results and the verified-equation route |
 
+## Course workspace (Tier 1 user stories)
+
+| Record | Topic |
+|---|---|
+| [33](33_course_workspace_tier1_v0.1.md) | Course path, lessons, check questions, adaptive next step on the website; verification and lessons from the real run |
+
 ## Next
 
 | Record | Topic |
