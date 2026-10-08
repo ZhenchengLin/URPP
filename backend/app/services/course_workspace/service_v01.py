@@ -32,6 +32,7 @@ from app.services.course_workspace.preparation_v01 import PreparationWorkerV01
 from app.services.course_workspace.practice_v01 import (
     generate_items_v01,
     public_item_v01,
+    question_fingerprint_v01,
     score_answer_v01,
 )
 from app.services.course_workspace.progress_policy_v01 import (
@@ -194,9 +195,31 @@ class CourseWorkspaceServiceV01:
         self.schedule_preparation(course_id)
         return self.course_view(course_id)
 
+    def _canonical_items(self, course_id: str, outline: dict) -> dict[str, str]:
+        """Map each question to the first saved question with the same text in
+        its topic. Earlier versions could save the same question twice (docs/35)."""
+        first: dict[tuple[str, str], str] = {}
+        canonical = {}
+        for topic in outline["topics"]:
+            for item in self.store.list_items(course_id, outline["revision"], topic["topic_id"]):
+                key = (topic["topic_id"], question_fingerprint_v01(item["question"]))
+                canonical[item["item_id"]] = first.setdefault(key, item["item_id"])
+        return canonical
+
     def _observations(self, course_id: str, outline: dict):
-        attempts = self.store.attempts(course_id, outline["revision"])
-        events = self.store.events(course_id, outline["revision"])
+        canonical = self._canonical_items(course_id, outline)
+        attempts, answered = [], set()
+        for attempt in self.store.attempts(course_id, outline["revision"]):
+            item_id = canonical.get(attempt["item_id"], attempt["item_id"])
+            attempt = {**attempt, "item_id": item_id}
+            if item_id in answered:
+                # The solution is shown after every submission, so a later
+                # attempt on the same question (or a copy of it) had help.
+                attempt["solution_shown"] = 1
+            answered.add(item_id)
+            attempts.append(attempt)
+        events = [{**event, "item_id": canonical.get(event["item_id"], event["item_id"])}
+                  for event in self.store.events(course_id, outline["revision"])]
         summaries = {
             topic["topic_id"]: summarize_topic_v01(topic["topic_id"], attempts, events)
             for topic in outline["topics"]
@@ -293,8 +316,11 @@ class CourseWorkspaceServiceV01:
         attempts, _, summaries = self._observations(course_id, outline)
         labels = {s["ref"]: s["locator_label"] for s in self._sources(course_id)}
         lesson = self.store.get_lesson(course_id, outline["revision"], topic_id)
+        canonical = self._canonical_items(course_id, outline)
         items = []
         for item in self.store.list_items(course_id, outline["revision"], topic_id):
+            if canonical[item["item_id"]] != item["item_id"]:
+                continue  # a saved copy of an earlier question
             mine = [a for a in attempts if a["item_id"] == item["item_id"]]
             items.append({
                 **public_item_v01(item),
@@ -349,8 +375,10 @@ class CourseWorkspaceServiceV01:
         with self._generation_lock:
             if only_if_empty and self.store.list_items(course_id, revision, topic_id):
                 return {"added": 0, "rejected": {}, "skipped": "already_prepared"}
+            existing = self.store.list_items(course_id, revision, topic_id)
             result = generate_items_v01(
-                self.model, topic, self._topic_sources(course_id, topic))
+                self.model, topic, self._topic_sources(course_id, topic),
+                [item["question"] for item in existing])
             for item in result["items"]:
                 self.store.add_item(course_id, revision, topic_id, item)
         return {"added": len(result["items"]), "rejected": result["rejected"]}

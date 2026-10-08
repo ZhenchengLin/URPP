@@ -62,7 +62,22 @@ Demo materials: `demo_materials/lu_decomposition_notes.md` and `solving_systems_
 - With two short documents, the 9B path proposal failed validation ("No proposed topic survived validation"), so the path fell back to 8 heading-derived topics. This needs its own investigation.
 - On a 16 GB laptop with other apps open, the 9B model is slow enough that preparing ahead is necessary rather than just nice to have. Closing other apps, or using `--model qwen3.5:4b`, shortens the waits.
 
-## 6. Acceptance checks (automated)
+## 6. Follow-up: repeated questions (found in use, 2026-10-08)
+
+The Practice tab said "6 questions" for a topic that had only 2 different ones, each saved three times.
+
+- **Cause:** the model runs at temperature 0 and was never told which questions already existed, so "Write more questions" produced the same set again.
+- **Worse effect:** answering a copy counted as a new question answered without help, even though the student had already seen the original's solution. That inflated "correct without help" and could mark a topic practiced.
+- **Fix:**
+  - New sets are written with the list of questions the student has seen (latest 12) and an instruction not to repeat or reword them.
+  - Any question whose text matches one already saved in the topic (ignoring case, spacing and punctuation) is dropped and counted as `duplicate`.
+- **Existing data:** copies saved earlier are merged into the first question with the same text:
+  - Copies are hidden from Practice.
+  - Their attempts count as repeat attempts on the original, which are assisted because the solution is shown after every answer.
+  - On the developer's own course, topic 1 went from 6 questions and "practiced" to 2 questions and "learning". Its next step is now a new question without help.
+- **Limit:** reworded near-copies with different text are not detected. The prompt asks the model to avoid them.
+
+## 7. Acceptance checks (automated)
 
 `tests/test_course_workspace_v01.py`, `tests/test_local_learning_web_v01.py`:
 
@@ -76,3 +91,5 @@ Demo materials: `demo_materials/lu_decomposition_notes.md` and `solving_systems_
 - An old database without `notes_shown` opens and reads 0.
 - The HTTP help endpoint accepts `notes` and rejects unknown kinds.
 - Fallback summaries keep whole formulas and never leave an unmatched `$`.
+- "More questions" sends the questions already seen and drops exact repeats (`duplicate`).
+- Saved copies of a question are hidden, and answering one after the original's solution counts as help.

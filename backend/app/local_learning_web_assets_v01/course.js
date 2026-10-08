@@ -296,8 +296,9 @@ async function topicAction(path, payload) {
   if (topic.generation) {
     const g = topic.generation;
     if (g.skipped) setStatus("The first questions were already prepared.");
-    else setStatus("Added " + g.added + " question(s); rejected " + g.rejected.disagreed +
-      " that failed the re-solve check and " + g.rejected.invalid + " malformed.");
+    else setStatus("Added " + g.added + " new question(s). Not kept: " +
+      (g.rejected.duplicate || 0) + " repeated a question you already had, " +
+      g.rejected.disagreed + " failed the re-solve check, " + g.rejected.invalid + " malformed.");
   }
 }
 

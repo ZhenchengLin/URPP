@@ -167,7 +167,7 @@ def test_dual_solve_keeps_only_agreeing_items():
     topic = {"title": "LU", "summary": "s"}
     result = generate_items_v01(model, topic, sources()[:1])
     assert [i["question"][:12] for i in result["items"]] == ["For A=[[2,1]", "What is U[2]"]
-    assert result["rejected"] == {"invalid": 0, "disagreed": 1}
+    assert result["rejected"] == {"invalid": 0, "duplicate": 0, "disagreed": 1}
     assert all(i["key_check"] == "dual_solve_agreed" for i in result["items"])
 
 
@@ -342,7 +342,8 @@ def test_http_flow_and_page(tmp_path):
     client.post(f"/api/courses/{cid}/topics/{topic_id}/lesson", json={}, headers=headers)
     items = client.post(f"/api/courses/{cid}/topics/{topic_id}/questions",
                         json={}, headers=headers).json()["items"]
-    assert len(items) == 6  # the prepared set plus one more on request
+    # FakeModel always writes the same three questions, so "more" adds none.
+    assert len(items) == 3
     first_set = client.post(f"/api/courses/{cid}/topics/{topic_id}/questions",
                             json={"more": False}, headers=headers).json()
     assert first_set["generation"]["skipped"] == "already_prepared"
@@ -486,3 +487,47 @@ def test_fallback_summary_keeps_whole_formulas_for_the_renderer():
         "The multiplier is $m = \\frac{c}{a}$ Next."
     cut = _plain("Intro $$A = LU$$ then $$" + "x+" * 100 + "1$$", 60)
     assert cut == "Intro $A = LU$ then …" and cut.count("$") % 2 == 0
+
+
+def test_more_questions_never_repeat_ones_already_saved(tmp_path):
+    service = make_service(tmp_path)
+    cid = service.create_course("C")["course_id"]
+    service.add_document(cid, filename="lu.md", content=DOC_A, allow_local_teaching=True)
+    service.build_outline(cid)
+    service.model.users = []
+    original = service.model.generate
+
+    def spy(**kwargs):
+        service.model.users.append(kwargs["user"])
+        return original(**kwargs)
+
+    service.model.generate = spy
+    view = service.add_questions(cid, "t1", more=True)
+    assert view["generation"]["added"] == 0
+    assert view["generation"]["rejected"]["duplicate"] == 3
+    assert len(view["items"]) == 3
+    assert "already seen these questions" in service.model.users[0]
+    assert "For A=[[2,1],[6,8]], what is m?" in service.model.users[0]
+
+
+def test_saved_copies_of_a_question_are_merged_and_count_as_repeats(tmp_path):
+    """Data written before docs/35 could hold the same question twice. A copy is
+    hidden, and answering it after the original's solution was shown is help."""
+    service = make_service(tmp_path)
+    cid = service.create_course("C")["course_id"]
+    service.add_document(cid, filename="lu.md", content=DOC_A, allow_local_teaching=True)
+    service.build_outline(cid)
+    items = service.topic_view(cid, "t1")["items"]
+    for original in items:
+        copy = {**service.store.get_item(original["item_id"]),
+                "item_id": "item-" + original["item_id"][-12:] + "beef"}
+        service.store.add_item(cid, 1, "t1", copy)
+    assert len(service.topic_view(cid, "t1")["items"]) == 3
+
+    first = items[0]["item_id"]
+    copy_of_first = "item-" + first[-12:] + "beef"
+    assert service.submit(first, "2")["feedback"]["correct"] is False  # solution shown
+    service.submit(copy_of_first, "3")  # same question, answered after the solution
+    progress = service.topic_view(cid, "t1")["progress"]
+    assert progress["correct_unassisted_items"] == 0
+    assert progress["correct_assisted"] == 1

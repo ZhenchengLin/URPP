@@ -172,17 +172,36 @@ def _question_text(number: int, item: dict) -> str:
     return text
 
 
-def generate_items_v01(model, topic: dict, sources: list[dict]) -> dict:
-    """Return {'items': kept items, 'rejected': counts by reason}."""
+MAX_SEEN_QUESTIONS_IN_PROMPT_V01 = 12
+
+
+def question_fingerprint_v01(text: str) -> str:
+    """Question text without case, spacing, or punctuation. Two questions with
+    the same fingerprint are the same question for practice evidence (docs/35)."""
+    return re.sub(r"[^a-z0-9]+", " ", str(text).lower()).strip()
+
+
+def generate_items_v01(model, topic: dict, sources: list[dict],
+                       existing_questions: list[str] = ()) -> dict:
+    """Return {'items': kept items, 'rejected': counts by reason}.
+
+    The model runs at temperature 0, so without the list of questions the
+    student has already seen it would write the same set again."""
     aliases = {f"S{index}": source["ref"] for index, source in enumerate(sources, 1)}
     excerpts = "\n\n".join(
         f"[S{index}] {source['locator_label']}:\n{source['content'][:6000]}"
         for index, source in enumerate(sources, 1)
     )
+    seen = ""
+    if existing_questions:
+        recent = list(existing_questions)[-MAX_SEEN_QUESTIONS_IN_PROMPT_V01:]
+        seen = ("\n\nThe student has already seen these questions. Write new ones "
+                "that test a different fact or use different numbers; do not repeat "
+                "or reword them:\n" + "\n".join(f"- {q[:300]}" for q in recent))
     proposal = model.generate(
         system=ITEMS_SYSTEM_V01,
         user=f"Topic: {topic['title']}\nSummary: {topic['summary']}\n\n"
-             f"Course excerpts:\n\n{excerpts}",
+             f"Course excerpts:\n\n{excerpts}{seen}",
         schema=ITEMS_SCHEMA_V01,
         max_tokens=3000,
     )
@@ -191,15 +210,20 @@ def generate_items_v01(model, topic: dict, sources: list[dict]) -> dict:
     if proposed is None:
         raise CourseGenerationErrorV01("Question proposal has no item list.")
     candidates = []
-    invalid = 0
+    invalid = duplicate = 0
+    fingerprints = {question_fingerprint_v01(q) for q in existing_questions}
     for raw in proposed[:4]:
         item = _validate_item(raw, aliases)
         if item is None:
             invalid += 1
+        elif question_fingerprint_v01(item["question"]) in fingerprints:
+            duplicate += 1
         else:
+            fingerprints.add(question_fingerprint_v01(item["question"]))
             candidates.append(item)
     if not candidates:
-        return {"items": [], "rejected": {"invalid": invalid, "disagreed": 0}}
+        return {"items": [], "rejected": {"invalid": invalid, "duplicate": duplicate,
+                                          "disagreed": 0}}
 
     # The checker sees the same excerpts as the writer, but never the answer key.
     solved = model.generate(
@@ -229,7 +253,8 @@ def generate_items_v01(model, topic: dict, sources: list[dict]) -> dict:
                 "model": getattr(model, "model", "unknown"),
             })
     return {"items": kept,
-            "rejected": {"invalid": invalid, "disagreed": len(candidates) - len(kept)}}
+            "rejected": {"invalid": invalid, "duplicate": duplicate,
+                         "disagreed": len(candidates) - len(kept)}}
 
 
 def score_answer_v01(item: dict, answer_text: str) -> bool | None:
