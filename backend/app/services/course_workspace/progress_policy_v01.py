@@ -23,7 +23,8 @@ REASONS_V01 = {
     "recent_error":
         "Your last answer was not correct. Try another question; a hint is available.",
     "assisted_success_needs_unassisted_check":
-        "You got it right after a hint or solution. Try a new question without help.",
+        "You got it right with help (a hint, the solution, or the notes). "
+        "Try a new question without help.",
     "single_success_needs_confirmation":
         "One correct answer without help. One more new question will confirm it.",
     "ready_for_next_topic":
@@ -32,12 +33,18 @@ REASONS_V01 = {
 }
 
 
+def _assisted(attempt: dict) -> bool:
+    """A hint, the solution, or a peek at the notes during the question."""
+    return bool(attempt["hint_shown"] or attempt["solution_shown"]
+                or attempt.get("notes_shown"))
+
+
 def summarize_topic_v01(topic_id: str, attempts: list[dict], events: list[dict]) -> dict:
     mine = [a for a in attempts if a["topic_id"] == topic_id]
     opened = any(e["topic_id"] == topic_id and e["kind"] == "lesson_opened" for e in events)
     unassisted_items = {
         a["item_id"] for a in mine
-        if a["correct"] and not a["hint_shown"] and not a["solution_shown"]
+        if a["correct"] and not _assisted(a)
     }
     errors = sum(1 for a in mine if not a["correct"])
     last = mine[-1] if mine else None
@@ -65,16 +72,14 @@ def summarize_topic_v01(topic_id: str, attempts: list[dict], events: list[dict])
         "lesson_opened": opened,
         "attempts": len(mine),
         "correct_unassisted_items": len(unassisted_items),
-        "correct_assisted": sum(
-            1 for a in mine if a["correct"] and (a["hint_shown"] or a["solution_shown"])
-        ),
+        "correct_assisted": sum(1 for a in mine if a["correct"] and _assisted(a)),
         "incorrect": errors,
         "consecutive_errors": trailing_errors,
         "restudied_after_last_error": restudied,
         "last_attempt": (
             None if last is None else {
                 "correct": bool(last["correct"]),
-                "assisted": bool(last["hint_shown"] or last["solution_shown"]),
+                "assisted": _assisted(last),
             }
         ),
     }

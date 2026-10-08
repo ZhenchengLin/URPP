@@ -143,10 +143,16 @@ def build_outline_from_proposal_v01(proposal, sources: list[dict]) -> dict:
 
 
 def _plain(text: str, limit: int) -> str:
-    """Readable preview: drop Markdown heading marks, display-math fences, page tags."""
+    """Readable preview: drop Markdown heading marks and page tags. Display
+    formulas become inline math, so the page can typeset them (docs/35)."""
     text = re.sub(r"\[PDF page \d+, fragment \d+\]", " ", text)
-    text = re.sub(r"^#+\s*", "", text, flags=re.M).replace("$$", " ")
-    return _clean(text, limit)
+    text = re.sub(r"^#+\s*", "", text, flags=re.M)
+    text = re.sub(r"\$\$(.+?)\$\$", lambda m: "$" + m.group(1).strip() + "$", text, flags=re.S)
+    text = _clean(text, limit)
+    if text.count("$") % 2:
+        # The limit cut a formula in half: end the preview before it instead.
+        text = text[:text.rfind("$")].rstrip() + " …"
+    return text
 
 
 def _heading(text: str) -> str:

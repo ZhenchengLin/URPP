@@ -234,7 +234,9 @@ def test_unpracticed_prerequisite_comes_first():
 # ---------------------------------------------------------------- service
 
 def make_service(tmp_path, model=None):
-    return CourseWorkspaceServiceV01(data_root=tmp_path / "ws", model=model or FakeModel())
+    # Preparation runs inline so tests are deterministic (docs/35).
+    return CourseWorkspaceServiceV01(data_root=tmp_path / "ws", model=model or FakeModel(),
+                                     prepare_in_background=False)
 
 
 def test_end_to_end_course_path_lesson_practice_and_restart(tmp_path):
@@ -252,14 +254,22 @@ def test_end_to_end_course_path_lesson_practice_and_restart(tmp_path):
     assert topics[1]["prerequisite_topic_ids"] == ["t1"]
     assert topics[0]["source_labels"] == ["lu.md, part 1"]
     assert view["recommended_topic_id"] == "t1"
+    # The lesson and first questions for t1 and t2 were prepared ahead (docs/35).
+    for topic in topics:
+        assert topic["preparation"] == {"lesson": {"state": "ready"},
+                                        "questions": {"state": "ready"}}
 
     assert service.topic_view(cid, "t1")["next_step"]["reason_code"] == "topic_not_started"
+    calls_before = len(service.model.calls)
     lesson_view = service.open_lesson(cid, "t1")
+    assert len(service.model.calls) == calls_before  # nothing left to generate
     assert lesson_view["lesson"]["status"] == "generated_unverified"
     assert lesson_view["next_step"]["step"] == "answer_check"
-    assert lesson_view["next_step"]["needs_more_questions"] is True
+    assert lesson_view["next_step"]["needs_more_questions"] is False
 
-    items = service.add_questions(cid, "t1")["items"]
+    first_set = service.add_questions(cid, "t1", more=False)
+    assert first_set["generation"]["skipped"] == "already_prepared"
+    items = first_set["items"]
     assert len(items) == 3 and "answer_value" not in items[0]
 
     first, second = items[0]["item_id"], items[2]["item_id"]
@@ -291,8 +301,7 @@ def test_repeat_on_same_question_counts_as_assisted(tmp_path):
     cid = service.create_course("C")["course_id"]
     service.add_document(cid, filename="lu.md", content=DOC_A, allow_local_teaching=True)
     service.build_outline(cid)
-    service.open_lesson(cid, "t1")
-    item = service.add_questions(cid, "t1")["items"][0]["item_id"]
+    item = service.open_lesson(cid, "t1")["items"][0]["item_id"]
     assert service.submit(item, "2")["feedback"]["correct"] is False
     retry = service.submit(item, "3")
     assert retry["feedback"]["assisted"] is True  # the solution was shown after attempt 1
@@ -333,9 +342,19 @@ def test_http_flow_and_page(tmp_path):
     client.post(f"/api/courses/{cid}/topics/{topic_id}/lesson", json={}, headers=headers)
     items = client.post(f"/api/courses/{cid}/topics/{topic_id}/questions",
                         json={}, headers=headers).json()["items"]
+    assert len(items) == 6  # the prepared set plus one more on request
+    first_set = client.post(f"/api/courses/{cid}/topics/{topic_id}/questions",
+                            json={"more": False}, headers=headers).json()
+    assert first_set["generation"]["skipped"] == "already_prepared"
+    peek = client.post(f"/api/questions/{items[0]['item_id']}/help",
+                       json={"kind": "notes"}, headers=headers)
+    assert peek.status_code == 200
+    assert client.post(f"/api/questions/{items[0]['item_id']}/help",
+                       json={"kind": "answer"}, headers=headers).status_code in (400, 422)
     answer = client.post(f"/api/questions/{items[0]['item_id']}/answer",
                          json={"answer": "3"}, headers=headers)
     assert answer.json()["feedback"]["correct"] is True
+    assert answer.json()["feedback"]["help_used"] == ["notes"]
     bad = client.post(f"/api/questions/{items[0]['item_id']}/answer",
                       json={"answer": "three"}, headers=headers)
     assert bad.status_code == 400 and "one number" in bad.json()["detail"]
@@ -366,3 +385,104 @@ def test_heading_fallback_splits_markdown_sections_and_keeps_titles_unique():
                       "Worked example (Notes B)"]
     assert outline["topics"][1]["prerequisite_topic_ids"] == ["t1"]
     assert outline["topics"][2]["prerequisite_topic_ids"] == []
+
+
+# ---------------------------------------------------------------- docs/35
+
+def test_peeking_at_notes_during_a_question_counts_as_help(tmp_path):
+    service = make_service(tmp_path)
+    cid = service.create_course("C")["course_id"]
+    service.add_document(cid, filename="lu.md", content=DOC_A, allow_local_teaching=True)
+    service.build_outline(cid)
+    items = service.open_lesson(cid, "t1")["items"]
+    peeked, clean = items[0]["item_id"], items[2]["item_id"]
+    service.reveal(peeked, "notes")
+    result = service.submit(peeked, "3")
+    assert result["feedback"]["assisted"] is True
+    assert result["feedback"]["help_used"] == ["notes"]
+    assert result["progress"]["correct_unassisted_items"] == 0
+    assert result["next_step"]["reason_code"] == "assisted_success_needs_unassisted_check"
+    attempt = service.store.attempts(cid, 1)[-1]
+    assert attempt["notes_shown"] == 1 and attempt["hint_shown"] == 0
+    # Studying before a question (no item attached) is not help for it.
+    service.open_lesson(cid, "t1")
+    assert service.submit(clean, "5")["feedback"]["assisted"] is False
+
+
+def test_old_database_gains_notes_column(tmp_path):
+    import sqlite3
+    from app.services.course_workspace.store_v01 import CourseWorkspaceStoreV01
+
+    path = tmp_path / "old.sqlite3"
+    connection = sqlite3.connect(path)
+    connection.execute(
+        "CREATE TABLE cw_attempts_v01 (attempt_id INTEGER PRIMARY KEY AUTOINCREMENT, "
+        "item_id TEXT NOT NULL, course_id TEXT NOT NULL, revision INTEGER NOT NULL, "
+        "topic_id TEXT NOT NULL, answer_text TEXT NOT NULL, correct INTEGER NOT NULL, "
+        "hint_shown INTEGER NOT NULL, solution_shown INTEGER NOT NULL, "
+        "submitted_at TEXT NOT NULL)")
+    connection.execute(
+        "INSERT INTO cw_attempts_v01 VALUES (1, 'item-0', 'course-0', 1, 't1', '3', 1, 0, 0, 'x')")
+    connection.commit()
+    connection.close()
+    store = CourseWorkspaceStoreV01(path)
+    assert store.attempts("course-0", 1)[0]["notes_shown"] == 0
+    store.close()
+
+
+def test_background_preparation_fills_lesson_and_questions(tmp_path):
+    import time
+
+    service = CourseWorkspaceServiceV01(data_root=tmp_path / "ws", model=FakeModel())
+    cid = service.create_course("C")["course_id"]
+    service.add_document(cid, filename="lu.md", content=DOC_A, allow_local_teaching=True)
+    service.add_document(cid, filename="solve.md", content=DOC_B, allow_local_teaching=True)
+    view = service.build_outline(cid)
+    assert view["outline"]["topics"][0]["preparation"]["lesson"]["state"] in (
+        "queued", "working", "ready")
+    deadline = time.time() + 10
+    while service.course_view(cid)["preparing"] and time.time() < deadline:
+        time.sleep(0.02)
+    topics = service.course_view(cid)["outline"]["topics"]
+    assert [t["preparation"] for t in topics] == [
+        {"lesson": {"state": "ready"}, "questions": {"state": "ready"}}] * 2
+    assert len(service.topic_view(cid, "t1")["items"]) == 3  # prepared once, not twice
+    assert set(service.course_view(cid)["measured_seconds"]) == {"lesson", "questions"}
+
+
+def test_preparation_reports_failures_and_empty_sets(tmp_path):
+    class NoQuestions(FakeModel):
+        def generate(self, *, system, user, schema, max_tokens=2048):
+            if "check questions" in system:
+                return {"items": []}
+            if "professor teaching one topic" in system:
+                raise RuntimeError("model crashed")
+            return super().generate(system=system, user=user, schema=schema,
+                                    max_tokens=max_tokens)
+
+    service = make_service(tmp_path, NoQuestions())
+    cid = service.create_course("C")["course_id"]
+    service.add_document(cid, filename="lu.md", content=DOC_A, allow_local_teaching=True)
+    prep = service.build_outline(cid)["outline"]["topics"][0]["preparation"]
+    assert prep["lesson"]["state"] == "failed" and prep["lesson"]["error"] == "RuntimeError"
+    assert prep["questions"]["state"] == "empty"
+
+
+def test_stale_preparation_after_rebuild_is_skipped(tmp_path):
+    service = make_service(tmp_path)
+    cid = service.create_course("C")["course_id"]
+    service.add_document(cid, filename="lu.md", content=DOC_A, allow_local_teaching=True)
+    service.build_outline(cid)
+    service.build_outline(cid)  # revision 2
+    calls = len(service.model.calls)
+    service._run_preparation_job((cid, 1, "t1", "questions"))
+    assert len(service.model.calls) == calls
+
+
+def test_fallback_summary_keeps_whole_formulas_for_the_renderer():
+    from app.services.course_workspace.outline_v01 import _plain
+
+    assert _plain("The multiplier is\n\n$$m = \\frac{c}{a}$$\n\nNext.", 200) == \
+        "The multiplier is $m = \\frac{c}{a}$ Next."
+    cut = _plain("Intro $$A = LU$$ then $$" + "x+" * 100 + "1$$", 60)
+    assert cut == "Intro $A = LU$ then …" and cut.count("$") % 2 == 0

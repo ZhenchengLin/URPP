@@ -5,8 +5,9 @@
 // MathJax never receives course files or the Session ID from this adapter.
 (function () {
   const MAX_TEX_CHARS = 4096;
-  const MAX_FORMULAS_PER_PAGE = 160;
-  let attempted = 0;
+  // The number of formulas is bounded per rendered message by the Markdown
+  // renderer. A page-wide counter here never reset, so pages that re-render
+  // (the course workspace, long chats) stopped typesetting after 160 formulas.
 
   // No remote loading, no browser-wide automatic DOM scanning, no web fonts.
   // Keep the TeX package set small (no require, autoload, html, or unicode).
@@ -20,8 +21,7 @@
   function typeset(target, tex, display) {
     if (!target || typeof target.replaceChildren !== "function" ||
         typeof tex !== "string" || tex.length > MAX_TEX_CHARS ||
-        !tex.trim() || typeof display !== "boolean" ||
-        ++attempted > MAX_FORMULAS_PER_PAGE) return;
+        !tex.trim() || typeof display !== "boolean") return;
 
     // Never interpret output or input as HTML. The fallback was inserted by
     // the Markdown renderer using textContent and stays on render failure.

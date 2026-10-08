@@ -99,5 +99,24 @@ select,input[type=text]{display:block;width:100%;margin-top:7px;font:inherit;fon
 .feedback{margin-top:10px;padding:9px 11px;border-radius:8px}.feedback.correct{background:#e3f4ea}.feedback.incorrect{background:#fbeee6}
 .help-box{margin-top:9px;padding:8px 10px;background:#fff8e6;border-radius:8px}
 @media(max-width:740px){.topic-grid{grid-template-columns:1fr}.topic-heading{flex-direction:column}.nav-links{float:none;display:block;margin-top:6px}.nav-links a{margin:0 14px 0 0}}
+/* Study / Practice modes and activity indicator (docs/35) */
+.mode-tabs{display:flex;gap:4px;border-bottom:1px solid #dae3ed;margin:16px 0 14px}
+.mode-tabs button{background:none;color:#4a5d73;border-radius:8px 8px 0 0;border-bottom:3px solid transparent}
+.mode-tabs button[aria-selected=true]{color:#173e6b;border-bottom-color:#245b99}
+.waiting{display:flex;gap:12px;align-items:center;border:1px dashed #b9c6d5;border-radius:9px;padding:14px;background:#f9fbff;font-size:14px}
+.waiting p{margin:3px 0 0}
+.spinner{flex:none;width:20px;height:20px;border-radius:50%;border:3px solid #cfdae6;border-top-color:#245b99;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.spinner{animation-duration:2.4s}}
+.activity[hidden]{display:none}
+.activity{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);display:flex;gap:12px;align-items:center;max-width:min(560px,calc(100vw - 32px));padding:12px 16px;background:#182e4c;color:white;border-radius:12px;box-shadow:0 8px 28px rgba(16,32,56,.28);z-index:10}
+.activity .spinner{border-color:#41597a;border-top-color:white}
+.activity strong{display:block;font-size:14px}.activity .hint{color:#cfe0f9;display:block}
+.pill-prep{background:#fff3d6;color:#7a4d00}.pill-ready{background:#e6f1fb;color:#1d4c82}
+.practice-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;font-size:13px;color:#5b6d82}
+.notes-peek{margin-top:12px;border:1px solid #f0d9a6;background:#fffcf3;border-radius:9px;padding:10px 13px}
+.confirm-box{margin-top:10px;padding:10px 12px;border-radius:8px;background:#fff8e6;font-size:13px}
+.confirm-box p{margin:0 0 8px}
+.row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 /* Inline formulas: no scrollbar track for a one-pixel SVG overflow. */
 .md-body .md-formula.md-tex-inline{overflow:visible}

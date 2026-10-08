@@ -28,6 +28,7 @@ from app.services.course_knowledge.local_material_import_v01 import (
 from app.services.course_knowledge.local_pdf_import_v01 import build_local_pdf_pack_v01
 from app.services.course_workspace.lesson_v01 import generate_lesson_v01
 from app.services.course_workspace.outline_v01 import propose_outline_v01
+from app.services.course_workspace.preparation_v01 import PreparationWorkerV01
 from app.services.course_workspace.practice_v01 import (
     generate_items_v01,
     public_item_v01,
@@ -56,7 +57,7 @@ def locator_label_v01(filename: str, locator: str) -> str:
 
 
 class CourseWorkspaceServiceV01:
-    def __init__(self, *, data_root: Path, model) -> None:
+    def __init__(self, *, data_root: Path, model, prepare_in_background: bool = True) -> None:
         supplied = Path(data_root).expanduser().absolute()
         if supplied.is_symlink():
             raise ValueError("Workspace path cannot be a symlink.")
@@ -73,6 +74,9 @@ class CourseWorkspaceServiceV01:
         self.model = model
         # One local model call at a time keeps a 16 GB laptop responsive.
         self._generation_lock = threading.Lock()
+        # Lessons and first questions are written ahead of the student (docs/35).
+        self._preparer = PreparationWorkerV01(
+            self._run_preparation_job, background=prepare_in_background)
 
     # Validation helpers ----------------------------------------------------
 
@@ -187,6 +191,7 @@ class CourseWorkspaceServiceV01:
         with self._generation_lock:
             outline = propose_outline_v01(self.model, sources)
         self.store.add_outline(course_id, outline)
+        self.schedule_preparation(course_id)
         return self.course_view(course_id)
 
     def _observations(self, course_id: str, outline: dict):
@@ -197,6 +202,54 @@ class CourseWorkspaceServiceV01:
             for topic in outline["topics"]
         }
         return attempts, events, summaries
+
+    # Preparation ahead of the student ----------------------------------------
+
+    def schedule_preparation(self, course_id: str) -> None:
+        """Queue the lesson and first questions for the recommended topic and
+        the topic after it, unless they already exist."""
+        outline = self.store.latest_outline(course_id)
+        if outline is None or self.model is None:
+            return
+        revision = outline["revision"]
+        _, _, summaries = self._observations(course_id, outline)
+        ordered = sorted(outline["topics"], key=lambda t: t["order"])
+        first = recommended_topic_v01(outline, summaries)
+        index = next(i for i, t in enumerate(ordered) if t["topic_id"] == first)
+        targets = [first] + [
+            t["topic_id"] for t in ordered[index + 1:]
+            if summaries[t["topic_id"]]["status"] != "practiced"
+        ][:1]
+        for topic_id in targets:
+            if self.store.get_lesson(course_id, revision, topic_id) is None:
+                self._preparer.submit((course_id, revision, topic_id, "lesson"))
+            if not self.store.list_items(course_id, revision, topic_id):
+                self._preparer.submit((course_id, revision, topic_id, "questions"))
+
+    def _run_preparation_job(self, key) -> None:
+        course_id, revision, topic_id, kind = key
+        outline = self.store.latest_outline(course_id)
+        if outline is None or outline["revision"] != revision:
+            return  # the course path was rebuilt; this work is no longer needed
+        topic = self._topic(outline, topic_id)
+        if kind == "lesson":
+            self._ensure_lesson(course_id, outline, topic)
+        else:
+            self._generate_questions(course_id, outline, topic, only_if_empty=True)
+
+    def _preparation(self, course_id: str, revision: int, topic_id: str,
+                     has_lesson: bool, has_items: bool) -> dict:
+        def state(kind: str, done: bool) -> dict:
+            if done:
+                return {"state": "ready"}
+            status = self._preparer.status((course_id, revision, topic_id, kind))
+            if status and status["state"] == "ready":
+                # The job finished but nothing was saved: no question passed
+                # the dual-solve check. The student can ask for a new set.
+                return {**status, "state": "empty"}
+            return status or {"state": "not_started"}
+        return {"lesson": state("lesson", has_lesson),
+                "questions": state("questions", has_items)}
 
     def course_view(self, course_id: str) -> dict:
         course = self._course(course_id)
@@ -214,7 +267,13 @@ class CourseWorkspaceServiceV01:
             "topics": [
                 {**topic,
                  "source_labels": [labels.get(ref, ref) for ref in topic["source_refs"]],
-                 "progress": summaries[topic["topic_id"]]}
+                 "progress": summaries[topic["topic_id"]],
+                 "preparation": self._preparation(
+                     course_id, outline["revision"], topic["topic_id"],
+                     self.store.get_lesson(course_id, outline["revision"],
+                                           topic["topic_id"]) is not None,
+                     bool(self.store.list_items(course_id, outline["revision"],
+                                                topic["topic_id"])))}
                 for topic in outline["topics"]
             ],
             "unassigned_source_labels": [
@@ -222,6 +281,8 @@ class CourseWorkspaceServiceV01:
             ],
         }
         view["recommended_topic_id"] = recommended_topic_v01(outline, summaries)
+        view["preparing"] = self._preparer.busy(course_id, outline["revision"])
+        view["measured_seconds"] = self._preparer.last_seconds()
         return view
 
     # Topics ----------------------------------------------------------------
@@ -263,34 +324,54 @@ class CourseWorkspaceServiceV01:
             "items": items,
             "progress": summaries[topic_id],
             "next_step": step,
+            "preparation": self._preparation(
+                course_id, outline["revision"], topic_id, lesson is not None, bool(items)),
         }
 
     def _topic_sources(self, course_id: str, topic: dict) -> list[dict]:
         wanted = set(topic["source_refs"])
         return [s for s in self._sources(course_id) if s["ref"] in wanted]
 
+    def _ensure_lesson(self, course_id: str, outline: dict, topic: dict) -> None:
+        revision, topic_id = outline["revision"], topic["topic_id"]
+        if self.store.get_lesson(course_id, revision, topic_id) is not None:
+            return
+        with self._generation_lock:
+            # Re-check: the background worker may have written it meanwhile.
+            if self.store.get_lesson(course_id, revision, topic_id) is None:
+                lesson = generate_lesson_v01(
+                    self.model, topic, self._topic_sources(course_id, topic))
+                self.store.add_lesson(course_id, revision, topic_id, lesson)
+
+    def _generate_questions(self, course_id: str, outline: dict, topic: dict,
+                            *, only_if_empty: bool) -> dict:
+        revision, topic_id = outline["revision"], topic["topic_id"]
+        with self._generation_lock:
+            if only_if_empty and self.store.list_items(course_id, revision, topic_id):
+                return {"added": 0, "rejected": {}, "skipped": "already_prepared"}
+            result = generate_items_v01(
+                self.model, topic, self._topic_sources(course_id, topic))
+            for item in result["items"]:
+                self.store.add_item(course_id, revision, topic_id, item)
+        return {"added": len(result["items"]), "rejected": result["rejected"]}
+
     def open_lesson(self, course_id: str, topic_id: str) -> dict:
         outline = self._outline(course_id)
         topic = self._topic(outline, topic_id)
-        if self.store.get_lesson(course_id, outline["revision"], topic_id) is None:
-            with self._generation_lock:
-                if self.store.get_lesson(course_id, outline["revision"], topic_id) is None:
-                    lesson = generate_lesson_v01(
-                        self.model, topic, self._topic_sources(course_id, topic))
-                    self.store.add_lesson(course_id, outline["revision"], topic_id, lesson)
+        self._ensure_lesson(course_id, outline, topic)
         self.store.add_event(course_id, outline["revision"], topic_id, "lesson_opened")
+        self.schedule_preparation(course_id)
         return self.topic_view(course_id, topic_id)
 
-    def add_questions(self, course_id: str, topic_id: str) -> dict:
+    def add_questions(self, course_id: str, topic_id: str, *, more: bool = True) -> dict:
+        """Generate check questions. With more=False, only fill an empty topic,
+        so a click never duplicates the set the background worker prepared."""
         outline = self._outline(course_id)
         topic = self._topic(outline, topic_id)
-        with self._generation_lock:
-            result = generate_items_v01(
-                self.model, topic, self._topic_sources(course_id, topic))
-        for item in result["items"]:
-            self.store.add_item(course_id, outline["revision"], topic_id, item)
+        generation = self._generate_questions(
+            course_id, outline, topic, only_if_empty=not more)
         view = self.topic_view(course_id, topic_id)
-        view["generation"] = {"added": len(result["items"]), "rejected": result["rejected"]}
+        view["generation"] = generation
         return view
 
     # Practice --------------------------------------------------------------
@@ -305,9 +386,15 @@ class CourseWorkspaceServiceV01:
         return item
 
     def reveal(self, item_id: str, kind: str) -> dict:
-        if kind not in ("hint", "solution"):
+        if kind not in ("hint", "solution", "notes"):
             raise ValueError("Unknown help kind.")
         item = self._item(item_id)
+        if kind == "notes":
+            # Looking at the lesson while answering counts as help (docs/35).
+            self.store.add_event(item["course_id"], item["revision"], item["topic_id"],
+                                 "lesson_opened", item_id)
+            return {"item_id": item_id, "kind": kind,
+                    "text": "Looking at the notes now counts as help for this question."}
         self.store.add_event(item["course_id"], item["revision"], item["topic_id"],
                              f"{kind}_shown", item_id)
         text = item["hint"] if kind == "hint" else item["solution"]
@@ -325,7 +412,8 @@ class CourseWorkspaceServiceV01:
         shown = {e["kind"] for e in self.store.events(item["course_id"], item["revision"])
                  if e["item_id"] == item_id}
         self.store.add_attempt(item, answer_text.strip(), correct,
-                               "hint_shown" in shown, "solution_shown" in shown)
+                               "hint_shown" in shown, "solution_shown" in shown,
+                               "lesson_opened" in shown)
         # The solution is displayed after every submission, so any later attempt
         # on this question is recorded as assisted.
         self.store.add_event(item["course_id"], item["revision"], item["topic_id"],
@@ -335,10 +423,14 @@ class CourseWorkspaceServiceV01:
             else item["answer_letter"]
         )
         view = self.topic_view(item["course_id"], item["topic_id"])
+        self.schedule_preparation(item["course_id"])
         view["feedback"] = {
             "item_id": item_id,
             "correct": correct,
             "assisted": bool(shown),
+            "help_used": sorted(
+                {"hint_shown": "hint", "solution_shown": "solution",
+                 "lesson_opened": "notes"}[kind] for kind in shown),
             "expected_answer": expected,
             "solution": item["solution"],
         }

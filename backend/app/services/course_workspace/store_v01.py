@@ -74,7 +74,8 @@ CREATE TABLE IF NOT EXISTS cw_attempts_v01 (
     correct INTEGER NOT NULL CHECK (correct IN (0, 1)),
     hint_shown INTEGER NOT NULL CHECK (hint_shown IN (0, 1)),
     solution_shown INTEGER NOT NULL CHECK (solution_shown IN (0, 1)),
-    submitted_at TEXT NOT NULL
+    submitted_at TEXT NOT NULL,
+    notes_shown INTEGER NOT NULL DEFAULT 0 CHECK (notes_shown IN (0, 1))
 );
 """
 
@@ -95,7 +96,19 @@ class CourseWorkspaceStoreV01:
         self._connection.row_factory = sqlite3.Row
         self._connection.execute("PRAGMA foreign_keys=ON")
         self._connection.executescript(SCHEMA_V01)
+        self._migrate()
         path.chmod(0o600)
+
+    def _migrate(self) -> None:
+        """Add columns introduced after a database was first created."""
+        columns = {row["name"] for row in
+                   self._connection.execute("PRAGMA table_info(cw_attempts_v01)")}
+        if "notes_shown" not in columns:
+            # Peeking at the lesson during a question counts as help (docs/35).
+            self._connection.execute(
+                "ALTER TABLE cw_attempts_v01 ADD COLUMN notes_shown INTEGER NOT NULL "
+                "DEFAULT 0 CHECK (notes_shown IN (0, 1))"
+            )
 
     def close(self) -> None:
         self._connection.close()
@@ -227,14 +240,15 @@ class CourseWorkspaceStoreV01:
         )
 
     def add_attempt(self, item: dict, answer_text: str, correct: bool,
-                    hint_shown: bool, solution_shown: bool) -> int:
+                    hint_shown: bool, solution_shown: bool,
+                    notes_shown: bool = False) -> int:
         return self._write(
             "INSERT INTO cw_attempts_v01 (item_id, course_id, revision, topic_id, "
-            "answer_text, correct, hint_shown, solution_shown, submitted_at) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "answer_text, correct, hint_shown, solution_shown, submitted_at, notes_shown) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (item["item_id"], item["course_id"], item["revision"], item["topic_id"],
              answer_text, int(correct), int(hint_shown), int(solution_shown),
-             now_utc_v01()),
+             now_utc_v01(), int(notes_shown)),
         )
 
     def attempts(self, course_id: str, revision: int) -> list[dict]:

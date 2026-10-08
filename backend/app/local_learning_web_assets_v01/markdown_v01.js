@@ -2,10 +2,18 @@
 
 // Deliberately bounded Markdown renderer for untrusted chat messages.
 // Never parses user HTML, loads remote scripts, or creates untrusted links.
-// $...$ and $$...$$ are shown as TeX source, NOT mathematically typeset.
+// $...$ and $$...$$ keep their TeX source as a fallback; URPPMathV01 typesets them.
 (function () {
   const MAX_MESSAGE_CHARS = 20000;
-  const MARK = /(\$\$[\s\S]+?\$\$|\$[^$\n]+\$|\*\*[^*\n]+\*\*|__[^_\n]+__|`[^`\n]+`|\*[^*\n]+\*|_[^_\n]+_)/g;
+  // Formulas typeset per renderInto() call. Pages that re-render often (the
+  // course workspace) must not exhaust a page-wide budget and fall back to
+  // raw TeX after a few clicks.
+  const MAX_FORMULAS_PER_MESSAGE = 160;
+  let formulaBudget = MAX_FORMULAS_PER_MESSAGE;
+  // Inline $...$ may span a line break inside one paragraph (models often put
+  // a matrix on its own line) and may contain escaped characters such as the
+  // LaTeX row separator \\. It never starts at "$$".
+  const MARK = /(\$\$[\s\S]+?\$\$|\$(?!\$)(?:\\[\s\S]|[^$\\])+?\$|\*\*[^*\n]+\*\*|__[^_\n]+__|`[^`\n]+`|\*[^*\n]+\*|_[^_\n]+_)/g;
 
   function element(tag, value, className) {
     const node = document.createElement(tag);
@@ -20,7 +28,8 @@
     const wrap = element(display ? "div" : "span", undefined,
       display ? "md-tex-block md-formula" : "md-tex md-tex-inline md-formula");
     wrap.append(element("code", tex, "md-tex-source"));
-    if (globalThis.URPPMathV01 && typeof globalThis.URPPMathV01.typeset === "function") {
+    if (formulaBudget-- > 0 &&
+        globalThis.URPPMathV01 && typeof globalThis.URPPMathV01.typeset === "function") {
       globalThis.URPPMathV01.typeset(wrap, tex, display);
     }
     return wrap;
@@ -70,6 +79,7 @@
     }
     target.replaceChildren();
     target.classList.add("md-body");
+    formulaBudget = MAX_FORMULAS_PER_MESSAGE;
     const lines = raw.replace(/\r\n?/g, "\n").split("\n");
     let pos = 0;
     while (pos < lines.length) {

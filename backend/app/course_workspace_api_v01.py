@@ -41,8 +41,14 @@ class _Empty(_Input):
     pass
 
 
+class _Questions(_Input):
+    # False: only fill an empty topic (the first set); True: add another set.
+    more: bool = True
+
+
 class _Help(_Input):
-    kind: Literal["hint", "solution"]
+    # "notes": the student opened the lesson while answering; counts as help.
+    kind: Literal["hint", "solution", "notes"]
 
 
 class _Answer(_Input):
@@ -120,8 +126,8 @@ def register_course_workspace_routes_v01(
 
     @app.post("/api/courses/{course_id}/topics/{topic_id}/questions")
     async def questions(course_id: str, topic_id: str, request: Request):
-        await _bounded_json(request, _Empty, limit=MAX_SMALL_BODY_BYTES)
-        return await _call(service.add_questions, course_id, topic_id)
+        data = await _bounded_json(request, _Questions, limit=MAX_SMALL_BODY_BYTES)
+        return await _call(service.add_questions, course_id, topic_id, more=data.more)
 
     @app.post("/api/questions/{item_id}/help")
     async def help_request(item_id: str, request: Request):

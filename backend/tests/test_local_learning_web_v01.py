@@ -161,3 +161,58 @@ assert.throws(() => URPPMarkdownV01.renderInto(output, "x".repeat(20001)), TypeE
         timeout=15, check=False,
     )
     assert completed.returncode == 0, completed.stderr
+
+
+def test_markdown_renderer_math_spanning_lines_and_per_message_budget():
+    import shutil
+    import subprocess
+    from pathlib import Path
+    import pytest
+
+    if shutil.which("node") is None:
+        pytest.skip("Node.js unavailable")
+    script = Path(__file__).resolve().parents[1] / "app" / "local_learning_web_assets_v01" / "markdown_v01.js"
+    js = r'''
+const fs = require("node:fs");
+const vm = require("node:vm");
+const assert = require("node:assert/strict");
+class El {
+  constructor(tag) { this.tagName = tag; this.childNodes = []; this._text = "";
+    this.className = ""; this.classList = {add: () => {}}; }
+  set textContent(value) { this._text = String(value); this.childNodes = []; }
+  get textContent() { return this._text + this.childNodes.map(x => x.textContent).join(""); }
+  append(...items) { this.childNodes.push(...items); }
+  replaceChildren(...items) { this._text = ""; this.childNodes = items; }
+}
+globalThis.document = {
+  createElement: (tag) => new El(tag),
+  createTextNode: (text) => { const n = new El("#text"); n.textContent = text; return n; }
+};
+let typeset = [];
+globalThis.URPPMathV01 = {typeset: (target, tex, display) => typeset.push(tex)};
+vm.runInThisContext(fs.readFileSync(process.argv[1], "utf8"));
+
+// The worked-example ending that broke: a matrix on its own line inside $...$.
+const raw = "Multiplying $L$ and $U$: $\n\\begin{bmatrix} 1 & 0 \\\\ 3 & 1 \\end{bmatrix}$, which recovers $A$.";
+const out = new El("div");
+URPPMarkdownV01.renderInto(out, raw);
+assert.deepEqual(typeset, ["L", "U", "\n\\begin{bmatrix} 1 & 0 \\\\ 3 & 1 \\end{bmatrix}", "A"]);
+const plain = [];
+(function visit(n) { if (n.tagName === "#text") plain.push(n.textContent); n.childNodes.forEach(visit); })(out);
+assert(plain.join("").includes(", which recovers "));
+assert(!plain.join("").includes("$"));
+
+// The budget is per message: re-rendering many times keeps typesetting.
+typeset = [];
+const many = Array.from({length: 100}, (_, i) => "$x_" + i + "$").join(" ");
+for (let i = 0; i < 3; i++) URPPMarkdownV01.renderInto(out, many);
+assert.equal(typeset.length, 300);
+typeset = [];
+URPPMarkdownV01.renderInto(out, Array.from({length: 200}, (_, i) => "$y_" + i + "$").join(" "));
+assert.equal(typeset.length, 160);
+'''
+    completed = subprocess.run(
+        ["node", "-e", js, str(script)], text=True, capture_output=True,
+        timeout=15, check=False,
+    )
+    assert completed.returncode == 0, completed.stderr

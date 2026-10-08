@@ -45,6 +45,10 @@
     <div id="path"><p class="hint">Add materials, then build the course path.</p></div>
   </section>
 </main>
+<div id="activity" class="activity" role="status" aria-live="polite" hidden>
+  <span class="spinner" aria-hidden="true"></span>
+  <div><strong id="activity-label"></strong><span id="activity-detail" class="hint"></span></div>
+</div>
 <section id="topic" class="topic-panel" aria-labelledby="topic-title" hidden>
   <div class="topic-heading">
     <div>
@@ -55,17 +59,14 @@
     <div id="topic-progress" class="progress-box"></div>
   </div>
   <div id="next-step" class="next-step" aria-live="polite"></div>
-  <div class="topic-grid">
-    <div>
-      <h3>Lesson</h3>
-      <div id="lesson"></div>
-    </div>
-    <div>
-      <h3>Check questions</h3>
-      <div id="questions"></div>
-      <button id="more-questions" type="button" class="secondary">Generate check questions</button>
-      <p class="hint">Questions are kept only if the model reaches the same answer when it re-solves them without the key (a consistency check, not human verification).</p>
-    </div>
+  <div class="mode-tabs" role="tablist" aria-label="Topic mode">
+    <button id="tab-study" type="button" role="tab" aria-controls="study-pane">Study the notes</button>
+    <button id="tab-practice" type="button" role="tab" aria-controls="practice-pane">Practice</button>
+  </div>
+  <div id="study-pane" role="tabpanel" aria-labelledby="tab-study"></div>
+  <div id="practice-pane" role="tabpanel" aria-labelledby="tab-practice" hidden>
+    <div id="question-area"></div>
+    <p class="hint">Questions are kept only if the model reaches the same answer when it re-solves them without the key (a consistency check, not human verification). The notes are hidden while you practice; opening them counts as help, like a hint.</p>
   </div>
 </section>
 </body>

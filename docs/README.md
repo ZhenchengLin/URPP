@@ -60,6 +60,7 @@ Each stage of URPP was written up as a design record before or alongside its cod
 |---|---|
 | [33](33_course_workspace_tier1_v0.1.md) | Course path, lessons, check questions, adaptive next step on the website; verification and lessons from the real run |
 | [34](34_model_size_comparison_v0.1.md) | 4B vs 9B on explanations and answer keys; model selection by memory |
+| [35](35_course_workspace_flow_fixes_v0.1.md) | Study/Practice modes (notes during practice count as help), visible waits, lessons and questions prepared ahead; Markdown/math fixes |
 
 ## Next
 

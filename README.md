@@ -58,12 +58,12 @@ URPP is built against a list of student user stories. The first tier now runs en
 
 **The course workspace** (`/course` on the local website):
 1. Create a course and add your notes.
-2. Build the course path.
-3. Open a topic: the lesson is written from that topic's sources.
-4. Answer check questions, with a hint if you want one.
+2. Build the course path. URPP starts writing the first lessons and check questions in the background right away, so they are usually ready by the time you open a topic.
+3. **Study** a topic: the notes are written from that topic's sources.
+4. **Practice:** one question at a time, with the notes hidden. A hint, or a peek at the notes, counts as help.
 
 URPP then tells you the next step and why:
-- **Correct after a hint:** try a new question without help.
+- **Correct with help (a hint or the notes):** try a new question without help.
 - **Two different questions correct without help:** the topic is marked practiced, and you move on.
 - **Topic built on an unpracticed one:** URPP sends you there first.
 
