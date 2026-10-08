@@ -110,6 +110,20 @@ def test_json_repair_restores_latex_damaged_by_valid_escapes():
     assert parsed["x"] == r"\frac{a}{b} and \theta"
 
 
+def test_local_model_retries_once_after_invalid_json():
+    replies = iter(['{"topics": [', '{"ok": true}'])
+    calls = []
+
+    def transport(payload):
+        calls.append(payload["messages"][0]["content"])
+        return {"done": True, "done_reason": "stop",
+                "message": {"content": next(replies)}}
+
+    assert LocalJsonModelV01(transport=transport).generate(
+        system="s", user="u", schema={}) == {"ok": True}
+    assert len(calls) == 2 and "not valid JSON" in calls[1]
+
+
 def test_local_model_rejects_incomplete_generation():
     model = LocalJsonModelV01(transport=lambda payload: {"done": True, "done_reason": "length",
                                                          "message": {"content": "{}"}})

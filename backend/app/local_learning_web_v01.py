@@ -13,7 +13,9 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 
+from app.llm.local_general_knowledge_gateway_v01 import LocalGeneralKnowledgeGatewayV01
 from app.llm.local_ollama_professor_gateway_v01 import LocalOllamaProfessorGatewayV01
+from app.llm.model_selection_v01 import SUPPORTED_MODELS_V01, select_model_v01
 from app.course_workspace_api_v01 import register_course_workspace_routes_v01
 from app.local_learning_api_v01 import create_local_learning_api_v01
 from app.services.course_workspace.llm_json_v01 import LocalJsonModelV01
@@ -125,22 +127,33 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="URPP local single-user learning web demo")
     parser.add_argument("--port", type=int, default=8765)
     parser.add_argument("--data-root", type=Path, default=DEFAULT_DATA_ROOT)
+    parser.add_argument(
+        "--model", default="auto", choices=["auto", *sorted(SUPPORTED_MODELS_V01)],
+        help="Local Ollama model; 'auto' picks the largest that fits this computer's RAM.",
+    )
     args = parser.parse_args()
     if not 1024 <= args.port <= 65535:
         parser.error("Port must be 1024–65535.")
 
+    choice = select_model_v01(override=None if args.model == "auto" else args.model)
+    model = choice.model
+
     os.umask(0o077)
     workspace = LocalLearningWorkspaceV01(
         data_root=args.data_root,
-        gateway_factory=lambda: LocalOllamaProfessorGatewayV01(model="qwen3.5:4b"),
+        gateway_factory=lambda: LocalOllamaProfessorGatewayV01(model=model),
+        general_gateway_factory=lambda: LocalGeneralKnowledgeGatewayV01(model=model),
     )
     course_service = CourseWorkspaceServiceV01(
-        data_root=args.data_root, model=LocalJsonModelV01(model="qwen3.5:4b"),
+        data_root=args.data_root, model=LocalJsonModelV01(model=model),
     )
     app = create_local_learning_web_v01(workspace=workspace, course_service=course_service)
 
     import uvicorn
 
+    print(f"Model: {model} ({choice.reason})")
+    if choice.pull_hint:
+        print(choice.pull_hint)
     print(f"URPP local learning: http://127.0.0.1:{args.port}")
     print(f"URPP course workspace: http://127.0.0.1:{args.port}/course")
     print("Developer-only: do not expose this server to the LAN or Internet.")

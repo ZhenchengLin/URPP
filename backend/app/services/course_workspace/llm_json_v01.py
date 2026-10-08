@@ -102,6 +102,17 @@ class LocalJsonModelV01:
     def generate(
         self, *, system: str, user: str, schema: dict, max_tokens: int = 2048
     ) -> Any:
+        """One structured call, retried once if the output is not usable JSON."""
+        try:
+            return self._generate_once(system, user, schema, max_tokens)
+        except CourseGenerationErrorV01:
+            return self._generate_once(
+                system + " Your previous reply was not valid JSON. Reply with one "
+                "complete JSON object only, with every backslash written as \\\\.",
+                user, schema, max_tokens,
+            )
+
+    def _generate_once(self, system: str, user: str, schema: dict, max_tokens: int) -> Any:
         payload = {
             "model": self.model,
             "messages": [
