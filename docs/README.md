@@ -2,7 +2,7 @@
 
 Each stage of URPP was written up as a design record before or alongside its code. Start with the overview, then read by topic.
 
-**Start here:** [Implementations 0–14: review and analysis](URPP_00-14_review_and_analysis_v01.md)
+**Start here:** [One-page research brief](research_brief.md) · [Implementations 0–14: review and analysis](URPP_00-14_review_and_analysis_v01.md)
 
 ## Foundations
 
@@ -59,6 +59,7 @@ Each stage of URPP was written up as a design record before or alongside its cod
 | Record | Topic |
 |---|---|
 | [33](33_course_workspace_tier1_v0.1.md) | Course path, lessons, check questions, adaptive next step on the website; verification and lessons from the real run |
+| [34](34_model_size_comparison_v0.1.md) | 4B vs 9B on explanations and answer keys; model selection by memory |
 
 ## Next
 

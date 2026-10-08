@@ -8,10 +8,9 @@
 ![status](https://img.shields.io/badge/status-research%20prototype-orange)
 
 <p align="center">
-  <img src="docs/assets/course-path.jpg" width="49%" alt="A course path built from two uploaded documents, with prerequisites, key concepts, and sources">
-  <img src="docs/assets/topic-adaptive-next-step.jpg" width="49%" alt="A topic page: grounded lesson, check questions, and the next step with its reason">
+  <img src="docs/assets/demo.gif" width="80%" alt="Demo: course path, grounded lesson, and the adaptive next step after a correct answer with a hint">
 </p>
-<p align="center"><sub>Left: a course path the local model built from two uploaded notes, checked against the sources. Right: after a correct answer <i>with a hint</i>, URPP asks for a new question <i>without</i> help, and says why.</sub></p>
+<p align="center"><sub>Real screens from the local website: a course path built from two uploaded notes, a grounded lesson, and the next step after a correct answer <i>with a hint</i> (a new question without help, not "mastered"). One-page summary: <a href="docs/research_brief.md">research brief</a>.</sub></p>
 
 ---
 
@@ -69,6 +68,11 @@ URPP then tells you the next step and why:
 - **Topic built on an unpracticed one:** URPP sends you there first.
 
 Progress is labelled "practice observed in URPP, not verified mastery", because a correct answer can't rule out help from outside the app.
+
+<p align="center">
+  <img src="docs/assets/course-path.jpg" width="49%" alt="A course path built from two uploaded documents, with prerequisites, key concepts, and sources">
+  <img src="docs/assets/topic-adaptive-next-step.jpg" width="49%" alt="A topic page: grounded lesson, check questions, and the next step with its reason">
+</p>
 
 **The evidence loop** (local numeric lesson, `scripts/run_local_numeric_lesson_v01.py`): the student asks for a hint, then answers correctly. URPP records both, keeps mastery `unknown` because the answer was assisted, and changes the next action to a conceptual review.
 
@@ -135,6 +139,15 @@ flowchart LR
 
 The honest reading: **showing verified equations fixes transcription, but the 4B model's *explanations* still contain math errors** (for example, putting a factor in the numerator instead of the denominator). L1 cannot catch this; human L2 review is pending. In the English run, all four failures come from one malformed model response. Details: [`docs/URPP_14F_revision_record_v01.md`](docs/URPP_14F_revision_record_v01.md).
 
+**Model size (4B vs 9B, same tasks; [details](docs/34_model_size_comparison_v0.1.md)).**
+
+| | 4B | 9B |
+|---|---:|---:|
+| Critical math errors in explanations (benchmark questions) | 3 | 0 |
+| Wrong answer keys in generated check questions | 1 of 11 | 0 of 12 |
+
+A small sample, checked against the source with an AI assistant; human review is pending. The larger model fixes the specific errors the 4B model made. It still needs the safeguards, and it needs free memory to run well.
+
 **Engineering.** 1,424 backend tests; a recoverable session that survives restarts without double-submitting; and a full design record for each stage.
 
 ## Try it
@@ -146,7 +159,7 @@ git clone https://github.com/ZhenchengLin/URPP.git
 cd URPP/backend
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[pdf,dev]"
-ollama pull qwen3.5:4b
+ollama pull qwen3.5:4b   # or qwen3.5:9b on a 16 GB machine
 ```
 
 Run the web app (local only): the course workspace is at http://127.0.0.1:8765/course and the Professor chat at http://127.0.0.1:8765:
@@ -156,6 +169,8 @@ python -m app.local_learning_web_v01 --port 8765 --data-root ~/urpp-demo
 ```
 
 The data folder must be private (`chmod 700 ~/urpp-demo`).
+
+URPP picks the local model from your computer's memory: `qwen3.5:4b` on 8–15 GB, `qwen3.5:9b` on 16–31 GB, `qwen3.5:27b` on 32 GB or more. It falls back to the largest installed model that fits. Pull the recommended one (for example `ollama pull qwen3.5:9b`), or force a choice with `--model qwen3.5:4b` if your machine is busy.
 
 Run the evidence-loop lesson (creates a new SQLite file):
 
@@ -177,7 +192,7 @@ URPP is a **single-developer research prototype**, not a product.
 - **Generated content is checked, not verified.** Course paths are validated against sources, and check questions must survive an independent re-solve. Both are consistency checks, not human review; lessons can still contain errors.
 - **No learning-outcome data yet.** No study with real students has been run, and no claim is made that URPP improves learning.
 - **Local, single-user, no authentication.** Course materials never leave the machine.
-- **Explanation quality depends on model size.** Larger local models are being evaluated.
+- **Explanation quality depends on model size.** 9B removed the errors 4B made in our sample, but needs about 6 GB of free memory.
 
 ## Roadmap and open research questions
 
